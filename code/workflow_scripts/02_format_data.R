@@ -24,8 +24,8 @@ dat_historicalMean <- format_data_historicalMean()
 dat_DOY_chla <- format_data_DOY_chla()
 dat_ETS <- format_data_ETS()
 dat_ARIMA <- format_data_ARIMA()
-# need to pick back up here Monday
 dat_TSLM <- format_data_TSLM()
+# need to pick back up here Monday
 dat_XGBoost <- format_data_XGBoost()
 dat_LSTM <- format_data_LSTM()
 dat_processModels <- format_data_processModels()
