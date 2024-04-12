@@ -1,24 +1,22 @@
 #Format data for DOY model for chl-a
 #Author: Mary Lofton
-#Date: 13MAR23
+#Date last updated: 12APR24
 
 #Purpose: format data for DOY model for chla from 2018-2021
 
-#'Function to fit day of year model for chla
-#'@param filepath filepath to exo data product from EDI for FCR
+#'Function to format chlorophyll-a data for DOY model
+#'@param res_url url to targets data for daily in situ reservoir variables from VERA
 
 #load packages
 library(tidyverse)
 library(lubridate)
 
-format_data_DOY_chla <- function(filepath = "./multi-model-ensemble/data/data_raw/FCR_Catwalk_EDI_2018_2022.csv"){
-
-exo <- read_csv(filepath) %>%
-  filter(Flag_EXOChla_ugL_1 == 0 & year(DateTime) %in% c(2018:2022)) %>%
-  select(DateTime, EXOChla_ugL_1) %>%
-  mutate(Date = date(DateTime)) %>%
-  group_by(Date) %>%
-  summarize(Chla_ugL = median(EXOChla_ugL_1, na.rm = TRUE))
-    
-return(exo)
+format_data_DOY_chla <- function(res_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz"){
+  
+  chla <- read_csv(res_url) %>%
+    filter(site_id == "fcre" & variable == "Chla_ugL_mean" & year(datetime) %in% c(2018:2023)) %>%
+    select(datetime, observation) %>%
+    rename(Chla_ugL_mean = observation)
+  
+  return(chla)
 }

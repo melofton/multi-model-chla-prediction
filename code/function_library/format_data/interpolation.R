@@ -1,6 +1,6 @@
 #Format data for ARIMA model for chl-a
 #Author: Mary Lofton
-#Date: 14MAR23
+#Date last updated: 12APR24
 
 #Purpose: create daily dataframe from Aug 6, 2018 to Dec. 31, 2022 of 
 #daily median values
@@ -20,9 +20,9 @@ library(glmtools)
 
 #'Function to format data for ARIMA model for chla from 2018-2022
 #'@param daily_dates data frame of dates over which to interpolate (yyyy-mm-dd)
-#'with column name "Date"
+#'with column name "datetime"
 #'@param data data frame with the following columns:
-#'Date: yyyy-mm-dd
+#'datetime: yyyy-mm-dd
 #'variables: variables to be interpolated
 #'@param variables vector of variable names (character) to be interpolated
 #'@param method interpolation method;
@@ -35,7 +35,7 @@ library(glmtools)
 interpolate <- function(daily_dates, data, variables, method, DOY_data, glm_output_filepath){
   
   #linear interpolation to fill in missing values
-  df <- left_join(daily_dates, data, by = "Date")
+  df <- left_join(daily_dates, data, by = "datetime")
   
   #set flag column names
   flag_names <- paste0("Flag_",variables)
@@ -56,8 +56,8 @@ interpolate <- function(daily_dates, data, variables, method, DOY_data, glm_outp
     interp <- na.approx(df[,variables[i]])
     
     #fill in missing values at end of timeseries
-    if(length(interp) < length(daily_dates$Date)){
-      num_NA = length(daily_dates$Date) - length(interp)
+    if(length(interp) < length(daily_dates$datetime)){
+      num_NA = length(daily_dates$datetime) - length(interp)
       nas <- rep(NA, times = num_NA)
       interp2 = c(interp, nas)
       interp3 <- na.locf(interp2)
@@ -71,9 +71,9 @@ interpolate <- function(daily_dates, data, variables, method, DOY_data, glm_outp
     
     #create doy column
     cal <- DOY_data %>%
-      mutate(doy = yday(Date))
+      mutate(doy = yday(datetime))
     df <- df %>%
-      mutate(doy = yday(Date))
+      mutate(doy = yday(datetime))
     
     for(i in 1:length(variables)){
     
@@ -84,7 +84,7 @@ interpolate <- function(daily_dates, data, variables, method, DOY_data, glm_outp
     my.gam <- mgcv::gam(formula = y ~ s(doy, bs = "cs"), family = gaussian(),
                             data = temp, method = "REML")
     
-    for(j in 1:length(daily_dates$Date)){
+    for(j in 1:length(daily_dates$datetime)){
     #fill in df with GAM predictions 
       df[j,variables[i]] <- ifelse(is.na(df[j,variables[i]]),mgcv::predict.gam(my.gam, data.frame(doy=df[j,"doy"])),df[j,variables[i]])
     }
@@ -148,9 +148,9 @@ interpolate <- function(daily_dates, data, variables, method, DOY_data, glm_outp
       } else {
         colnames(temp) <- c("DateTime","var")
         var4 <- temp %>%
-          mutate(Date = date(DateTime)) %>%
-          filter(Date %in% daily_dates$Date) %>%
-          group_by(Date) %>%
+          mutate(datetime = date(DateTime)) %>%
+          filter(datetime %in% daily_dates$datetime) %>%
+          group_by(datetime) %>%
           summarize(med = median(var, na.rm = TRUE)) %>%
           ungroup()
       }
