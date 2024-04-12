@@ -8,6 +8,11 @@
 library(tidyverse)
 library(lubridate)
 
+#Load targets data for VERA
+res <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz"
+inf <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-inflow-targets.csv.gz"
+met <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-met-targets.csv.gz"
+
 #Load data formatting functions
 data.format.functions <- list.files("./multi-model-ensemble/code/function_library/format_data")
 sapply(paste0("./multi-model-ensemble/code/function_library/format_data/", data.format.functions),source,.GlobalEnv)
