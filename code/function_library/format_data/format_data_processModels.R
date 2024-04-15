@@ -1,8 +1,8 @@
-#Format data for ARIMA model for chl-a
+#Format data for process models for chl-a
 #Author: Mary Lofton
-#Date: 14MAR23
+#Date last updated: 15APR24
 
-#Purpose: create daily dataframe from Aug 6, 2018 to Dec. 31, 2022 of 
+#Purpose: create daily dataframe from Aug 6, 2018 to Dec. 31, 2023 of 
 #daily median of the following variables:
 
 #'1. Met: SWR 
@@ -21,94 +21,85 @@ library(tidyverse)
 library(lubridate)
 library(data.table)
 library(zoo)
-library(glmtools)
+# library(glmtools)
 
 
 #source internal functions
-source("./multi-model-ensemble/code/function_library/format_data/interpolation.R")
+source("./code/function_library/format_data/interpolation.R")
 
 #'Function to format data for ARIMA model for chla from 2018-2022
-#'@param filepath_exo filepath to exo data product from EDI for FCR
 #'@param filepath_chemistry filepath to chemistry data product from EDI
-#'@param filepath_Secchi filepath to YSI/Secchi data product from EDI
-#'@param filepath_met filepath to FCR met data product from EDI
-#'@param filepath_inflow filepath to FCR inflow data product from EDI
-#'@param start_date start date of desired formatted data file
-#'@param end_date end date of desired formatted data file
+#'@param res_url url to in situ reservoir targets data for VERA
+#'@param met_url url to meteorology targets data for VERA
 
-format_data_processModels <- function(filepath_exo = "./multi-model-ensemble/data/data_raw/FCR_Catwalk_EDI_2018_2022.csv",
-                                 filepath_chemistry = "./multi-model-ensemble/data/data_raw/chemistry_2013_2021.csv",
-                                 filepath_met = "./multi-model-ensemble/data/data_raw/FCR_Met_final_2015_2022.csv",
-                                 start_date = "2018-08-06",
-                                 end_date = "2022-12-31"){
 
+
+format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chemistry_2013_2023.csv",
+                              res_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz",
+                              met_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-met-targets.csv.gz",
+                              start_date = "2018-08-06",
+                              end_date = "2023-12-31"){
+  
   #get list of dates
   start_date = as.Date(start_date)
   end_date = as.Date(end_date)
   daily_dates <- tibble(seq.Date(from = as.Date(start_date), to = as.Date(end_date), by = "day"))
-  colnames(daily_dates)[1] <- "Date"
+  colnames(daily_dates)[1] <- "datetime"
   
   #set GLM-AED output filepath for vars that use this method of interp
   glm_output_filepath = "./Eco-KGML-transfer-learning/data/data_raw/ModelOutputFCR/output.nc"
   
-
-##MET----
+  
+  ##MET----
   #message
   message("interpolating met")
   #read in data
-  met_raw <- fread(filepath_met)
+  met_vars <- c("PAR_umolm2s_mean")
   #initial data wrangling
-  met <- tibble(met_raw) %>%
-    select(DateTime, ShortwaveRadiationDown_Average_W_m2, Flag_ShortwaveRadiationDown_Average_W_m2) %>%
-    filter(!Flag_ShortwaveRadiationDown_Average_W_m2 == 5) %>%
-    select(-Flag_ShortwaveRadiationDown_Average_W_m2) %>%
-    mutate(Date = date(DateTime)) %>%
-    group_by(Date) %>%
-    summarize(Shortwave_Wm2 = median(ShortwaveRadiationDown_Average_W_m2, na.rm = TRUE)) %>%
-    filter(Date >= start_date)
-
+  met <- read_csv(met_url) %>%
+    filter(site_id == "fcre" & variable %in% met_vars & year(datetime) %in% c(2018:2023)) %>%
+    select(datetime, variable, observation) %>%
+    pivot_wider(names_from = "variable", values_from = "observation") %>%
+    filter(datetime >= start_date)
+  
   #interpolation
   met2 <- interpolate(daily_dates = daily_dates,
                       data = met,
-                      variables = c("Shortwave_Wm2"),
+                      variables = met_vars,
                       method = "linear")
-
-##EXO----
+  
+  ##EXO----
   
   #message
-  message("interpolating exo")
-  exo <- read_csv(filepath_exo,
-                  col_types = cols(
-                    .default = col_double(),
-                    Reservoir = col_character(),
-                    DateTime = col_datetime(format = ""),
-                    EXOTemp_C_1 = col_double(),
-                    Flag_EXOTemp_C_1 = col_double()
-                  )) %>%
-    mutate(EXOTemp_C_1 = ifelse(Flag_EXOTemp_C_1 == 0,EXOTemp_C_1,NA),
-           EXOChla_ugL_1 = ifelse(Flag_EXOChla_ugL_1 == 0,EXOChla_ugL_1,NA)) %>%
-    select(DateTime, EXOChla_ugL_1, EXOTemp_C_1) %>%
-    mutate(Date = date(DateTime)) %>%
-    group_by(Date) %>%
-    summarize(WaterTemp_C = median(EXOTemp_C_1, na.rm = TRUE),
-              Chla_ugL = median(EXOChla_ugL_1, na.rm = TRUE)) %>%
-    filter(Date >= start_date)
+  message("interpolating reservoir data")
+  #read in data
+  res_vars <- c("Chla_ugL_mean","Temp_C_mean")
+  #initial data wrangling
+  res <- read_csv(res_url) %>%
+    filter(site_id == "fcre" & variable %in% res_vars & year(datetime) %in% c(2018:2023) & depth_m %in% c(1.6, NA)) %>%
+    select(datetime, variable, observation) %>%
+    mutate(datetime = date(datetime)) %>%
+    group_by(datetime, variable) %>%
+    summarise(observation = mean(observation, na.rm = TRUE)) %>%
+    ungroup() %>%
+    pivot_wider(names_from = "variable", values_from = "observation") %>%
+    filter(datetime >= start_date)
   
   #interpolation
-  exo2 <- interpolate(daily_dates = daily_dates,
-                      data = exo,
-                      variables = c("WaterTemp_C","Chla_ugL"),
+  res2 <- interpolate(daily_dates = daily_dates,
+                      data = res,
+                      variables = c("Chla_ugL_mean","Temp_C_mean"),
                       method = "linear")
-
-
-##CHEM----
-#not removing flags here b/c I don't think any of these will outweigh
-#the uncertainty introduced via interpolation
+  
+  
+  ##CHEM----
+  #not removing flags here b/c I don't think any of these will outweigh
+  #the uncertainty introduced via interpolation
   
   #message
   message("interpolating chem")
-
-##start with Site 50
+  
+  ##start with Site 50
   chem <- read_csv(filepath_chemistry,
                    col_types = cols(
                      .default = col_double(),
@@ -120,36 +111,36 @@ format_data_processModels <- function(filepath_exo = "./multi-model-ensemble/dat
                    )) %>%
     filter(Reservoir == "FCR" & Site == 50 & Depth_m == 1.6) %>%
     select(DateTime, SRP_ugL, NH4_ugL, NO3NO2_ugL) %>%
-    mutate(Date = date(DateTime),
+    mutate(datetime = date(DateTime),
            DIN_ugL = NH4_ugL + NO3NO2_ugL) %>%
-    group_by(Date) %>%
-    summarize(SRP_ugL = median(SRP_ugL, na.rm = TRUE),
-              DIN_ugL = median(DIN_ugL, na.rm = TRUE)) 
-    
-  chem_cal <- chem %>%
-    filter_at(vars(DIN_ugL, SRP_ugL),all_vars(!is.na(.))) %>%
-    filter(Date <= start_date)
+    group_by(datetime) %>%
+    summarize(SRP_ugL = mean(SRP_ugL, na.rm = TRUE),
+              DIN_ugL = mean(DIN_ugL, na.rm = TRUE)) %>%
+    filter(datetime >= start_date)
   
-  chem_interp <- chem %>%
-    filter(Date >= start_date)
+  # this will be needed if you decide to use DOY interpolation
+  # chem_cal <- chem %>%
+  #   filter_at(vars(DIN_ugL, SRP_ugL),all_vars(!is.na(.))) %>%
+  #   filter(datetime <= start_date)
+  # 
+  # chem_interp <- chem %>%
+  #   filter(datetime >= start_date)
   
   #interpolation
   chem2 <- interpolate(daily_dates = daily_dates,
-                      data = chem_interp,
-                      variables = c("DIN_ugL","SRP_ugL"),
-                      method = "DOY",
-                      DOY_data = chem_cal,
-                      glm_output_filepath = glm_output_filepath)
+                       data = chem,
+                       variables = c("DIN_ugL","SRP_ugL"),
+                       method = "linear")
   
   #PREPARE FINAL DF
   message("preparing final df")
   
-  df.out <- left_join(met2, exo2) %>%
+  df.out <- left_join(met2, res2) %>%
     left_join(., chem2) %>%
-    select(Date, Shortwave_Wm2, WaterTemp_C,
-           SRP_ugL, DIN_ugL, Chla_ugL,
-           Flag_Shortwave_Wm2, Flag_WaterTemp_C, Flag_SRP_ugL,
-           Flag_DIN_ugL, Flag_Chla_ugL)
+    select(datetime, PAR_umolm2s_mean, Temp_C_mean,
+           SRP_ugL, DIN_ugL, Chla_ugL_mean,
+           Flag_PAR_umolm2s_mean, Flag_Temp_C_mean, Flag_SRP_ugL,
+           Flag_DIN_ugL, Flag_Chla_ugL_mean)
   
   return(df.out)
 }

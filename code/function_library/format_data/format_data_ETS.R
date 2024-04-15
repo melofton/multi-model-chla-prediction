@@ -1,10 +1,10 @@
-#Format data for DOY model for chl-a
+#Format data for ETS model for chl-a
 #Author: Mary Lofton
-#Date: 13MAR23
+#Date last updated: 15APR24
 
-#Purpose: format data for DOY model for chla from 2018-2021
+#Purpose: format data for ETS model for chla from 2018-2021
 
-#'Function to fit day of year model for chla
+#'Function to fit model for chla
 #'@param res_url url to in situ reservoir targets data for VERA
 
 #load packages
