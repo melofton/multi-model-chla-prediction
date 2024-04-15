@@ -22,16 +22,16 @@ fit_XGBoost <- function(data, cal_dates){
   
   #assign target and predictors
   dates <- as_tibble(data) %>%
-    filter(Date >= start_cal & Date <= stop_cal) %>%
-    select(Date)
+    filter(datetime >= start_cal & datetime <= stop_cal) %>%
+    select(datetime)
   df <- as_tibble(data) %>%
-    mutate(lag_Chla_ugL = stats::lag(Chla_ugL, k = 1)) %>%
-    filter(Date >= start_cal & Date <= stop_cal) %>%
-    select(AirTemp_C,Shortwave_Wm2,Windspeed_ms,Inflow_cms, WaterTemp_C ,LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL, lag_Chla_ugL) 
+    mutate(lag_Chla_ugL_mean = stats::lag(Chla_ugL_mean, k = 1)) %>%
+    filter(datetime >= start_cal & datetime <= stop_cal) %>%
+    select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean, lag_Chla_ugL_mean) 
 
   #set recipe
   xgboost_recipe <- df |> 
-    recipe(Chla_ugL ~ . )
+    recipe(Chla_ugL_mean ~ . )
   
   #assign folds
   folds <- vfold_cv(df, v = 10)
@@ -63,7 +63,7 @@ fit_XGBoost <- function(data, cal_dates){
     arrange(mean)
   
   best_hyperparameters <- xgboost_resample_fit %>%
-    select_best("mae")
+    select_best(metric = "mae")
   
   #update workflow
   final_workflow <- 
@@ -83,14 +83,14 @@ fit_XGBoost <- function(data, cal_dates){
   XGBoost_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
-    geom_point(data = df, aes(x = Date, y = Chla_ugL, fill = "obs"))+
-    geom_line(data = fitted_values, aes(x = Date, y = .pred, color = "XGBoost"))+
+    geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = .pred, color = "XGBoost"))+
     labs(color = NULL, fill = NULL)+
     theme_classic()
 
   #build output df
   df.out <- data.frame(model_id = "XGBoost",
-                       datetime = dates$Date,
+                       datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = fitted_values$.pred)
 

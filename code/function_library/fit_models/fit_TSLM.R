@@ -1,6 +1,6 @@
 #Fit TSLM model for chl-a
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 15APR24
 
 #Purpose: fit TSLM model for chla from 2018-2021
 
@@ -26,29 +26,29 @@ fit_TSLM <- function(data, cal_dates){
   # 
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(Date >= start_cal & Date <= stop_cal) #%>%
+    filter(datetime >= start_cal & datetime <= stop_cal) #%>%
     #mutate_at(vars, scale2) 
   
   #fit TSLM from fable package
   my.tslm <- df %>%
-    model(arima = fable::TSLM(formula = Chla_ugL ~ AirTemp_C + Shortwave_Wm2 + Windspeed_ms + Inflow_cms + WaterTemp_C + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
+    model(arima = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
   fitted_values <- fitted(my.tslm)
   
   TSLM_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
-    geom_point(data = df, aes(x = Date, y = Chla_ugL, fill = "obs"))+
-    geom_line(data = fitted_values, aes(x = Date, y = .fitted, color = "TSLM"))+
+    geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = .fitted, color = "TSLM"))+
     labs(color = NULL, fill = NULL)+
     theme_classic()
 
   #get list of calibration dates
   dates <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal)
+    filter(datetime >= start_cal & datetime <= stop_cal)
   
   #build output df
   df.out <- data.frame(model_id = "TSLM",
-                       datetime = dates$Date,
+                       datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = fitted_values$.fitted)
 

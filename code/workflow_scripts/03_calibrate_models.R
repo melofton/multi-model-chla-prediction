@@ -1,6 +1,6 @@
 #Format data for each model and fit models from 2018-2021
 #Author: Mary Lofton
-#Date: 13MAR23
+#Date last updated: 15APR24
 
 #Purpose: Format Falling Creek Data downloaded from EDI to inputs needed for each model
 #and fit models from 2018-2021
@@ -9,19 +9,19 @@ library(tidyverse)
 library(lubridate)
 
 #Load model fitting functions
-fit.model.functions <- list.files("./multi-model-ensemble/code/function_library/fit_models")
-sapply(paste0("./multi-model-ensemble/code/function_library/fit_models/",fit.model.functions),source,.GlobalEnv)
+fit.model.functions <- list.files("./code/function_library/fit_models")
+sapply(paste0("./code/function_library/fit_models/",fit.model.functions),source,.GlobalEnv)
 
 #Read in data
-dat_historicalMean <- read_csv("./multi-model-ensemble/data/data_processed/historicalMean.csv")
-dat_DOY <- read_csv("./multi-model-ensemble/data/data_processed/DOY.csv")
-dat_ETS <- read_csv("./multi-model-ensemble/data/data_processed/ETS.csv")
-dat_ARIMA <- read_csv("./multi-model-ensemble/data/data_processed/ARIMA.csv")
-dat_TSLM <- read_csv("./multi-model-ensemble/data/data_processed/TSLM.csv")
-dat_processModels <- read_csv("./multi-model-ensemble/data/data_processed/processModels.csv")
-dat_XGBoost <- read_csv("./multi-model-ensemble/data/data_processed/XGBoost.csv")
-dat_prophet <- read_csv("./multi-model-ensemble/data/data_processed/prophet.csv")
-dat_NNETAR <- read_csv("./multi-model-ensemble/data/data_processed/NNETAR.csv")
+dat_historicalMean <- read_csv("./data/data_processed/historicalMean.csv")
+dat_DOY <- read_csv("./data/data_processed/DOY.csv")
+dat_ETS <- read_csv("./data/data_processed/ETS.csv")
+dat_ARIMA <- read_csv("./data/data_processed/ARIMA.csv")
+dat_TSLM <- read_csv("./data/data_processed/TSLM.csv")
+dat_processModels <- read_csv("./data/data_processed/processModels.csv")
+dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
+dat_prophet <- read_csv("./data/data_processed/prophet.csv")
+dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 
 #Fit models (not applicable for persistence model)
 fit_historicalMean <- fit_historicalMean(data = dat_historicalMean, cal_dates = c("2018-08-06","2021-12-31"))
@@ -41,7 +41,6 @@ fit_TSLM$plot
 
 fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
 fit_XGBoost$plot
-save(fit_XGBoost, file = "./multi-model-ensemble/model_output/XGBoost_output.rds")
 
 fit_prophet <- fit_prophet(data = dat_prophet, cal_dates = c("2018-08-06","2021-12-31"))
 fit_prophet$plot
@@ -145,12 +144,13 @@ save(fit_MNP, trim_MNP, file = "./multi-model-ensemble/model_output/OptimumMonod
 
 #Stack model predictions and write to file (not applicable for persistence model
 #and currently not supported for models fit in JAGS)
-mod_output <- bind_rows(fit_DOY$out, fit_ARIMA$out, fit_ETS$out)
+mod_output <- bind_rows(fit_DOY$out, fit_ARIMA$out, fit_ETS$out, fit_TSLM$out,
+                        fit_XGBoost$out, fit_prophet$out, fit_NNETAR$out)
 
 #OR if you only want to run (or re-run) one or a few models
-mod_output <- read_csv("./multi-model-ensemble/model_output/calibration_output.csv") %>%
-  #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
-  bind_rows(.,fit_NNETAR$out) # %>% #bind rows with models to add/replace if applicable
+# mod_output <- read_csv("./multi-model-ensemble/model_output/calibration_output.csv") %>%
+#   #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
+#   bind_rows(.,fit_NNETAR$out) # %>% #bind rows with models to add/replace if applicable
 
-write.csv(mod_output, "./multi-model-ensemble/model_output/calibration_output.csv", row.names = FALSE)
+write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
 unique(mod_output$model_id)

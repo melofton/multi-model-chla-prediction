@@ -1,8 +1,8 @@
-#Fit DOY model for chl-a
+#Fit ETS model for chl-a
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 15APR24
 
-#Purpose: fit ARIMA model for chla from 2018-2021
+#Purpose: fit ETS model for chla from 2018-2021
 
 library(fable)
 
@@ -20,28 +20,28 @@ fit_ETS <- function(data, cal_dates){
   
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(Date >= start_cal & Date <= stop_cal) 
+    filter(datetime >= start_cal & datetime <= stop_cal) 
   
   #fit ARIMA from fable package
   my.ets <- df %>%
-    model(ets = fable::ETS(Chla_ugL)) 
+    model(ets = fable::ETS(Chla_ugL_mean)) 
   fitted_values <- fitted(my.ets)
   
   ETS_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
-    geom_point(data = df, aes(x = Date, y = Chla_ugL, fill = "obs"))+
-    geom_line(data = fitted_values, aes(x = Date, y = .fitted, color = "ETS"))+
+    geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = .fitted, color = "ETS"))+
     labs(color = NULL, fill = NULL)+
     theme_classic()
 
   #get list of calibration dates
   dates <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal)
+    filter(datetime >= start_cal & datetime <= stop_cal)
   
   #build output df
   df.out <- data.frame(model_id = "ETS",
-                       datetime = dates$Date,
+                       datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = fitted_values$.fitted)
 

@@ -1,6 +1,6 @@
 #Fit DOY model for chl-a
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 15APR24
 
 #Purpose: fit DOY model for chla from 2018-2021
 
@@ -20,9 +20,9 @@ fit_DOY_chla <- function(data, cal_dates){
   
   #assign target and predictors
   df <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal) %>%
-    mutate(doy = yday(Date)) %>%
-    select(doy, Chla_ugL)
+    filter(datetime >= start_cal & datetime <= stop_cal) %>%
+    mutate(doy = yday(datetime)) %>%
+    select(doy, Chla_ugL_mean)
   colnames(df) <- c("x","y")
   
   #fit GAM following methods in ggplot()
@@ -39,11 +39,11 @@ fit_DOY_chla <- function(data, cal_dates){
   
   #get list of calibration dates
   dates <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal)
+    filter(datetime >= start_cal & datetime <= stop_cal)
   
   #build output df
   df.out <- data.frame(model_id = "DOY",
-                       datetime = dates$Date,
+                       datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = GAM_predicted)
 

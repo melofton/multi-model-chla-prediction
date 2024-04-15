@@ -1,6 +1,6 @@
 #Fit DOY model for chl-a
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 15APR24
 
 #Purpose: fit DOY model for chla from 2018-2021
 
@@ -19,15 +19,15 @@ fit_historicalMean <- function(data, cal_dates){
   
   #assign target and predictors
   df <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal) 
+    filter(datetime >= start_cal & datetime <= stop_cal) 
   
   #calculate historical mean
-  historicalMean <- mean(df$Chla_ugL, na.rm = TRUE)
+  historicalMean <- mean(df$Chla_ugL_mean, na.rm = TRUE)
   
   HM_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
-    geom_point(data = df, aes(x = Date, y = Chla_ugL, fill = "obs"))+
+    geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
     geom_hline(aes(yintercept = historicalMean, color = "historical mean"))+
     theme_classic()+
     labs(color = NULL, fill = NULL)
@@ -35,11 +35,11 @@ fit_historicalMean <- function(data, cal_dates){
   
   #get list of calibration dates
   dates <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal)
+    filter(datetime >= start_cal & datetime <= stop_cal)
   
   #build output df
   df.out <- data.frame(model_id = "historical mean",
-                       datetime = dates$Date,
+                       datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = historicalMean)
 

@@ -1,6 +1,6 @@
 #Fit prophet model for chl-a
 #Author: Mary Lofton
-#Date: 28JUL23
+#Date last updated: 15APR24
 
 #Purpose: fit prophet model for chla from 2018-2021
 
@@ -20,10 +20,10 @@ fit_prophet <- function(data, cal_dates){
   
   #assign target and predictors
   df <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal) %>%
-    select(-Flag_Chla_ugL) %>%
-    rename(ds = Date,
-           y = Chla_ugL)
+    filter(datetime >= start_cal & datetime <= stop_cal) %>%
+    select(-Flag_Chla_ugL_mean) %>%
+    rename(ds = datetime,
+           y = Chla_ugL_mean)
   
   #fit prophet model 
   my.prophet <- prophet(df) 
@@ -43,11 +43,11 @@ fit_prophet <- function(data, cal_dates){
 
   #get list of calibration dates
   dates <- data %>%
-    filter(Date >= start_cal & Date <= stop_cal)
+    filter(datetime >= start_cal & datetime <= stop_cal)
   
   #build output df
   df.out <- data.frame(model_id = "prophet",
-                       datetime = dates$Date,
+                       datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = forecast$yhat)
 
