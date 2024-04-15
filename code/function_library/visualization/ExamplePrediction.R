@@ -1,6 +1,6 @@
 #Example prediction plot
 #Author: Mary Lofton
-#Date: 14MAR23
+#Date last updated: 15APR24
 
 #Purpose: plot a prediction into future with all models plotted
 
@@ -33,8 +33,8 @@ ExamplePrediction <- function(observations,
   
   #limit to relevant observations
   plot_obs <- observations %>%
-    filter(Date %in% plot_dates) %>%
-    mutate(variable = ifelse(Date <= ref_datetime,"observed, seen by model","observed, not seen by model")) %>%
+    filter(datetime %in% plot_dates) %>%
+    mutate(variable = ifelse(datetime <= ref_datetime,"observed, seen by model","observed, not seen by model")) %>%
     mutate(variable = factor(variable, levels = c("observed, seen by model","observed, not seen by model")))
   
   #limit model output to relevant dates
@@ -43,28 +43,31 @@ ExamplePrediction <- function(observations,
     mutate(model_id = factor(model_id, levels = model_ids))
   
   p <- ggplot()+
-    geom_point(data = plot_obs, aes(x = Date, y = Chla_ugL, 
+    geom_point(data = plot_obs, aes(x = datetime, y = Chla_ugL_mean, 
                                     group = variable, fill = variable),
                shape = 21)+
     geom_line(data = plot_mod, aes(x = datetime, y = prediction,
                                    group = model_id, color = model_id))+
     geom_vline(xintercept = ref_datetime, linetype = "dashed")+
-    annotate("text", x = ref_datetime + 1.5, y = max(plot_obs$Chla_ugL), 
+    annotate("text", x = ref_datetime + 1.5, y = max(plot_obs$Chla_ugL_mean), 
              label = "future", hjust = 0.25)+
-    annotate("text", x = ref_datetime -2.5, y = max(plot_obs$Chla_ugL), 
+    annotate("text", x = ref_datetime -2.5, y = max(plot_obs$Chla_ugL_mean), 
              label = "past", hjust = 0.25)+
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
-    scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
+    scale_color_discrete(name = "Model ID")+
+    # if want to group models by type, can do that with colors in line below
+    #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
     scale_fill_manual(name = "", values = c("observed, seen by model" = "black",
                                             "observed, not seen by model" = "white"))+
     theme_classic()+
-    ggtitle("2022")+
+    ggtitle("2022/2023")+
     theme(axis.text = element_text(size = 12),
           axis.title.y = element_text(size = 16),
           plot.title = element_text(size = 16, face = "bold", hjust = 1),
           legend.title = element_text(face = "bold"),
-          panel.background = element_rect(color = "black", linewidth = 1))+
+          panel.background = element_rect(color = "black", linewidth = 1),
+          legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1),
            fill = guide_legend(order = 2))
   

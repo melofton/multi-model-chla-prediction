@@ -32,14 +32,13 @@ PerformanceRelativeToBloom <- function(observations,
   plot_dates <- seq.Date(from = as.Date(focal_dates[d])-(-1*max_horizon_past), to = as.Date(focal_dates[d]), by = "day")
   
   #reformat observations
-  pred_dates <- data.frame(Date = plot_dates) %>%
-    left_join(., observations, by = "Date") %>%
-    rename(datetime = Date)
+  pred_dates <- data.frame(datetime = plot_dates) %>%
+    left_join(., observations, by = "datetime") 
   
   #focal chl-a
   focal_chla <- observations %>%
-    filter(Date == focal_dates[d]) %>%
-    pull(Chla_ugL)
+    filter(datetime == focal_dates[d]) %>%
+    pull(Chla_ugL_mean)
   
   #reformat model output
   output <- model_output %>% 
@@ -60,7 +59,7 @@ PerformanceRelativeToBloom <- function(observations,
     filter(horizon_past >= max_horizon_past) %>%
     rename(score = any_of(score)) %>%
     mutate(model_type = factor(model_type, levels = c("null","statistical","process","machine learning"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","prophet","OptimumMonod","OptimumSteele","OptimumMonodNP","OptimumSteeleNP","LSTM","XGBoost")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","prophet","XGBoost","NNETAR")))
   
   
   if(d == 1){
@@ -91,7 +90,7 @@ PerformanceRelativeToBloom <- function(observations,
     }
   }
 
-  p <- ggplot(data = plot_data, aes(x = horizon_past, y = score, group = model_id, linetype = model_id, color = model_type)) +
+  p <- ggplot(data = plot_data, aes(x = horizon_past, y = score, group = model_id, color = model_id, linetype = model_type)) +
     geom_line(linewidth = 1) +
     xlim(max_horizon_past,0) +
     geom_vline(xintercept = 0, linetype = "dashed", linewidth = 1) +
@@ -105,16 +104,19 @@ PerformanceRelativeToBloom <- function(observations,
           plot.title = element_text(size = 16, face = "bold", hjust = 1),
           legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),
-          legend.key.width = unit(2,"cm"))+
+          legend.key.width = unit(2,"cm"),
+          legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1)) +
-    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "dotted","dotdash", "solid", "dashed", "dotted", "dotdash","solid", "dashed"))+
-    scale_color_manual(name = "Model type", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))
+    scale_color_discrete(name = "Model ID")+
+    scale_linetype_discrete(name = "Model type")
+    # scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "dotted","dotdash", "solid", "dashed", "dotted", "dotdash","solid", "dashed"))+
+    # scale_color_manual(name = "Model type", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))
       
   if(data_plot == TRUE){
-  p1 <- ggplot(data = pred_dates, aes(x = datetime, y = Chla_ugL)) +
+  p1 <- ggplot(data = pred_dates, aes(x = datetime, y = Chla_ugL_mean)) +
     geom_point() +
     geom_vline(xintercept = as.Date(focal_date), linetype = "dashed") +
-    annotate("text", x = as.Date(focal_date) - 7.2, y = max(pred_dates$Chla_ugL)-1, 
+    annotate("text", x = as.Date(focal_date) - 7.2, y = max(pred_dates$Chla_ugL_mean)-1, 
              label = "date of maximum chl-a")+
     labs(x = "", y = expression(paste("Chlorophyll-a (",mu,g,~L^-1,")"))) +
     theme_classic() +
@@ -122,7 +124,8 @@ PerformanceRelativeToBloom <- function(observations,
           axis.title = element_text(size = 16),
           plot.title = element_text(size = 16, face = "bold", hjust = 1),
           legend.title = element_text(face = "bold"),
-          panel.background = element_rect(color = "black", linewidth = 1))+
+          panel.background = element_rect(color = "black", linewidth = 1),
+          legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1))+
     ggtitle(paste0("Observations prior to ",focal_date))
   

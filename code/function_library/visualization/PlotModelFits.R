@@ -1,13 +1,13 @@
-#Plot observations
+#Plot model fits
 #Author: Mary Lofton
-#Date: 01JUN23
+#Date last updated: 15APR24
 
 
 PlotModelFits <- function(observations, predictions, model_ids){
   
     #limit to year of prediction
     observations <- observations %>%
-      filter(!year(Date) == 2022) %>%
+      filter(!lubridate::year(datetime) %in% c(2022,2023)) %>%
       add_column(variable = "observed")
     
     #limit to models you want
@@ -16,7 +16,7 @@ PlotModelFits <- function(observations, predictions, model_ids){
       mutate(model_id = factor(model_id, levels = model_ids))
     
   p <- ggplot()+
-    geom_point(data = observations, aes(x = Date, y = Chla_ugL,
+    geom_point(data = observations, aes(x = datetime, y = Chla_ugL_mean,
                                         group = variable, fill = variable), size = 1) + 
     geom_line(data = predictions, aes(x = datetime, y = prediction, group = model_id, color = model_id))+
     xlab("")+
@@ -24,10 +24,12 @@ PlotModelFits <- function(observations, predictions, model_ids){
     theme_bw()+
     theme(axis.title.y = element_text(size = 16),
           axis.text.x = element_text(size = 14),
-          plot.title = element_text(hjust = 0.98, vjust = -8, face = "bold",
+          plot.title = element_text(hjust = 0.05, vjust = -8, face = "bold",
                                     size = 16),
           legend.title = element_text(face = "bold"))+
-    scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
+    scale_color_discrete(name = "Model ID")+
+    # if want to group models by type, can do that with colors in line below
+    #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
     scale_fill_discrete(name = "")
     
 

@@ -26,11 +26,11 @@ OneHorizonTimeseries <- function(observations,
                                forecast_horizon){
   
   #get plotting dates
-  plot_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2022-12-31"), by = "day")  
+  plot_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-12-31"), by = "day")  
   
   #limit to relevant observations
   plot_obs <- observations %>%
-    filter(Date %in% plot_dates) %>%
+    filter(datetime %in% plot_dates) %>%
     mutate(variable = "observed")
   
   #limit model output to relevant dates
@@ -43,7 +43,7 @@ OneHorizonTimeseries <- function(observations,
     filter(horizon == forecast_horizon)
   
   p <- ggplot()+
-    geom_point(data = plot_obs, aes(x = Date, y = Chla_ugL, 
+    geom_point(data = plot_obs, aes(x = datetime, y = Chla_ugL_mean, 
                                     group = variable, fill = variable))+
     geom_line(data = plot_mod, aes(x = datetime, y = prediction,
                                    group = model_id, color = model_id))+
