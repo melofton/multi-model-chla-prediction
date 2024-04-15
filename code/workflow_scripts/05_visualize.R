@@ -1,6 +1,6 @@
 #Visualize model output
 #Author: Mary Lofton
-#Date: 13MAR23
+#Date last updated: 15APR24
 
 #Purpose: Visualize model output to assess model performance
 
@@ -9,26 +9,16 @@ library(tidyverse)
 library(lubridate)
 
 #Load plotting functions
-plot.functions <- list.files("./multi-model-ensemble/code/function_library/visualization")
-sapply(paste0("./multi-model-ensemble/code/function_library/visualization/",plot.functions),source,.GlobalEnv)
+plot.functions <- list.files("./code/function_library/visualization")
+sapply(paste0("./code/function_library/visualization/",plot.functions),source,.GlobalEnv)
 
 ##ADD FUNCTION TO DO WHICH DAY IS PREDICTED TO BE PEAK DAY!!!!!!
 
 #Read in data
-
-#different interp methods
-input_li <- read_csv("./multi-model-ensemble/data/data_processed/ARIMA_LinearInterp.csv")
-input_doyi <- read_csv("./multi-model-ensemble/data/data_processed/ARIMA_DOYInterp.csv")
-input_glmi <- read_csv("./multi-model-ensemble/data/data_processed/ARIMA_GLM-AEDInterp.csv")
-
-#input data for models with predictors
-input <- read_csv("./multi-model-ensemble/data/data_processed/ARIMA.csv")
-
-#final dataset
 cal <- read_csv("./multi-model-ensemble/model_output/calibration_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet"),"statistical",
-                                    ifelse(model_id %in% c("LSTM","XGBoost"),"machine learning","process"))))
+                                    ifelse(model_id %in% c("LSTM","XGBoost","NNETAR"),"machine learning","process"))))
 out <- read_csv("./multi-model-ensemble/model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet"),"statistical",
@@ -38,8 +28,6 @@ obs <- read_csv("./multi-model-ensemble/data/data_processed/chla_obs.csv")
 #Set arguments for plotting functions
 reference_datetime = "2022-10-20"
 forecast_horizon = 35
-
-
 
 #Plot 
 

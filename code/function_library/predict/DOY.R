@@ -1,6 +1,6 @@
-#Fit DOY model for chl-a
+#Make predictions with DOY model for chl-a
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 28FEB23
 
 #Purpose: make predictions using DOY model for chla
 
@@ -17,9 +17,9 @@ DOY <- function(data, pred_dates, forecast_horizon){
   #Fit model
   #assign target and predictors
   df <- data %>%
-    filter(!Date %in% pred_dates) %>%
-    mutate(doy = yday(Date)) %>%
-    select(doy, Chla_ugL)
+    filter(!datetime %in% pred_dates) %>%
+    mutate(doy = yday(datetime)) %>%
+    select(doy, Chla_ugL_mean)
   colnames(df) <- c("x","y")
   
   #fit GAM following methods in ggplot()

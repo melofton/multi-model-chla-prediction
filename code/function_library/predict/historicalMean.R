@@ -1,6 +1,6 @@
 #Persistence model
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 15APR24
 
 #'Function to predict chl-a using persistence model
 #'@param data data frame with columns DateTime (yyyy-mm-dd hh:mm:ss) and
@@ -19,7 +19,7 @@ historicalMean <- function(data, pred_dates, forecast_horizon){
   
     #subset to reference_datetime and identify observation
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
-    chla <- data[which(data$Date == pred_dates[t]),"Chla_ugL"]
+    chla <- data[which(data$datetime == pred_dates[t]),"Chla_ugL_mean"]
     
     #set up dataframe for today's prediction
     temp.df <- data.frame(model_id = "historical mean",

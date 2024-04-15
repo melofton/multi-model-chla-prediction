@@ -1,6 +1,6 @@
-#Fit DOY model for chl-a
+#Predict using ETS model for chl-a
 #Author: Mary Lofton
-#Date: 28FEB23
+#Date last updated: 15APR24
 
 #Purpose: make predictions using DOY model for chla
 
@@ -17,11 +17,11 @@ fableETS <- function(data, pred_dates, forecast_horizon){
   #Fit model
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(Date < pred_dates[1]) 
+    filter(datetime < pred_dates[1]) 
   
   #fit ETS from fable package
   my.ets <- df %>%
-    model(ets = fable::ETS(formula = Chla_ugL))
+    model(ets = fable::ETS(formula = Chla_ugL_mean))
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -35,12 +35,12 @@ fableETS <- function(data, pred_dates, forecast_horizon){
     
     #build driver dataset
     drivers = as_tsibble(data) %>%
-      filter(Date %in% forecast_dates) 
-    drivers[,"Chla_ugL"] <- NA
+      filter(datetime %in% forecast_dates) 
+    drivers[,"Chla_ugL_mean"] <- NA
     
     #refit model
     new.data <- as_tsibble(data) %>%
-      filter(Date <= pred_dates[t])
+      filter(datetime <= pred_dates[t])
     ref <- refit(my.ets, new_data = new.data)
     
     #generate predictions
@@ -48,9 +48,9 @@ fableETS <- function(data, pred_dates, forecast_horizon){
 
     #set up dataframe for today's prediction
     curr_chla_df <- data %>%
-      filter(Date == pred_dates[t]) %>%
-      select(Chla_ugL)
-    curr_chla <- curr_chla_df$Chla_ugL[1]
+      filter(datetime == pred_dates[t]) %>%
+      select(Chla_ugL_mean)
+    curr_chla <- curr_chla_df$Chla_ugL_mean[1]
     temp.df <- data.frame(model_id = "ETS",
                           reference_datetime = rep(pred_dates[t],forecast_horizon+1),
                           datetime = c(pred_dates[t],forecast_dates),

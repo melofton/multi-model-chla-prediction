@@ -7,10 +7,10 @@ PlotObservations <- function(observations, pred_only, focal_dates, forecast_hori
   
   if(pred_only == TRUE){
     observations <- observations %>%
-      filter(year(Date) == 2022)
+      filter(year(Date) %in% c(2022,2023))
   }
   
-  p <- ggplot(data = observations, aes(x = Date, y = Chla_ugL))+
+  p <- ggplot(data = observations, aes(x = datetime, y = Chla_ugL_mean))+
     geom_point(size = 1) + 
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+

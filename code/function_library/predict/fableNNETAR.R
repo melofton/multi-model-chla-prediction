@@ -1,6 +1,6 @@
-#Fit NNETAR model for chl-a
+#Predict using NNETAR model for chl-a
 #Author: Mary Lofton
-#Date: 10OCT23
+#Date last updated: 15APR24
 
 #Purpose: make predictions using DOY model for chla
 
@@ -24,12 +24,12 @@ fableNNETAR <- function(data, pred_dates, forecast_horizon){
   # 
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(Date < pred_dates[1]) #%>%
+    filter(datetime < pred_dates[1]) #%>%
     #mutate_at(vars, scale2)
   
   #fit NNETAR from fable package
   my.nnar <- df %>%
-    model(nnar = fable::NNETAR(formula = Chla_ugL ~ AirTemp_C + Shortwave_Wm2 + Windspeed_ms + Inflow_cms + WaterTemp_C + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
+    model(nnar = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
   pred.df <- data.frame(matrix(nrow = 0, ncol = length(df.cols))) 
@@ -42,13 +42,13 @@ fableNNETAR <- function(data, pred_dates, forecast_horizon){
     
     #build driver dataset
     drivers = as_tsibble(data) %>%
-      filter(Date %in% forecast_dates) #%>%
+      filter(datetime %in% forecast_dates) #%>%
     #mutate_at(vars, scale2)
-    drivers[,"Chla_ugL"] <- NA
+    drivers[,"Chla_ugL_mean"] <- NA
     
     #refit model
     new.data <- as_tsibble(data) %>%
-      filter(Date <= pred_dates[t]) #%>%
+      filter(datetime <= pred_dates[t]) #%>%
       #mutate_at(vars, scale2)
     ref <- refit(object = my.nnar, new_data = new.data)
     
@@ -60,9 +60,9 @@ fableNNETAR <- function(data, pred_dates, forecast_horizon){
     
     #set up dataframe for today's prediction
     curr_chla_df <- data %>%
-      filter(Date == pred_dates[t]) %>%
-      select(Chla_ugL)
-    curr_chla <- curr_chla_df$Chla_ugL[1]
+      filter(datetime == pred_dates[t]) %>%
+      select(Chla_ugL_mean)
+    curr_chla <- curr_chla_df$Chla_ugL_mean[1]
     temp.df <- data.frame(model_id = "NNETAR",
                           reference_datetime = rep(pred_dates[t],forecast_horizon+1),
                           datetime = c(pred_dates[t],forecast_dates),

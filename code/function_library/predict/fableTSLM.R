@@ -24,12 +24,12 @@ fableTSLM <- function(data, pred_dates, forecast_horizon){
   # 
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(Date < pred_dates[1]) #%>%
+    filter(datetime < pred_dates[1]) #%>%
     #mutate_at(vars, scale2) 
   
   #fit TSLM from fable package
   my.tslm <- df %>%
-    model(tslm = fable::TSLM(formula = Chla_ugL ~ AirTemp_C + Shortwave_Wm2 + Windspeed_ms + Inflow_cms + WaterTemp_C + LightAttenuation_Kd + DIN_ugL + SRP_ugL))
+    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL))
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -43,13 +43,13 @@ fableTSLM <- function(data, pred_dates, forecast_horizon){
     
     #build driver dataset
     drivers = as_tsibble(data) %>%
-      filter(Date %in% forecast_dates) #%>%
+      filter(datetime %in% forecast_dates) #%>%
       #mutate_at(vars, scale2) 
-    drivers[,"Chla_ugL"] <- NA
+    drivers[,"Chla_ugL_mean"] <- NA
     
     #refit model
     new.data <- as_tsibble(data) %>%
-      filter(Date < pred_dates[t])
+      filter(datetime < pred_dates[t])
     ref <- refit(my.tslm, new_data = new.data)
     
     #generate predictions

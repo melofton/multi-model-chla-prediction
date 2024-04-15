@@ -1,6 +1,6 @@
-#Fit prophet model for chl-a
+#Predict prophet model for chl-a
 #Author: Mary Lofton
-#Date: 28JUL23
+#Date last updated: 15APR24
 
 #Purpose: make predictions using prophet model for chla
 
@@ -17,10 +17,10 @@ pred_prophet <- function(data, pred_dates, forecast_horizon){
   #Fit model
   #assign target and predictors
   df <- data %>%
-    filter(Date < pred_dates[1]) %>%
-    select(-Flag_Chla_ugL) %>%
-    rename(ds = Date,
-           y = Chla_ugL)
+    filter(datetime < pred_dates[1]) %>%
+    select(-Flag_Chla_ugL_mean) %>%
+    rename(ds = datetime,
+           y = Chla_ugL_mean)
   
   #fit prophet model 
   my.prophet <- prophet(df) 
@@ -37,10 +37,10 @@ pred_prophet <- function(data, pred_dates, forecast_horizon){
     
     #build refit dataset
     refit <- data %>%
-      filter(Date <= pred_dates[t]) %>%
-      select(-Flag_Chla_ugL) %>%
-      rename(ds = Date,
-             y = Chla_ugL)
+      filter(datetime <= pred_dates[t]) %>%
+      select(-Flag_Chla_ugL_mean) %>%
+      rename(ds = datetime,
+             y = Chla_ugL_mean)
     
     #refit model
     ref <- prophet(refit)
@@ -55,10 +55,10 @@ pred_prophet <- function(data, pred_dates, forecast_horizon){
 
     #set up dataframe for today's prediction
     curr_chla_df <- data %>%
-      filter(Date == pred_dates[t]) %>%
-      select(Chla_ugL)
+      filter(datetime == pred_dates[t]) %>%
+      select(Chla_ugL_mean)
     
-    curr_chla <- curr_chla_df$Chla_ugL[1]
+    curr_chla <- curr_chla_df$Chla_ugL_mean[1]
     
     temp.df <- data.frame(model_id = "prophet",
                           reference_datetime = rep(pred_dates[t],forecast_horizon+1),
