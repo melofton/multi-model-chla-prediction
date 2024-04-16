@@ -71,11 +71,13 @@ chla <- read_csv("./data/data_processed/chla_obs.csv") %>%
 
 # read in other key vars that drive phytos
 wt <- glmtools::get_var(nc_file, var_name = "temp", reference="surface", z_out=1.6)
-par <- glmtools::get_var(nc_file, var_name = "light")
+par <- glmtools::get_var(nc_file, var_name = "PHY_par")
 hist(par$TOT_par_1.6)
 plot(light$DateTime, light$light)
 met <- read_csv("./model_output/GLM-AED/inputs/met_avg_filtered.csv")
 hist(met$ShortWave)
+lake <- read_csv("./model_output/GLM-AED/output/lake.csv")
+phyto_pars <- read_csv("./model_output/GLM-AED/aed/aed_phyto_pars.csv")
 
 # plot timeseries of pred vs obs
 p1 <- ggplot(data = chla)+
@@ -122,7 +124,4 @@ p6 <- ggplot(data = plot_factors, aes(x = DateTime, y = value, group = factor_na
   theme_bw()
 p6
 
-limiting_factor <- plot_factors %>%
-  group_by
 
-p7 <- ggplot()

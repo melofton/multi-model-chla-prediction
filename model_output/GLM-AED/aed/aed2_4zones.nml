@@ -229,7 +229,7 @@
    c_uptake_target_variable = 'CAR_dic'
    !dbase = 'aed/aed2_phyto_pars_28April2022_constant.nml'
    !dbase = 'aed/aed2_phyto_pars_20April2022_constant.nml'
-   dbase = 'aed/aed2_phyto_pars_16APR24_MEL.nml'
+   dbase = 'aed/aed_phyto_pars.csv'
    diag_level = 10
    min_rho = 900
    max_rho = 1200
