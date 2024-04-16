@@ -16,4 +16,47 @@ infile1 <- paste0("./data/data_raw/chemistry_2013_2023.csv")
 try(download.file(inUrl1,infile1,method="curl"))
 if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
 
+# CTD (for GLM-AED initial conditions)
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/200/13/27ceda6bc7fdec2e7d79a6e4fe16ffdf" 
+infile1 <- tempfile()
+try(download.file(inUrl1,infile1,method="curl"))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
 
+
+dt1 <-read.csv(infile1,header=F 
+               ,skip=1
+               ,sep=","  
+               , col.names=c(
+                 "Reservoir",     
+                 "Site",     
+                 "DateTime",     
+                 "Depth_m",     
+                 "Temp_C",     
+                 "DO_mgL",     
+                 "DOsat_percent",     
+                 "Cond_uScm",     
+                 "SpCond_uScm",     
+                 "Chla_ugL",     
+                 "Turbidity_NTU",     
+                 "pH",     
+                 "ORP_mV",     
+                 "PAR_umolm2s",     
+                 "DescRate_ms",     
+                 "Flag_DateTime",     
+                 "Flag_Temp_C",     
+                 "Flag_DO_mgL",     
+                 "Flag_DOsat_percent",     
+                 "Flag_Cond_uScm",     
+                 "Flag_SpCond_uScm",     
+                 "Flag_Chla_ugL",     
+                 "Flag_Turbidity_NTU",     
+                 "Flag_pH",     
+                 "Flag_ORP_mV",     
+                 "Flag_PAR_umolm2s",     
+                 "Flag_DescRate_ms"    ), check.names=TRUE)
+tail(dt1)
+unlink(infile1)
+
+dt2 <- dt1 %>%
+  filter(Reservoir == "FCR" & Site == 50 & year(DateTime) %in% c(2018:2023))
+write.csv(dt2, "./data/data_raw/CTD_2018_2022_FCR50.csv", row.names = FALSE)

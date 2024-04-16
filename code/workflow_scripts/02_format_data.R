@@ -31,6 +31,10 @@ dat_processModels <- format_data_processModels()
 dat_prophet <- format_data_prophet()
 dat_NNETAR <- format_data_NNETAR()
 
+# do not run this unless you are in a containerized environment that includes
+# GLM Version 3.3.1a10 and glmtools
+initialConditions_GLMAED <- format_initialConditions_GLMAED()
+
 #Write processed data to file
 write.csv(obs, "./data/data_processed/chla_obs.csv",row.names = FALSE)
 write.csv(dat_persistence, "./data/data_processed/persistence.csv",row.names = FALSE)
