@@ -35,16 +35,22 @@ GLM3r::run_glm(sim_folder = "./model_output/GLM-AED",
 nc_file <- file.path('./model_output/GLM-AED/output/output.nc') 
 
 # pull variables of interest from model output
-chl <- glmtools::get_var(nc_file, var_name = "PHY_tchla", reference="surface", z_out=1.6)
+chl <- glmtools::get_var(nc_file, var_name = "PHY_tchla", reference="surface", z_out=1.6) %>%
+  filter(hour(DateTime) == 12) %>%
+  mutate(DateTime = date(DateTime))
 
-phy <- glmtools::get_var(nc_file, var_name = "PHY_phyto", reference="surface", z_out=1.6)
+phy <- glmtools::get_var(nc_file, var_name = "PHY_phyto", reference="surface", z_out=1.6) %>%
+  filter(hour(DateTime) == 12) %>%
+  mutate(DateTime = date(DateTime))
 
 out_vars <- sim_vars(file = nc_file)
 
 f_factor_names <- c("PHY_phyto_fI","PHY_phyto_fNit","PHY_phyto_fPho","PHY_phyto_fT")
 
 for(i in 1:length(f_factor_names)){
-  var <- glmtools::get_var(nc_file, var_name = f_factor_names[i], reference="surface", z_out=1.6)
+  var <- glmtools::get_var(nc_file, var_name = f_factor_names[i], reference="surface", z_out=1.6) %>%
+    filter(hour(DateTime) == 12) %>%
+    mutate(DateTime = date(DateTime))
   
   if(i == 1){
     factors <- left_join(phy, var, by = "DateTime")
