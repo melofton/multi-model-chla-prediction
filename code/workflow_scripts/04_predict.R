@@ -28,14 +28,6 @@ dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
 forecast_horizon = 35
 
-#Load model output for JAGS models if needed
-load("./multi-model-ensemble/model_output/OptimumMonod_output.rds")
-load("./multi-model-ensemble/model_output/OptimumSteele_output.rds")
-load("./multi-model-ensemble/model_output/OptimumSteeleNP_output.rds")
-
-#Load XGBoost model output
-load("./multi-model-ensemble/model_output/XGBoost_output.rds")
-
 #Predict chl-a
 #Each function should take processed data, pred_dates, and forecast_horizon
 #Each function should subset to pred_dates, run a forecast with max horizon of
@@ -83,26 +75,26 @@ pred_NNETAR <- fableNNETAR(data = dat_NNETAR,
                          forecast_horizon = forecast_horizon)
 
 #Stack model output and write to file
-mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM, pred_prophet)
+mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM, pred_prophet, pred_XGBoost, pred_NNETAR)
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  #filter(!model_id == "XGBoost") %>%
-  bind_rows(.,pred_NNETAR)
+  filter(!model_id == "ARIMA") %>%
+  bind_rows(.,pred_ARIMA)
 unique(mod_output$model_id)
 
-#OR if you are reading in LSTM output
-LSTM_output <- read_csv("./multi-model-ensemble/model_output/LSTM_output.csv") %>%
-  add_column(horizon = c(1:21)) %>%
-  gather(-horizon,key = "reference_datetime", value = "prediction") %>%
-  mutate(datetime = as.Date(reference_datetime) + horizon,
-         reference_datetime = as.Date(reference_datetime)) %>%
-  add_column(variable = "chlorophyll-a",
-             model_id = "LSTM") %>%
-  select(model_id, reference_datetime, datetime, variable, prediction)
-mod_output <- read_csv("./multi-model-ensemble/model_output/validation_output.csv") %>%
-  bind_rows(.,LSTM_output)
-unique(mod_output$model_id)
+# #OR if you are reading in LSTM output
+# LSTM_output <- read_csv("./multi-model-ensemble/model_output/LSTM_output.csv") %>%
+#   add_column(horizon = c(1:21)) %>%
+#   gather(-horizon,key = "reference_datetime", value = "prediction") %>%
+#   mutate(datetime = as.Date(reference_datetime) + horizon,
+#          reference_datetime = as.Date(reference_datetime)) %>%
+#   add_column(variable = "chlorophyll-a",
+#              model_id = "LSTM") %>%
+#   select(model_id, reference_datetime, datetime, variable, prediction)
+# mod_output <- read_csv("./multi-model-ensemble/model_output/validation_output.csv") %>%
+#   bind_rows(.,LSTM_output)
+# unique(mod_output$model_id)
 
 write.csv(mod_output, "./model_output/validation_output.csv", row.names = FALSE)
 
