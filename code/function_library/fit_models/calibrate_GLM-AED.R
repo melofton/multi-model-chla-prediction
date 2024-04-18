@@ -71,7 +71,7 @@ plot_factors <- factors %>%
 # read in observations
 chla <- read_csv("./data/data_processed/chla_obs.csv") %>%
   rename(DateTime = datetime) %>%
-  filter(year(DateTime) %in% c(2018:2020)) %>%
+  filter(year(DateTime) %in% c(2018:2021)) %>%
   left_join(., chl, by = "DateTime") %>%
   mutate(bias = PHY_tchla_1.6 - Chla_ugL_mean)
 
