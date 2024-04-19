@@ -103,18 +103,18 @@
    inflow_factor = 1, 0.493447354566162
    strmbd_drag = 0.03, 0.03
    subm_elev = 7.166530546, 1.63130926288586
-   inflow_fl = 'inputs/FCR_weir_inflow_2013_2021_20220927_allfractions_2poolsDOC_1dot5xDOCr.csv','inputs/inflow_SSS_K_elevation_waterquality.csv'
+   inflow_fl = 'inputs/FCR_weir_inflow_2013_2021_20220927_allfractions_2poolsDOC_1dot5xDOCr.csv','inputs/FCR_SSS_inflow_2013_2021_20220413_allfractions_2DOCpools.csv'
    inflow_varnum = 37
    inflow_vars = 'FLOW','TEMP','SALT','TRC_tr1','TRC_age','NCS_ss1','NCS_ss2','OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','CAR_ch4_bub','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','PHS_frp_ads','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_cyano','PHY_cyano_IN','PHY_cyano_IP','PHY_green','PHY_green_IN','PHY_green_IP','PHY_diatom','PHY_diatom_IN','PHY_diatom_IP','BIV_filtfrac'
 /
 &outflow
-   num_outlet = 2
-   flt_off_sw = .false., .false.
-   outl_elvs = 506.9, 498
-   bsn_len_outl = 711.699, 711.699
-   bsn_wid_outl = 226.03, 226.03
-   outflow_fl = 'inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv','inputs/outflow_K.csv'
-   outflow_factor = 1, 0.493447354566162
+   num_outlet = 1
+   flt_off_sw = .false.!, .false.
+   outl_elvs = 506.9!, 498
+   bsn_len_outl = 711.699!, 711.699
+   bsn_wid_outl = 226.03!, 226.03
+   outflow_fl = 'inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv'!,'inputs/outflow_K.csv'
+   outflow_factor = 1!, 0.493447354566162
 /
 &snowice
    snow_albedo_factor = 0.8

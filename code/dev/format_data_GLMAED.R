@@ -20,6 +20,9 @@ tail(met)
 sss <- read_csv("./model_output/GLM-AED/inputs/inflow_SSS_K_elevation_waterquality.csv") %>%
   arrange(time) 
 tail(sss)
+ggplot(data = sss, aes(x = time, y = FLOW))+
+  geom_line()+
+  theme_bw()
 
 inf <- read_csv("./model_output/GLM-AED/inputs/FCR_weir_inflow_2013_2020_20220411_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
@@ -34,6 +37,9 @@ tail(out)
 out_sss <- read_csv("./model_output/GLM-AED/inputs/outflow_K.csv") %>%
   arrange(time)
 tail(out_sss)
+ggplot(data = out_sss, aes(x = time, y = FLOW))+
+  geom_line()+
+  theme_bw()
 
 # compare between 2020 and 2021 versions of weir inflow/outflow files
 new_inf <- read_csv("./model_output/GLM-AED/inputs/FCR_weir_inflow_2013_2021_20220927_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
