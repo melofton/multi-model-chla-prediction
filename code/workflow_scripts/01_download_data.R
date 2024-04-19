@@ -60,3 +60,12 @@ unlink(infile1)
 dt2 <- dt1 %>%
   filter(Reservoir == "FCR" & Site == 50 & year(DateTime) %in% c(2018:2023))
 write.csv(dt2, "./data/data_raw/CTD_2018_2022_FCR50.csv", row.names = FALSE)
+
+#get FP data to help inform GLM-AED calibration
+url <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz"
+fp <- read_csv(url, show_col_types = FALSE) %>%
+  filter(variable %in% c("GreenAlgae_ugL_sample","Bluegreens_ugL_sample","BrownAlgae_ugL_sample",
+                         "MixedAlgae_ugL_sample"),
+         site_id == "fcre",
+         year(datetime) %in% c(2018:2023))
+write.csv(fp, "./data/data_raw/FP_2018_2023_FCR50.csv", row.names = FALSE)

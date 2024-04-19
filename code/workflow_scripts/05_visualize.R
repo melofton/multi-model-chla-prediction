@@ -79,6 +79,7 @@ ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
 #need to figure out how to detach legend from this and make it a separate
 #plot, then add
 #focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06","2023-05-16","2023-07-31","2023-10-02","2023-11-11"),
+# ADD DROP-ONE-OUT VALIDATION TO THIS FIGURE!
 p6 <- PerformanceRelativeToBloom(observations = obs,
                            model_output = out,
                            variable_name = "chlorophyll-a",

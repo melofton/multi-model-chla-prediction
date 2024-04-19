@@ -1,6 +1,6 @@
 # Calibrate GLM-AED to EXO
 # Author: Mary Lofton
-# Date last updated: 16APR24
+# Date last updated: 19APR24
 
 # Purpose: Calibrate GLM-AED to EXO chl-a data at 1.6 m in FCR from Aug. 2018-2021
 
@@ -29,16 +29,18 @@ install.packages("lhs")
 library(lhs)
 install.packages("cowplot")
 library(cowplot)
+install.packages("plotly")
+library(plotly)
 
 # create matrix of parameter values using maximin space-filling design ----
 
 # Notes on choices re: which parameters to include
-#' 1. not including parameters that specify a choice of method; these are fixed
+#'  - not including parameters that specify a choice of method; these are fixed
 #'  - temperature method is 1 (so phytos are temperature-limited)
-#'  - light method is 2 (Steele; photoinhibition) and we are only including
-#'    light parameters relevant to that method (I_S)
+#'  - light method is 1 (Monod; no photoinhibition) and we are only including
+#'    light parameters relevant to that method (I_K)
 #'  - simDINuptake is 1, but internal N dynamics are not simulated so parameters
-#'    related to that are not included here (X_ncon, X_nmin, X_nmax)
+#'    related to that are not included here (X_nmin, X_nmax)
 #'  - same for DIP
 #'  - simNFixation is 1, so this is a group that can fix N, so parameters related
 #'    to this process are included (k_nfix, r_nfix); however, I should probably 
@@ -48,6 +50,9 @@ library(cowplot)
 #'  - N_o and P_0 are not included as we always want them to be able to take up 
 #'    nutrients
 #'  - another complication is that T_std, T_opt, and T_max have value dependencies
+#'  - eliminating k_fres and k_fdom because this is more about feedbacks between
+#'    phytos and OM and we are more interested in focal "knobs" of temperature,
+#'    light, and nutrient sensitivity, respiration rate, and sinking/floating
 #'    
 
 phyto_groups <- c("phyto")
@@ -58,14 +63,14 @@ param_names <- c("pd%w_p",
                  "pd%T_std",
                  "pd%T_opt", 
                  "pd%T_max",  
-                 "pd%I_S", 
+                 "pd%I_K", 
                  "pd%f_pr",  
                  "pd%R_resp",  
                  "pd%theta_resp", 
-                 "pd%k_fres",  
-                 "pd%k_fdom",  
                  "pd%X_ncon",
                  "pd%K_N",   
+                 "pd%k_nfix",
+                 "pd%R_nfix",
                  "pd%K_P",
                  "pd%X_pcon") 
 
@@ -134,12 +139,10 @@ param_values <- tibble(data.frame(Dlist$X)) %>%
          x5 = scale_T_parms(x5, min = 4, max_a = 20, max_b = 35, max_c = 40), #T_std
          x6 = scale_T_parms(x5, min = 4, max_a = 20, max_b = 35, max_c = 40), #T_opt
          x7 = scale_T_parms(x5, min = 4, max_a = 20, max_b = 35, max_c = 40), #T_max
-         x8 = scale_parm(x8, min = 10, max = 500), #I_S
+         x8 = scale_parm(x8, min = 10, max = 500), #I_K
          x9 = scale_parm(x9, min = 0, max = 1), #f_pr; ASK CCC
          x10 = scale_parm(x10, min = 0.01, max = 0.3), #R_resp
          x11 = scale_parm(x11, min = 1, max = 1.2), #theta_resp
-         x12 = scale_parm(x12, min = 0, max = 1), #k_fres; ASK CCC
-         x13 = scale_parm(x13, min = 0, max = 1), #k_fdom; ASK CCC
          x14 = scale_parm(x14, min = 0.5, max = 3.5), #K_N; ASK CCC
          x15 = scale_parm(x15, min = 0.5, max = 3.5)) #K_P; ASK CCC
 colnames(param_values) <- param_names
@@ -192,7 +195,21 @@ chla <- read_csv("./data/data_processed/chla_obs.csv") %>%
   rename(DateTime = datetime) %>%
   filter(year(DateTime) %in% c(2018:2021)) %>%
   left_join(., chl, by = "DateTime") %>%
-  mutate(bias = PHY_tchla_1.6 - Chla_ugL_mean)
+  mutate(bias = PHY_tchla_1.6 - Chla_ugL_mean,
+         DateTime = date(DateTime))
+
+fp <- read_csv("./data/data_raw/FP_2018_2023_FCR50.csv") %>%
+  rename(DateTime = datetime) %>%
+  filter(year(DateTime) %in% c(2018:2021),
+         DateTime >= "2018-08-06") %>%
+  mutate(DateTime = date(DateTime))
+
+fp_sum <- fp %>%
+  pivot_wider(names_from = "variable", values_from = "observation") %>%
+  rowwise() %>%
+  mutate(non_cyano = sum(GreenAlgae_ugL_sample, BrownAlgae_ugL_sample, MixedAlgae_ugL_sample)) %>%
+  left_join(., chla %>% select(DateTime, Chla_ugL_mean))
+
 
 # data wrangling to get factors and bias in same dataset
 min_factor <- plot_factors %>%
@@ -252,27 +269,55 @@ p4 <- ggplot(data = chla, aes(x = Chla_ugL_mean, y = bias))+
   theme_bw()
 p4
 
-# plot timeseries of groups
+# plot timeseries of AED groups
 p5 <- ggplot(data = phy, aes(x = DateTime, y = PHY_phyto_1.6))+
   geom_line()+
   theme_bw()
 p5
 
+# plot timeseries of FP groups
+p6 <- ggplot()+
+  geom_line(data = fp_sum, aes(x = DateTime, y = Bluegreens_ugL_sample, color = "FP cyanobacteria"))+
+  geom_line(data = chla, aes(x = DateTime, y = Chla_ugL_mean, color = "EXO chl-a"))+
+  geom_line(data = fp_sum, aes(x = DateTime, y = non_cyano, color = "FP biomass w/o cyanos"), linetype = 2)+
+  scale_color_manual(values = c("EXO chl-a" = "black","FP biomass w/o cyanos" = "gray","FP cyanobacteria" = "cadetblue"))+
+  labs(color = NULL, y = "ugL")+
+  theme_bw()+
+  theme(legend.position = "bottom")
+p6
+#ggplotly(p6)
+
+p7 <- ggplot(data = fp_sum)+
+  xlab("EXO chl-a")+
+  ylab("FP biomass")+
+  geom_point(aes(x = Chla_ugL_mean, y = non_cyano, color = "non-cyanos"))+
+  geom_point(aes(x = Chla_ugL_mean, y = Bluegreens_ugL_sample, color = "cyanobacteria"))+
+  scale_color_manual(values = c("non-cyanos" = "gray","cyanobacteria" = "cadetblue"))+
+  geom_abline(linetype = 2)+
+  ylim(c(0,50))+
+  xlim(c(0,50))+
+  theme_bw()
+p7
+
+sensors <- plot_grid(p6, p7, rel_widths = c(3,1))
+ggsave(sensors, filename = "./figures/FPNoCyanosVersusEXOChla.png",
+       device = "png", height = 2.5, width = 10, units = "in")
+
 # look at f factors
-p6 <- ggplot(data = plot_factors, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
+p7 <- ggplot(data = plot_factors, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
   geom_line()+
   theme_bw()
-p6
+p7
 
 # look at bias + limiting factor
-p7 <- ggplot(data = bias_and_factors)+
+p8 <- ggplot(data = bias_and_factors)+
   geom_line(aes(x = DateTime, y = bias))+
   geom_point(aes(x = DateTime, y = line, group = factor_name, color = factor_name))+
   geom_hline(yintercept = 0, linewidth = 1, linetype = "dashed")+
   ylab("bias (predicted - observed)")+
   labs(color = "Limiting factor")+
   theme_bw()
-p7
+p8
 
 biasfactor <- plot_grid(p7, p6, ncol = 1)
 ggsave(biasfactor, filename = "./figures/biasAndLimitingFactorsGLM-AED.png",

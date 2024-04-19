@@ -10,7 +10,7 @@
   pd%T_std                =            20
   pd%T_opt                =            28
   pd%T_max                =            35
-  pd%lightModel           =             2
+  pd%lightModel           =             1
   pd%I_K                  =            10
   pd%I_S                  =           250
   pd%KePHY                =         0.005
