@@ -206,9 +206,9 @@
    diag_level = 10
 /
 &aed_phytoplankton
-   num_phytos = 1
-   the_phytos = 1
-   settling = 1
+   num_phytos = 2
+   the_phytos = 1,2
+   settling = 1,1
    do_mpb = 0
    p_excretion_target_variable = 'OGM_dop'
    n_excretion_target_variable = 'OGM_don'
