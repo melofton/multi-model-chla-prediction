@@ -399,7 +399,6 @@ plot_ts <- ggplot(data = chla)+
   labs(color = "", fill = "", y = "Chlorophyll-a (ug/L)")+
   theme_bw()+
   theme(legend.position = "bottom")
-plot_ts
 
 
 # plot AED phyto groups

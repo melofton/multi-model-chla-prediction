@@ -4,10 +4,10 @@
    pd%p0 = 0.03,0.03
    pd%w_p = -0.13,-0.13
    pd%Xcc = 20,20
-   pd%R_growth = 1,5
+   pd%R_growth = 1,1
    pd%fT_Method = 1,1
-   pd%theta_growth = 1.08,1.08
-   pd%T_std = 10,4
+   pd%theta_growth = 1.08,1.02
+   pd%T_std = 10,10
    pd%T_opt = 28,12
    pd%T_max = 35,30
    pd%lightModel = 1,1
