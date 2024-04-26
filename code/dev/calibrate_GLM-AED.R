@@ -251,62 +251,90 @@ chl <- glmtools::get_var(nc_file, var_name = "PHY_tchla", reference="surface", z
   filter(hour(DateTime) == 12) %>%
   mutate(DateTime = date(DateTime))
 
-phyN <- glmtools::get_var(nc_file, var_name = "PHY_phyto_N", reference="surface", z_out=1.6) %>%
+phy_hot <- glmtools::get_var(nc_file, var_name = "PHY_hot", reference="surface", z_out=1.6) %>%
   filter(hour(DateTime) == 12) %>%
   mutate(DateTime = date(DateTime))
 
-phyP <- glmtools::get_var(nc_file, var_name = "PHY_phyto_P", reference="surface", z_out=1.6) %>%
+phy_cold <- glmtools::get_var(nc_file, var_name = "PHY_cold", reference="surface", z_out=1.6) %>%
   filter(hour(DateTime) == 12) %>%
   mutate(DateTime = date(DateTime))
 
-phy <- left_join(phyN, phyP, by = "DateTime") %>%
-  pivot_longer(PHY_phyto_N_1.6:PHY_phyto_P_1.6, names_to = "var_name", values_to = "value") %>%
-  separate(var_name, c("PHY","group","group_limiting_factor","depth1","depth2")) %>%
-  select(-c("PHY","group","depth1","depth2")) 
+phy_Nfixer <- glmtools::get_var(nc_file, var_name = "PHY_Nfixer", reference="surface", z_out=1.6) %>%
+  filter(hour(DateTime) == 12) %>%
+  mutate(DateTime = date(DateTime))
 
-f_factor_names_N <- c("PHY_phyto_N_fI","PHY_phyto_N_fNit","PHY_phyto_N_fPho","PHY_phyto_N_fT")
+phy <- left_join(phy_hot, phy_cold, by = "DateTime") %>%
+  left_join(.,phy_Nfixer, by = "DateTime") %>%
+  pivot_longer(PHY_hot_1.6:PHY_Nfixer_1.6, names_to = "var_name", values_to = "value") %>%
+  separate(var_name, c("PHY","group","depth1","depth2")) %>%
+  select(-c("PHY","depth1","depth2")) 
 
-for(i in 1:length(f_factor_names_N)){
-  var <- glmtools::get_var(nc_file, var_name = f_factor_names_N[i], reference="surface", z_out=1.6) %>%
+f_factor_names_hot <- c("PHY_hot_fI","PHY_hot_fNit","PHY_hot_fPho","PHY_hot_fT")
+
+for(i in 1:length(f_factor_names_hot)){
+  var <- glmtools::get_var(nc_file, var_name = f_factor_names_hot[i], reference="surface", z_out=1.6) %>%
     filter(hour(DateTime) == 12) %>%
     mutate(DateTime = date(DateTime))
   
   if(i == 1){
-    factors_N <- left_join(phyN, var, by = "DateTime")
+    factors_hot <- left_join(phy_hot, var, by = "DateTime")
   } else {
-    factors_N <- left_join(factors_N, var, by = "DateTime")
+    factors_hot <- left_join(factors_hot, var, by = "DateTime")
     
   }
   
 }
 
-plot_factors_N <- factors_N %>%
-  pivot_longer(PHY_phyto_N_fI_1.6:PHY_phyto_N_fT_1.6, names_to = "var_name", values_to = "value") %>%
-  separate(var_name, c("PHY","group1","group2","factor_name","depth1","depth2")) %>%
-  select(-c("PHY","group1","group2","depth1","depth2")) %>%
+plot_factors_hot <- factors_hot %>%
+  pivot_longer(PHY_hot_fI_1.6:PHY_hot_fT_1.6, names_to = "var_name", values_to = "value") %>%
+  separate(var_name, c("PHY","group","factor_name","depth1","depth2")) %>%
+  select(-c("PHY","group","depth1","depth2")) %>%
   filter(DateTime >= "2018-08-06")
 
-f_factor_names_P <- c("PHY_phyto_P_fI","PHY_phyto_P_fNit","PHY_phyto_P_fPho","PHY_phyto_P_fT")
+f_factor_names_cold <- c("PHY_cold_fI","PHY_cold_fNit","PHY_cold_fPho","PHY_cold_fT")
 
-for(i in 1:length(f_factor_names_P)){
-  var <- glmtools::get_var(nc_file, var_name = f_factor_names_P[i], reference="surface", z_out=1.6) %>%
+for(i in 1:length(f_factor_names_cold)){
+  var <- glmtools::get_var(nc_file, var_name = f_factor_names_cold[i], reference="surface", z_out=1.6) %>%
     filter(hour(DateTime) == 12) %>%
     mutate(DateTime = date(DateTime))
   
   if(i == 1){
-    factors_P <- left_join(phyP, var, by = "DateTime")
+    factors_cold <- left_join(phy_cold, var, by = "DateTime")
   } else {
-    factors_P <- left_join(factors_P, var, by = "DateTime")
+    factors_cold <- left_join(factors_cold, var, by = "DateTime")
     
   }
   
 }
 
-plot_factors_P <- factors_P %>%
-  select(-PHY_phyto_P_1.6) %>%
-  pivot_longer(PHY_phyto_P_fI_1.6:PHY_phyto_P_fT_1.6, names_to = "var_name", values_to = "value") %>%
-  separate(var_name, c("PHY","group1","group2","factor_name","depth1","depth2")) %>%
-  select(-c("PHY","group1","group2","depth1","depth2")) %>%
+plot_factors_cold <- factors_cold %>%
+  select(-PHY_cold_1.6) %>%
+  pivot_longer(PHY_cold_fI_1.6:PHY_cold_fT_1.6, names_to = "var_name", values_to = "value") %>%
+  separate(var_name, c("PHY","group","factor_name","depth1","depth2")) %>%
+  select(-c("PHY","group","depth1","depth2")) %>%
+  filter(DateTime >= "2018-08-06")
+
+f_factor_names_Nfixer <- c("PHY_Nfixer_fI","PHY_Nfixer_fNit","PHY_Nfixer_fPho","PHY_Nfixer_fT")
+
+for(i in 1:length(f_factor_names_Nfixer)){
+  var <- glmtools::get_var(nc_file, var_name = f_factor_names_Nfixer[i], reference="surface", z_out=1.6) %>%
+    filter(hour(DateTime) == 12) %>%
+    mutate(DateTime = date(DateTime))
+  
+  if(i == 1){
+    factors_Nfixer <- left_join(phy_Nfixer, var, by = "DateTime")
+  } else {
+    factors_Nfixer <- left_join(factors_Nfixer, var, by = "DateTime")
+    
+  }
+  
+}
+
+plot_factors_Nfixer <- factors_Nfixer %>%
+  select(-PHY_Nfixer_1.6) %>%
+  pivot_longer(PHY_Nfixer_fI_1.6:PHY_Nfixer_fT_1.6, names_to = "var_name", values_to = "value") %>%
+  separate(var_name, c("PHY","group","factor_name","depth1","depth2")) %>%
+  select(-c("PHY","group","depth1","depth2")) %>%
   filter(DateTime >= "2018-08-06")
 
 # read in observations
@@ -376,52 +404,66 @@ plot_frp <- ggplot(data = frp, aes(x = DateTime, y = PHS_frp_1.6))+
   theme_bw()
 
 # look at f factors
-plot_f_factors_N <- ggplot(data = plot_factors_N, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
+plot_f_factors_hot <- ggplot(data = plot_factors_hot, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
   geom_line()+
   theme_bw()+
   xlab("")+
-  ggtitle("N-limited group")+
+  ggtitle("Warm group")+
   theme(legend.position = "bottom")+
   labs(color = "Limiting factor")
 
-plot_f_factors_P <- ggplot(data = plot_factors_P, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
+plot_f_factors_cold <- ggplot(data = plot_factors_cold, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
   geom_line()+
   theme_bw()+
   xlab("")+
-  ggtitle("P-limited group")+
+  ggtitle("Cold group")+
+  theme(legend.position = "bottom")+
+  labs(color = "Limiting factor")
+ggplotly(plot_f_factors_cold)
+
+plot_f_factors_Nfixer <- ggplot(data = plot_factors_Nfixer, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
+  geom_line()+
+  theme_bw()+
+  xlab("")+
+  ggtitle("N-fixing group")+
   theme(legend.position = "bottom")+
   labs(color = "Limiting factor")
 
 # look at timeseries 
 plot_ts <- ggplot(data = chla)+
-  geom_point(aes(x = DateTime, y = Chla_ugL_mean, fill = "observed"))+
-  geom_line(aes(x = DateTime, y = PHY_tchla_1.6),color = "darkolivegreen3")+
+  geom_point(aes(x = DateTime, y = Chla_ugL_mean, color = "observed"))+
+  geom_line(aes(x = DateTime, y = PHY_tchla_1.6,,color = "modeled"))+
   labs(color = "", fill = "", y = "Chlorophyll-a (ug/L)")+
+  scale_color_manual(values = c("observed" = "black", "modeled" = "darkolivegreen3"))+
   theme_bw()+
   theme(legend.position = "bottom")
+ggplotly(plot_ts)
 
 
 # plot AED phyto groups
-plot_AED_groups <- ggplot(data = phy, aes(x = DateTime, y = value, group = group_limiting_factor, color = group_limiting_factor))+
+plot_AED_groups <- ggplot(data = phy, aes(x = DateTime, y = value, group = group, color = group))+
   geom_line()+
   xlab("")+
   ylab("Phytoplankton biomass (mmol C m3)")+
   theme_bw()+
   theme(legend.position = "bottom")
 
-# plot FP phyto groups
-plot_FP_groups <- ggplot(data = fp_groups, aes(x = DateTime, y = observation, group = group, color = group))+
-  geom_line()+
-  theme_bw()+
-  xlab("")+
-  theme(legend.position = "bottom")+
-  labs(color = NULL)
 
 assess_model_run <- plot_grid(plot_wt, plot_par, plot_din, plot_frp,
-                              plot_f_factors_N, plot_f_factors_P, plot_ts, plot_AED_groups,
-                              nrow = 2)
+                              plot_f_factors_hot, plot_f_factors_cold, plot_f_factors_Nfixer, plot_ts, plot_AED_groups,
+                              nrow = 3)
 ggsave(assess_model_run, filename = "./figures/assess_model_run.png",
-       height = 8, width = 16, units = "in")
+       height = 12, width = 16, units = "in")
+
+# assessment metrics
+
+# RMSE
+assess_data <- chla %>%
+  filter(year(DateTime) %in% c(2020:2021))
+
+rmse1 = sqrt(mean((chla$Chla_ugL_mean - chla$PHY_tchla_1.6)^2, na.rm = TRUE))
+rmse2 = sqrt(mean((assess_data$Chla_ugL_mean - assess_data$PHY_tchla_1.6)^2, na.rm = TRUE))
+
 
 # plot timeseries of pred vs obs
 p1 <- ggplot(data = chla)+
@@ -470,9 +512,9 @@ p5
 
 # plot timeseries of FP groups
 p6 <- ggplot()+
-  geom_line(data = fp_sum, aes(x = DateTime, y = Bluegreens_ugL_sample, color = "FP cyanobacteria"))+
+  geom_point(data = fp_sum, aes(x = DateTime, y = Bluegreens_ugL_sample, color = "FP cyanobacteria"))+
   geom_line(data = chla, aes(x = DateTime, y = Chla_ugL_mean, color = "EXO chl-a"))+
-  geom_line(data = fp_sum, aes(x = DateTime, y = non_cyano, color = "FP biomass w/o cyanos"), linetype = 2)+
+  geom_point(data = fp_sum, aes(x = DateTime, y = non_cyano, color = "FP biomass w/o cyanos"), linetype = 2)+
   scale_color_manual(values = c("EXO chl-a" = "black","FP biomass w/o cyanos" = "gray","FP cyanobacteria" = "cadetblue"))+
   labs(color = NULL, y = "ugL")+
   theme_bw()+
@@ -541,3 +583,11 @@ plot_ts_and_factors <- ggplot(data = bias_and_factors)+
   labs(color = "Limiting factor")+
   theme_bw()+
   theme(legend.position = "bottom")
+
+# plot FP phyto groups
+plot_FP_groups <- ggplot(data = fp_groups, aes(x = DateTime, y = observation, group = group, color = group))+
+  geom_line()+
+  theme_bw()+
+  xlab("")+
+  theme(legend.position = "bottom")+
+  labs(color = NULL)

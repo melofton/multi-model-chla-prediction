@@ -13,7 +13,7 @@ library(lubridate)
 f1 <- function(par, I_K){
   y = 1 - exp(-(par/I_K))
 }
-I_K = 200
+I_K = 20
 
 # check to see what range we should plot over
 dat <- read_csv("./data/data_processed/processModels.csv") %>%
@@ -25,7 +25,7 @@ plot(dat$datetime, dat$PAR_umolm2s_mean)
 # plot
 jpeg("./figures/light_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f1(x,I_K=I_K),from=0, to=800,ylab='fI',xlab = expression(paste("Light intensity"," (",mu,"mol ",m^-2," ",s^-1,")")),ylim = c(0,1), yaxt="n")
+curve(f1(x,I_K=I_K),from=0, to=160,ylab='fI',xlab = expression(paste("Light intensity"," (",mu,"mol ",m^-2," ",s^-1,")")),ylim = c(0,1), yaxt="n")
 axis(2, las = 2)
 legend("bottomright", lty = c(1), legend = c("Monod: saturating light response"),bty = "n")
 dev.off()
@@ -72,17 +72,17 @@ dev.off()
 f5 <- function(FRP, P_0, K_P){
   y = (FRP - P_0) / (FRP - P_0 + K_P)
 }
-K_P = 1
+K_P = 0.15
 P_0 = 0
 
 # check range to plot
-range(dat$SRP_ugL)
-plot(dat$datetime, dat$SRP_ugL)
+range(dat$SRP_ugL/94.9714)
+plot(dat$datetime, dat$SRP_ugL/94.9714)
 # values above ~200 look like outliers, going to cap plot at 200 ugL
 
 jpeg("./figures/FRP_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f5(x, P_0 = P_0, K_P = K_P),from=0, to=20,ylab='fP',xlab = expression(paste("FRP"," (",mu,"mol P ",m^-3,")")),ylim = c(0,1))
+curve(f5(x, P_0 = P_0, K_P = K_P),from=0, to=0.2,ylab='fP',xlab = expression(paste("FRP"," (",mu,"mol P ",m^-3,")")),ylim = c(0,1))
 dev.off()
 
 # AED temperature function - why so complex??
