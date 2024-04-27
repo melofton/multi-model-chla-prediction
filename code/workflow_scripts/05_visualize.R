@@ -97,3 +97,16 @@ p7 <- OneHorizonTimeseries(observations = obs,
 p7
 ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
        device = "png", height = 3, width = 7, units = "in")
+
+# GLM-AED
+
+# functional relationships
+
+
+# FluoroProbe heatmap
+fp_profiles <- read_csv("./data/data_raw/FP_2018_2023_profiles_FCR50.csv") %>%
+  filter(date(DateTime) >= "2018-08-06" & date(DateTime) <= "2021-12-31")
+
+p8 <- flora_heatmap(fp_data = fp_profiles, reservoir = "FCR", years = c(2019:2021), z = "non_cyano")
+ggsave(p8, filename = "./figures/FluoroProbeHeatmap.png",
+       device = "png", height = 2, width = 7, units = "in")

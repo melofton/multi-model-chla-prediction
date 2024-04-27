@@ -69,3 +69,58 @@ fp <- read_csv(url, show_col_types = FALSE) %>%
          site_id == "fcre",
          year(datetime) %in% c(2018:2023))
 write.csv(fp, "./data/data_raw/FP_2018_2023_FCR50.csv", row.names = FALSE)
+
+#get more FP data to help inform GLM-AED calibration
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/272/8/0359840d24028e6522f8998bd41b544e" 
+infile1 <- tempfile()
+try(download.file(inUrl1,infile1,method="curl"))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+
+
+dt1 <-read.csv(infile1,header=F 
+               ,skip=1
+               ,sep=","  
+               , col.names=c(
+                 "Reservoir",     
+                 "Site",     
+                 "DateTime",     
+                 "CastID",     
+                 "Depth_m",     
+                 "GreenAlgae_ugL",     
+                 "Bluegreens_ugL",     
+                 "BrownAlgae_ugL",     
+                 "MixedAlgae_ugL",     
+                 "TotalConc_ugL",     
+                 "YellowSubstances_ugL",     
+                 "Temp_C",     
+                 "Transmission_perc",     
+                 "RFU_370nm",     
+                 "RFU_470nm",     
+                 "RFU_525nm",     
+                 "RFU_570nm",     
+                 "RFU_590nm",     
+                 "RFU_610nm",     
+                 "Flag_GreenAlgae_ugL",     
+                 "Flag_Bluegreens_ugL",     
+                 "Flag_BrownAlgae_ugL",     
+                 "Flag_MixedAlgae_ugL",     
+                 "Flag_YellowSubstances_ugL",     
+                 "Flag_TotalConc_ugL",     
+                 "Flag_Temp_C",     
+                 "Flag_Transmission_perc",     
+                 "Flag_RFU_525nm",     
+                 "Flag_RFU_570nm",     
+                 "Flag_RFU_610nm",     
+                 "Flag_RFU_370nm",     
+                 "Flag_RFU_590nm",     
+                 "Flag_RFU_470nm"    ), check.names=TRUE)
+
+unlink(infile1)
+
+fp_profiles <- dt1 %>%
+  filter(Reservoir == "FCR" & Site == 50 & year(DateTime) %in% c(2018:2023)) %>%
+  rowwise() %>%
+  mutate(non_cyano = GreenAlgae_ugL + BrownAlgae_ugL + MixedAlgae_ugL) %>%
+  select(DateTime, CastID, Depth_m, GreenAlgae_ugL, BrownAlgae_ugL, MixedAlgae_ugL, non_cyano)
+
+write.csv(fp_profiles, "./data/data_raw/FP_2018_2023_profiles_FCR50.csv", row.names = FALSE)

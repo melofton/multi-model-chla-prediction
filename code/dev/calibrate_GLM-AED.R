@@ -25,12 +25,24 @@ library(tidyverse)
 library(lubridate)
 library(glmtools)
 library(GLM3r)
-install.packages("lhs")
 library(lhs)
-install.packages("cowplot")
 library(cowplot)
-install.packages("plotly")
 library(plotly)
+library(akima)
+library(reshape2)
+library(gridExtra)
+library(grid)
+library(colorRamps)
+library(RColorBrewer)
+install.packages("lhs")
+install.packages("cowplot")
+install.packages("plotly")
+install.packages("akima")
+install.packages("reshape2")
+install.packages("gridExtra")
+install.packages("grid")
+install.packages("colorRamps")
+install.packages("RColorBrewer")
 
 # create matrix of parameter values using maximin space-filling design ----
 
@@ -55,186 +67,6 @@ library(plotly)
 #'    light, and nutrient sensitivity, respiration rate, and sinking/floating
 #'  - not tuning Xcc as that is more about the sensor range and less about calibration
 #'    
-
-phyto_groups <- c("phyto")
-param_names <- c("pd%w_p",          
-                 "pd%R_growth",
-                 "pd%theta_growth",
-                 "pd%T_std",
-                 "pd%T_opt", 
-                 "pd%T_max",  
-                 "pd%I_K", 
-                 "pd%f_pr",  
-                 "pd%R_resp",  
-                 "pd%theta_resp", 
-                 "pd%X_ncon",
-                 "pd%K_N", 
-                 "pd%X_pcon",
-                 "pd%K_P") 
-
-# Latin hypercube function
-# n runs for m factors
-# so start with 1000 runs for 6 factors (parameters)
-
-mylhs <- function(n, m)
-{
-  ## generate the Latin hypercube 
-  l <- (-(n - 1)/2):((n - 1)/2)
-  L <- matrix(NA, nrow=n, ncol=m)
-  for(j in 1:m) L[,j] <- sample(l, n)
-  
-  ## draw the random uniforms and turn the hypercube into a sample
-  U <- matrix(runif(n*m), ncol=m)
-  X <- (L + (n - 1)/2 + U)/n
-  colnames(X) <- paste0("x", 1:m)
-  
-  ## return the design and the grid it lives on for visualization
-  return(list(X=X, g=c((l + (n - 1)/2)/n,1)))
-}
-
-# set number of sims you want to run
-n_sims = 1000
-Dlist <- mylhs(n = n_sims, m = length(param_names))
-
-# functions to get parameter values in correct range
-
-# function to scale parameters (this works for parameters whose ranges are > 0)
-scale_parm <- function(x,min,max, na.rm = FALSE) x*(max - min) + min
-
-# w_p (-1,1); will need this if add cyano group
-scale_w_p <- function(x, na.rm = FALSE){
-  
-  for(i in 1:length(x)){
-    if(x[i] == 0.5){x[i] <- 0} else if(x[i] < 0.5){x[i] <- x[i]*-2} else {x[i] <- (x[i]-0.5)*2}
-  }
-  
-  return(x)
-  
-}
-
-# temperature parameters 
-# a,b,c are the standardized values for T_std, T_opt, and T_max respectively
-# min = 4ºC
-# max_a (maximum value for T_std) = 20
-# max_b (maximum value for T_opt) = 35
-# max_c (maximum value for T_max) = 40
-scale_T_parms <- function(a,b,c,min,max_a,max_b,max_c){
-  
-  T_std = a*(max_a - min) + min
-  T_opt = b*(max_b - T_std) + T_std
-  T_max = c*(max_c - T_opt) + T_opt
-  
-  return(list(T_std = T_std, T_opt = T_opt, T_max = T_max))
-}
-
-
-
-param_values <- tibble(data.frame(Dlist$X)) %>%
-  mutate(w_p = scale_parm(x1, min = 0, max = 1)*-1, #w_p; (-1,0) for this sinking group
-         R_growth = scale_parm(x2, min = 0.5, max = 3.5), #R_growth
-         theta_growth = scale_parm(x3, min = 1.06, max = 1.11), #theta_growth; 1.06 to 1.11 and keep same as theta_resp
-         T_std = scale_T_parms(a = x4, b = x5, c = x6, min = 4, max_a = 20, max_b = 35, max_c = 40)[["T_std"]], #T_std
-         T_opt = scale_T_parms(a = x4, b = x5, c = x6, min = 4, max_a = 20, max_b = 35, max_c = 40)[["T_opt"]], #T_opt
-         T_max = scale_T_parms(a = x4, b = x5, c = x6, min = 4, max_a = 20, max_b = 35, max_c = 40)[["T_max"]], #T_max
-         I_K = scale_parm(x7, min = 10, max = 500), #I_K
-         f_pr = scale_parm(x8, min = 0.001, max = 0.1), #f_pr
-         R_resp = scale_parm(x9, min = 0.01, max = 0.3), #R_resp
-         theta_resp = scale_parm(x10, min = 1.06, max = 1.11), #theta_resp
-         X_ncon = scale_parm(x11, min = 0.01, max = 0.2), #X_ncon
-         K_N = scale_parm(x12, min = 0.1, max = 1), #K_N
-         X_pcon = scale_parm(x13, min = 0.0001, max = 0.01), #X_pcon
-         K_P = scale_parm(x14, min = 0.01, max = 0.1)) %>% #K_P
-  select(w_p, R_growth, theta_growth, T_std, T_opt, T_max, I_K, f_pr, R_resp,
-         theta_resp, X_ncon, K_N, X_pcon, K_P) %>%
-  mutate_all(as.numeric)
-
-for(i in 1:ncol(param_values)){
-  hist(unlist(param_values[,i]), main = colnames(param_values[i]))
-}
-
-# set nml filepath
-nml_file <- file.path('./model_output/GLM-AED/aed/aed2_phyto_pars_16APR24_MEL.nml')
-
-# set file location of output
-nc_file <- file.path('./model_output/GLM-AED/output/output.nc') 
-
-# save starting version of nml in environment so you can reset after
-start_nml <- glmtools::read_nml(nml_file = nml_file)
-
-# for-loop to run GLM using different parameter values
-
-
-for(j in 1:nrow(param_values)){
-  
-  # read in nml
-  nml <- glmtools::read_nml(nml_file = nml_file)
-  
-  for(i in 1:ncol(param_values)){
-  
-  # assign parameter value in environment
-  curr_parm <- unname(unlist(param_values[j,i]))
-  
-  # set nml parameter values in file
-  if(i == 1){
-    new_nml <- glmtools::set_nml(nml, arg_name = param_names[i], arg_val = curr_parm)
-    
-  }
-  new_nml <- glmtools::set_nml(new_nml, arg_name = param_names[i], arg_val = curr_parm)
-  
-  }
-  
-  # create path to write permuted nml to file
-  write_path <- nml_file
-  
-  # write permuted nml to file
-  glmtools::write_nml(new_nml, file = write_path)
-  
-  # run GLM-AED using GLM3r
-  GLM3r::run_glm(sim_folder = "./model_output/GLM-AED",
-                 nml_file = "glm3.nml",
-                 verbose = TRUE)
-  
-  # pull variable of interest from model output
-  chla <- glmtools::get_var(nc_file, var_name = "PHY_tchla", reference="surface", z_out=1.6) %>%
-    filter(hour(DateTime) == 12) %>%
-    mutate(DateTime = date(DateTime))
-  
-  # pull f factors
-  f_factor_names <- c("PHY_phyto_fI","PHY_phyto_fNit","PHY_phyto_fPho","PHY_phyto_fT")
-  
-  for(i in 1:length(f_factor_names)){
-    var <- glmtools::get_var(nc_file, var_name = f_factor_names[i], reference="surface", z_out=1.6) %>%
-      filter(hour(DateTime) == 12) %>%
-      mutate(DateTime = date(DateTime))
-    
-    if(i == 1){
-      factors <- left_join(phy, var, by = "DateTime")
-    } else {
-      factors <- left_join(factors, var, by = "DateTime")
-      
-    }
-    
-  }
-  
-  # assemble dataframe for that model run
-  temp <- left_join(chla, factors, by = "DateTime") %>%
-    add_column(model_run_ID = j)
-
-  # make sure you reset nml
-  glmtools::write_nml(start_nml, file = nml_file)
-  
-  # bind to other model runs
-  if(j == 1){
-    final <- temp
-  } else {
-    final <- bind_rows(final, temp)
-  }
-  
-}
-
-write.csv(final, file = "./model_output/model_calibration_GLM-AED.csv",row.names = FALSE)
-
-
 
 # run GLM-AED using GLM3r
 GLM3r::run_glm(sim_folder = "./model_output/GLM-AED",
@@ -286,8 +118,10 @@ for(i in 1:length(f_factor_names_hot)){
 }
 
 plot_factors_hot <- factors_hot %>%
-  pivot_longer(PHY_hot_fI_1.6:PHY_hot_fT_1.6, names_to = "var_name", values_to = "value") %>%
+  mutate(overall = min(PHY_hot_fI_1.6, PHY_hot_fPho_1.6, PHY_hot_fNit_1.6)*PHY_hot_fT_1.6) %>%
+  pivot_longer(PHY_hot_fI_1.6:overall, names_to = "var_name", values_to = "value") %>%
   separate(var_name, c("PHY","group","factor_name","depth1","depth2")) %>%
+  mutate(factor_name = ifelse(PHY == "overall","overall",factor_name)) %>%
   select(-c("PHY","group","depth1","depth2")) %>%
   filter(DateTime >= "2018-08-06")
 
@@ -308,9 +142,10 @@ for(i in 1:length(f_factor_names_cold)){
 }
 
 plot_factors_cold <- factors_cold %>%
-  select(-PHY_cold_1.6) %>%
-  pivot_longer(PHY_cold_fI_1.6:PHY_cold_fT_1.6, names_to = "var_name", values_to = "value") %>%
+  mutate(overall = min(PHY_cold_fI_1.6, PHY_cold_fPho_1.6, PHY_cold_fNit_1.6)*PHY_cold_fT_1.6) %>%
+  pivot_longer(PHY_cold_fI_1.6:overall, names_to = "var_name", values_to = "value") %>%
   separate(var_name, c("PHY","group","factor_name","depth1","depth2")) %>%
+  mutate(factor_name = ifelse(PHY == "overall","overall",factor_name)) %>%
   select(-c("PHY","group","depth1","depth2")) %>%
   filter(DateTime >= "2018-08-06")
 
@@ -331,9 +166,10 @@ for(i in 1:length(f_factor_names_Nfixer)){
 }
 
 plot_factors_Nfixer <- factors_Nfixer %>%
-  select(-PHY_Nfixer_1.6) %>%
-  pivot_longer(PHY_Nfixer_fI_1.6:PHY_Nfixer_fT_1.6, names_to = "var_name", values_to = "value") %>%
+  mutate(overall = min(PHY_Nfixer_fI_1.6, PHY_Nfixer_fPho_1.6, PHY_Nfixer_fNit_1.6)*PHY_Nfixer_fT_1.6) %>%
+  pivot_longer(PHY_Nfixer_fI_1.6:overall, names_to = "var_name", values_to = "value") %>%
   separate(var_name, c("PHY","group","factor_name","depth1","depth2")) %>%
+  mutate(factor_name = ifelse(PHY == "overall","overall",factor_name)) %>%
   select(-c("PHY","group","depth1","depth2")) %>%
   filter(DateTime >= "2018-08-06")
 
@@ -345,6 +181,11 @@ chla <- read_csv("./data/data_processed/chla_obs.csv") %>%
   mutate(bias = PHY_tchla_1.6 - Chla_ugL_mean,
          DateTime = date(DateTime))
 
+chla_obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
+  rename(DateTime = datetime) %>%
+  filter(year(DateTime) %in% c(2018:2021)) %>%
+  mutate(DateTime = date(DateTime))
+
 fp <- read_csv("./data/data_raw/FP_2018_2023_FCR50.csv") %>%
   rename(DateTime = datetime) %>%
   filter(year(DateTime) %in% c(2018:2021),
@@ -355,7 +196,7 @@ fp_sum <- fp %>%
   pivot_wider(names_from = "variable", values_from = "observation") %>%
   rowwise() %>%
   mutate(non_cyano = sum(GreenAlgae_ugL_sample, BrownAlgae_ugL_sample, MixedAlgae_ugL_sample)) %>%
-  left_join(., chla %>% select(DateTime, Chla_ugL_mean))
+  left_join(., chla_obs, by = "DateTime")
 
 fp_groups <- fp %>%
   filter(!variable == "Bluegreens_ugL_sample") %>%
@@ -404,13 +245,14 @@ plot_frp <- ggplot(data = frp, aes(x = DateTime, y = PHS_frp_1.6))+
   theme_bw()
 
 # look at f factors
-plot_f_factors_hot <- ggplot(data = plot_factors_hot, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
-  geom_line()+
+plot_f_factors_hot <- ggplot(data = plot_factors_hot)+
+  geom_line(aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
   theme_bw()+
   xlab("")+
   ggtitle("Warm group")+
   theme(legend.position = "bottom")+
   labs(color = "Limiting factor")
+plot_f_factors_hot
 
 plot_f_factors_cold <- ggplot(data = plot_factors_cold, aes(x = DateTime, y = value, group = factor_name, color = factor_name))+
   geom_line()+
@@ -431,12 +273,14 @@ plot_f_factors_Nfixer <- ggplot(data = plot_factors_Nfixer, aes(x = DateTime, y 
 
 # look at timeseries 
 plot_ts <- ggplot(data = chla)+
-  geom_point(aes(x = DateTime, y = Chla_ugL_mean, color = "observed"))+
-  geom_line(aes(x = DateTime, y = PHY_tchla_1.6,,color = "modeled"))+
+  geom_point(aes(x = DateTime, y = Chla_ugL_mean, fill = "observed"))+
+  geom_line(aes(x = DateTime, y = PHY_tchla_1.6,color = "modeled"))+
   labs(color = "", fill = "", y = "Chlorophyll-a (ug/L)")+
-  scale_color_manual(values = c("observed" = "black", "modeled" = "darkolivegreen3"))+
+  scale_color_manual(values = c("modeled" = "darkolivegreen3"))+
+  scale_fill_manual(values = c("observed" = "black"))+
   theme_bw()+
   theme(legend.position = "bottom")
+plot_ts
 ggplotly(plot_ts)
 
 
@@ -446,14 +290,17 @@ plot_AED_groups <- ggplot(data = phy, aes(x = DateTime, y = value, group = group
   xlab("")+
   ylab("Phytoplankton biomass (mmol C m3)")+
   theme_bw()+
+  labs(color = NULL)+
   theme(legend.position = "bottom")
-
+plot_AED_groups
 
 assess_model_run <- plot_grid(plot_wt, plot_par, plot_din, plot_frp,
                               plot_f_factors_hot, plot_f_factors_cold, plot_f_factors_Nfixer, plot_ts, plot_AED_groups,
                               nrow = 3)
 ggsave(assess_model_run, filename = "./figures/assess_model_run.png",
-       height = 12, width = 16, units = "in")
+       height = 9, width = 12, units = "in")
+
+plot_var_nc(nc_file, var_name = "PHY_tchla", reference = "surface", interval = 0.1, show.legend = TRUE)
 
 # assessment metrics
 
@@ -513,22 +360,20 @@ p5
 # plot timeseries of FP groups
 p6 <- ggplot()+
   geom_point(data = fp_sum, aes(x = DateTime, y = Bluegreens_ugL_sample, color = "FP cyanobacteria"))+
-  geom_line(data = chla, aes(x = DateTime, y = Chla_ugL_mean, color = "EXO chl-a"))+
-  geom_point(data = fp_sum, aes(x = DateTime, y = non_cyano, color = "FP biomass w/o cyanos"), linetype = 2)+
+  geom_line(data = chla_obs, aes(x = DateTime, y = Chla_ugL_mean, color = "EXO chl-a"))+
+  geom_point(data = fp_sum, aes(x = DateTime, y = non_cyano, color = "FP biomass w/o cyanos"))+
   scale_color_manual(values = c("EXO chl-a" = "black","FP biomass w/o cyanos" = "gray","FP cyanobacteria" = "cadetblue"))+
-  labs(color = NULL, y = "ugL")+
+  labs(color = NULL, y = "EXO chl-a (ug/L)")+
+  scale_y_continuous(sec.axis = sec_axis(~.,name = "FP w/o cyanos (ug/L)"))+
   theme_bw()+
   theme(legend.position = "bottom")
 p6
 #ggplotly(p6)
 
 p7 <- ggplot(data = fp_sum)+
-  xlab("EXO chl-a")+
-  ylab("FP biomass")+
-  geom_point(aes(x = Chla_ugL_mean, y = non_cyano, color = "non-cyanos"))+
-  geom_point(aes(x = Chla_ugL_mean, y = Bluegreens_ugL_sample, color = "cyanobacteria"))+
-  scale_color_manual(values = c("non-cyanos" = "gray","cyanobacteria" = "cadetblue"))+
-  geom_abline(linetype = 2)+
+  xlab("EXO chl-a (ug/L)")+
+  ylab("FP w/o cyanos (ug/L)")+
+  geom_point(aes(x = Chla_ugL_mean, y = non_cyano))+
   ylim(c(0,50))+
   xlim(c(0,50))+
   theme_bw()
@@ -591,3 +436,67 @@ plot_FP_groups <- ggplot(data = fp_groups, aes(x = DateTime, y = observation, gr
   xlab("")+
   theme(legend.position = "bottom")+
   labs(color = NULL)
+
+check <- chla %>%
+  filter(year(DateTime) %in% c(2020,2021))
+
+# fp heatmap
+fp_profiles <- read_csv("./data/data_raw/FP_2018_2023_profiles_FCR50.csv") %>%
+  filter(date(DateTime) >= "2018-08-06" & date(DateTime) <= "2021-12-31")
+
+.interpolate2grid <- function(xyzData, xcol = 1, ycol = 2, zcol = 3) {
+  # Interpolate field or modeled data to grid 
+  # xcol, ycol, and zcol and column numbers from data.frame
+  # The spreads of x and y must be within four orders of magnitude of each other for interp to work
+  # Therefore must scale data to be within similar magnitude to numeric dates (1e6)
+  gridData <-interp2xyz(interp(
+    x = as.numeric(xyzData[,xcol]), y=xyzData[,ycol]*1e6, z=xyzData[,zcol], 
+    duplicate="mean", linear = T,
+    xo = as.numeric(seq(min(xyzData[,xcol]), max(xyzData[,xcol]), by = 'day')),
+    yo = 1e6*seq(min(xyzData[,ycol]), max(xyzData[,ycol]), by = 0.1)), 
+    data.frame=TRUE) %>%
+    dplyr::mutate(x = as.POSIXct(.data$x, origin = '1970-01-01', 
+                                 tz = Sys.timezone())) %>%
+    dplyr::mutate(y = .data$y/1e6) %>%
+    dplyr::arrange(.data$x, .data$y)
+  
+  return(gridData)
+}
+
+flora_heatmap <- function(fp_data, reservoir, years, z){
+  
+  #subset to relevant data
+  fp <- fp_data %>%
+    select(DateTime, Depth_m, {{z}}) 
+  fp <- data.frame(fp)
+
+
+  observed_df <- .interpolate2grid(fp, xcol = 1, ycol = 2, zcol = 3) %>% 
+    rename(DateTime = .data$x, Depth = .data$y, var = .data$z)
+  
+  legend.title = "FP biomass w/o cyanos (ug/L)" 
+  text.size = 12
+  color.palette = 'RdYlBu' 
+  color.direction = -1 
+  obs.color = 'white' 
+  obs.alpha = 0.6 
+  obs.shape = 16 
+  obs.size = 1
+  shiftPalette = NULL 
+  zlim = c(0,45)
+  
+  h1 = ggplot(data = observed_df, aes(x = .data$DateTime, y = .data$Depth)) +
+    geom_raster(aes(fill = .data$var), interpolate = F) +
+    scale_y_reverse(expand = c(0.01,0.01)) +
+    scale_x_datetime(expand = c(0.01,0.01), limits = c(min(observed_df$DateTime), max(observed_df$DateTime))) +
+    scale_fill_distiller(palette = color.palette, direction = color.direction, na.value = "grey90", limits = zlim) +
+    ylab('Depth (m)') + xlab('Date') +
+    labs(fill = legend.title) +
+    theme_bw(base_size = text.size)
+  
+  print(h1)
+  
+}
+
+flora_heatmap(fp_data = fp_profiles, reservoir = "FCR", years = c(2019:2021), z = "non_cyano")
+
