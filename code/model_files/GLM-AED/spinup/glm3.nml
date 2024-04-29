@@ -45,7 +45,7 @@
 &time
    timefmt = 2
    start = '2018-04-20 12:00:00'
-   stop = '2021-12-31 12:00:00'
+   stop = '2021-01-01 12:00:00'
    dt = 3600
    num_days = 1
    timezone = -5
