@@ -23,6 +23,9 @@ dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_prophet <- read_csv("./data/data_processed/prophet.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 
+#Set sim folder (for GLM-AED)
+sim_folder <- "./code/model_files/GLM-AED/calibration"
+
 #Fit models (not applicable for persistence model)
 fit_historicalMean <- fit_historicalMean(data = dat_historicalMean, cal_dates = c("2018-08-06","2021-12-31"))
 fit_historicalMean$plot
@@ -48,98 +51,9 @@ fit_prophet$plot
 fit_NNETAR <- fit_NNETAR(data = dat_NNETAR, cal_dates = c("2018-08-06","2021-12-31"))
 fit_NNETAR$plot
 
-#process models fit in JAGS may need trimming
-
-#OptimumMonod
-#fit model
-fit_OM <- fit_OptimumMonod(data = dat_processModels, cal_dates = c("2018-08-06","2021-12-31"))
-
-#plot parameters
-for (i in 1:length(fit_OM$params)){
-  plot(fit_OM$jags.out, vars = fit_OM$params[i])
-}
-
-#trim model
-trim_OM <- trim_OptimumMonod(jags.out = fit_OM$jags.out, 
-                   trim_window = c(20001, 50000),
-                   params = fit_OM$params,
-                   data = dat_processModels,
-                   cal_dates = c("2018-08-06","2021-12-31"),
-                   thin = 3)
-plot(trim_OM$param.object)
-trim_OM$pred_plot
-
-#write fitted model info to file 
-save(fit_OM, trim_OM, file = "./multi-model-ensemble/model_output/OptimumMonod_output.rds")
-
-#OptimumSteele
-#fit model
-fit_OS <- fit_OptimumSteele(data = dat_processModels, cal_dates = c("2018-08-06","2021-12-31"))
-
-#drop chain that misbehaved
-jags.divide <- divide.jags(fit_OS$jags.out, which.chains=c(2,3))                     
-
-#plot parameters
-for (i in 1:length(fit_OS$params)){
-  plot(jags.divide, vars = fit_OS$params[i])
-}
-
-#trim model
-trim_OS <- trim_OptimumSteele(jags.out = jags.divide, 
-                             trim_window = c(20001, 50000),
-                             params = fit_OS$params,
-                             data = dat_processModels,
-                             cal_dates = c("2018-08-06","2021-12-31"),
-                             thin = 3)
-plot(trim_OS$param.object)
-trim_OS$pred_plot
-
-#write fitted model info to file - eventually this should save fit_OptimumMonod
-#instead of jags.out and params, so can keep straight among models
-save(fit_OS, trim_OS, file = "./multi-model-ensemble/model_output/OptimumSteele_output.rds")
-
-#OptimumSteeleNP
-#fit model
-fit_SNP <- fit_OptimumSteeleNP(data = dat_processModels, cal_dates = c("2018-08-06","2021-12-31"))
-
-#plot parameters
-for (i in 1:length(fit_SNP$params)){
-  plot(fit_SNP$jags.out, vars = fit_SNP$params[i])
-}
-
-#trim model
-trim_SNP <- trim_OptimumSteeleNP(jags.out = fit_SNP$jags.out, 
-                              trim_window = c(30001, 60000),
-                              params = fit_SNP$params,
-                              data = dat_processModels,
-                              cal_dates = c("2018-08-06","2021-12-31"),
-                              thin = 3)
-plot(trim_SNP$param.object)
-trim_SNP$pred_plot
-
-#OptimumMonodNP
-#fit model
-fit_MNP <- fit_OptimumMonodNP(data = dat_processModels, cal_dates = c("2018-08-06","2021-12-31"))
-
-#plot parameters
-for (i in 1:length(fit_MNP$params)){
-  plot(fit_MNP$jags.out, vars = fit_MNP$params[i])
-}
-
-#trim model
-trim_MNP <- trim_OptimumMonodNP(jags.out = fit_MNP$jags.out, 
-                                 trim_window = c(30001, 60000),
-                                 params = fit_MNP$params,
-                                 data = dat_processModels,
-                                 cal_dates = c("2018-08-06","2021-12-31"),
-                                 thin = 3)
-plot(trim_MNP$param.object)
-trim_MNP$pred_plot
-
-#write fitted model info to file - eventually this should save fit_OptimumMonod
-#instead of jags.out and params, so can keep straight among models
-save(fit_MNP, trim_MNP, file = "./multi-model-ensemble/model_output/OptimumMonodNP_output.rds")
-
+#Calibrate process models (this completes one run + diagnostics + assessment
+# metrics for GLM-AED)
+GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = TRUE)
 
 
 #Stack model predictions and write to file (not applicable for persistence model

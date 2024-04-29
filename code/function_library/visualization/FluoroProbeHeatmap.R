@@ -25,8 +25,6 @@
   return(gridData)
 }
 
-
-# fp heatmap
 flora_heatmap <- function(fp_data, reservoir, years, z){
   
   #subset to relevant data
@@ -47,7 +45,7 @@ flora_heatmap <- function(fp_data, reservoir, years, z){
   obs.shape = 16 
   obs.size = 1
   shiftPalette = NULL 
-  zlim = c(0,50)
+  zlim = c(0,45)
   
   h1 = ggplot(data = observed_df, aes(x = .data$DateTime, y = .data$Depth)) +
     geom_raster(aes(fill = .data$var), interpolate = F) +
@@ -58,8 +56,6 @@ flora_heatmap <- function(fp_data, reservoir, years, z){
     labs(fill = legend.title) +
     theme_bw(base_size = text.size)
   
-  print(h1)
+  return(h1)
   
 }
-
-

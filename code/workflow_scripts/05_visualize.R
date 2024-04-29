@@ -101,6 +101,39 @@ ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
 # GLM-AED
 
 # functional relationships
+PlotMonodLightLimitation(I_K = 20, xlim = c(0,160), save_plot = TRUE)
+PlotRespiration(theta_resp = 1.08, xlim = c(1,30), save_plot = TRUE)
+PlotNLimitation(K_N = 0.25, N_0 = 0, xlim = c(0,6), save_plot = TRUE)
+PlotPLimitation(K_P = 0.15, P_0 = 0, xlim = c(0,0.15), save_plot = TRUE)
+
+# set parameters for temperature limitation
+g1 <- list(T_std = 10,
+           T_opt = 28,
+           T_max = 35,
+           Ts = 10,
+           To = 28,
+           Tm = 35,
+           v = 1.08,
+           theta = 1.08)
+g2 <- list(T_std = 10,
+           T_opt = 12,
+           T_max = 30,
+           Ts = 10,
+           To = 12,
+           Tm = 30,
+           v = 1.02,
+           theta = 1.02)
+PlotTemperatureLimitation2Groups(g1_parms = g1, g2_parms = g2, save_plot = TRUE)
+
+# comparing phyto sensors
+EXOChlaVsFluoroProbe(fp_data = "./data/data_raw/FP_2018_2023_FCR50.csv", 
+                     chla_data = "./data/data_processed/chla_obs.csv", 
+                     save_plot = TRUE)
+
+# looking at nutrient limitation
+PlotNutrientLimitation(chem_data = "./data/data_raw/chemistry_2013_2023.csv", save_plot = TRUE)
+
+# assess calibration model runs
 
 
 # FluoroProbe heatmap
