@@ -101,9 +101,9 @@ ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
 # GLM-AED
 
 # functional relationships
-PlotMonodLightLimitation(I_K = 20, xlim = c(0,160), save_plot = TRUE)
+PlotMonodLightLimitation(I_K = 10, xlim = c(0,160), save_plot = TRUE)
 PlotRespiration(theta_resp = 1.08, xlim = c(1,30), save_plot = TRUE)
-PlotNLimitation(K_N = 0.25, N_0 = 0, xlim = c(0,6), save_plot = TRUE)
+PlotNLimitation(K_N = 0.25, N_0 = 0, xlim = c(0,15), save_plot = FALSE)
 PlotPLimitation(K_P = 0.15, P_0 = 0, xlim = c(0,0.15), save_plot = TRUE)
 
 # set parameters for temperature limitation
@@ -143,3 +143,9 @@ fp_profiles <- read_csv("./data/data_raw/FP_2018_2023_profiles_FCR50.csv") %>%
 p8 <- flora_heatmap(fp_data = fp_profiles, reservoir = "FCR", years = c(2019:2021), z = "non_cyano")
 ggsave(p8, filename = "./figures/FluoroProbeHeatmap.png",
        device = "png", height = 2, width = 7, units = "in")
+
+# illustrate initial conditions updating
+p9 <- ExampleInitialConditionsUpdating()
+ggsave(p1, filename = "./figures/ExampleInitialConditionsUpdating.png",
+       device = "png", height = 3.5, width = 6, units = "in")
+

@@ -13,7 +13,7 @@ PlotMonodLightLimitation <- function(I_K = 20, xlim = c(0,160), save_plot = TRUE
 
 # Monod function for light
 f1 <- function(par, I_K){
-  y = 1 - exp(-(par/I_K))
+  y = (par/I_K) / (1 + (par/I_K))
 }
 
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
