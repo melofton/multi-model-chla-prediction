@@ -22,6 +22,8 @@ dat_processModels <- read_csv("./data/data_processed/processModels.csv")
 dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_prophet <- read_csv("./data/data_processed/prophet.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
+dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
+
 
 #Set sim folder (for GLM-AED)
 sim_folder <- "./code/model_files/GLM-AED/calibration"
@@ -52,8 +54,38 @@ fit_NNETAR <- fit_NNETAR(data = dat_NNETAR, cal_dates = c("2018-08-06","2021-12-
 fit_NNETAR$plot
 
 #Calibrate process models (this completes one run + diagnostics + assessment
-# metrics for GLM-AED)
+# metrics for GLM-AED) - you must be in a container to run this!
 GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = TRUE)
+OneDProcessModel_run <- calibrate_1DProcessModel(
+  data = dat_1DProcessModel,
+  parms = c(-0.001, #w_p (negative is down, positive is up)
+            2, #R_growth
+            1.08, #theta_growth
+            1, #light_extinction
+            10, #I_K
+            0.0, #N_o
+            2, #K_N
+            0.0, #P_o
+            0.0001, #K_P
+            0.1, #f_pr
+            0.16, #R_resp
+            1.08, #theta_resp
+            10, #T_std
+            28, #T_opt
+            35, #T_max
+            0.02, #N_C_ratio
+            0.002, #P_C_ratio
+            0, #phyto_flux_top
+            1, #area (not used)
+            9.5,# lake_depth
+            38,# num_boxes
+            0.005,#KePHYTO
+            0.01, #D_temp
+            20), #Xcc,
+  cal_dates = c("2018-08-06","2021-12-31"),
+  save_plots = TRUE,
+  inputs = NULL
+)
 
 
 #Stack model predictions and write to file (not applicable for persistence model

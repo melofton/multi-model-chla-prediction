@@ -30,6 +30,7 @@ dat_LSTM <- format_data_LSTM()
 dat_processModels <- format_data_processModels()
 dat_prophet <- format_data_prophet()
 dat_NNETAR <- format_data_NNETAR()
+dat_1DProcessModel <- format_data_1DProcessModel()
 
 # do not run this unless you are in a containerized environment that includes
 # GLM Version 3.3.1a10 and glmtools
@@ -52,4 +53,5 @@ write.csv(dat_LSTM$df.out, "./data/data_processed/LSTM.csv",row.names = FALSE)
 write.csv(dat_LSTM$metadata, "./data/data_processed/LSTM_metadata.csv",row.names = FALSE)
 write.csv(dat_prophet, "./data/data_processed/prophet.csv",row.names = FALSE)
 write.csv(dat_NNETAR, "./data/data_processed/NNETAR.csv",row.names = FALSE)
+write.csv(dat_1DProcessModel, "./data/data_processed/1DProcessModel.csv",row.names = FALSE)
 

@@ -22,10 +22,6 @@ library(data.table)
 library(zoo)
 library(rMR)
 
-
-#source internal functions
-source("./code/function_library/format_data/interpolation.R")
-
 #'Function to format data for ARIMA model for chla from 2018-2022
 #'@param filepath_chemistry filepath to chemistry data product from EDI
 #'@param res_url url to in situ reservoir targets data for VERA
@@ -36,7 +32,8 @@ source("./code/function_library/format_data/interpolation.R")
 
 
 
-format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chemistry_2013_2023.csv",
+format_data_1DProcessModel <- function(filepath_chemistry = "./data/data_raw/chemistry_2013_2023.csv",
+                                       filepath_ctd = "./data/data_raw/CTD_2018_2022_FCR50.csv",
                               res_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz",
                               met_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-met-targets.csv.gz",
                               inf_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-inflow-targets.csv.gz",
@@ -60,6 +57,9 @@ format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chem
     filter(!variable %in% c("DN_mgL_sample", "DC_mgL_sample")) |>
     select(datetime, variable, observation) |>
     pivot_wider(names_from = variable, values_from = observation) |>
+    dplyr::right_join(daily_dates, by = "datetime") |>
+    dplyr::arrange(datetime) |>
+    dplyr::select(-DRSI_mgL_sample) |>
     mutate(across(Flow_cms_mean:DIC_mgL_sample, imputeTS::na_interpolation)) |>
     tidyr::fill(Flow_cms_mean:DIC_mgL_sample, .direction = "up") |>
     tidyr::fill(Flow_cms_mean:DIC_mgL_sample, .direction = "down") |>
@@ -89,9 +89,7 @@ format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chem
                   PHY_cyano = 0,
                   PHY_green = 0,
                   PHY_diatom = 0,
-                  SIL_rsi = DRSI_mgL_sample*1000*(1/60.08),
                   SALT = 0) |>
-    right_join(daily_dates, by = "datetime") |>
     dplyr::mutate_if(is.numeric, round, 4) |>
     dplyr::select(dplyr::any_of(variables)) |>
     tidyr::pivot_longer(-c("datetime"), names_to = "variable", values_to = "observation") |>
@@ -113,27 +111,44 @@ format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chem
   
   ##MET----
   #message
-  message("interpolating met")
+  message("interpolating light")
   #read in data
-  met_vars <- c("PAR_umolm2s_mean")
+  par_vars <- c("PAR_umolm2s_mean")
   #initial data wrangling
-  met <- read_csv(met_url) %>%
-    filter(site_id == "fcre" & variable %in% met_vars & year(datetime) %in% c(2018:2023)) %>%
+  par <- read_csv(met_url) %>%
+    filter(site_id == "fcre" & variable %in% par_vars & year(datetime) %in% c(2018:2023)) %>%
     select(datetime, variable, observation) %>%
-    pivot_wider(names_from = "variable", values_from = "observation") %>%
-    filter(datetime >= start_date)
-  
-  #interpolation
-  met2 <- interpolate(daily_dates = daily_dates,
-                      data = met,
-                      variables = met_vars,
-                      method = "linear")
-  
-  met3 <- met2 |>
-    dplyr::rename(observation = PAR_umolm2s_mean) |>
+    filter(datetime >= start_date) %>%
     dplyr::mutate(variable = "par",
                   depth = NA)  |>
     dplyr::mutate(depth = as.numeric(depth)) |>
+    dplyr::select(datetime, depth, variable, observation)
+  
+  swr_vars <- c("ShortwaveRadiationUp_Wm2_mean")
+  #initial data wrangling
+  swr <- read_csv(met_url) %>%
+    filter(site_id == "fcre" & variable %in% swr_vars & year(datetime) %in% c(2018:2023)) %>%
+    select(datetime, variable, observation) %>%
+    filter(datetime >= start_date) %>%
+    dplyr::mutate(variable = "swr",
+                  depth = NA)  |>
+    dplyr::mutate(depth = as.numeric(depth)) |>
+    dplyr::select(datetime, depth, variable, observation)
+  
+  daily_light_data <- dplyr::bind_rows(par, swr)
+  
+  regression_data <- daily_light_data |>
+    dplyr::select(-depth) |>
+    tidyr::pivot_wider(names_from = variable, values_from = observation) |>
+    na.omit()
+  
+  fit <- lm(par ~ swr, regression_data)
+  
+  light_data <- daily_light_data |>
+    dplyr::mutate(observation = ifelse(variable == "swr", fit$coefficients[1] + observation * fit$coefficients[2], observation)) |>
+    dplyr::summarise(observation = mean(observation, na.rm = TRUE), .by = c(datetime)) |>
+    dplyr::mutate(variable = "par") |>
+    tibble::add_column(depth = NA) |>
     dplyr::select(datetime, depth, variable, observation)
   
   ##in situ data----
@@ -168,7 +183,50 @@ format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chem
     ungroup() %>%
     filter(datetime >= start_date) %>%
     rename(depth = depth_m) %>%
-    mutate(variable = ifelse(variable == "Chla_ugL_mean","chla","secchi"))
+    mutate(variable = ifelse(variable == "Chla_ugL_mean","chla_exo","secchi"))
+  
+  secchi <- res %>% filter(variable == "secchi")
+  
+  exo_chla_data <- res %>% filter(variable == "chla_exo")
+  
+  ctd <- readr::read_csv(filepath_ctd)
+  
+  ctd1 <- ctd |> 
+    dplyr::rename(depth = Depth_m) |>
+    dplyr::select(DateTime, depth, Chla_ugL) |>
+    dplyr::mutate(datetime = lubridate::as_date(DateTime)) |>
+    dplyr::summarise(observation = mean(Chla_ugL, na.rm = TRUE), .by = c(datetime, depth)) |>
+    dplyr::mutate(variable = "chla_ctd") |>
+    dplyr::mutate(depth = as.numeric(depth)) |>
+    dplyr::select(datetime, depth, variable, observation)
+  
+  modeled_depths <- seq(0,20, 0.25)
+  
+  cuts <- tibble::tibble(cuts = as.integer(factor(seq(0,20, 0.25))),
+                         depth = seq(0,20, 0.25))
+  
+  daily_chla_data <- dplyr::bind_rows(exo_chla_data, ctd1)
+  
+  binned_chla <- daily_chla_data |>
+    dplyr::mutate(cuts = cut(depth, breaks = modeled_depths, include.lowest = TRUE, right = FALSE, labels = FALSE)) |>
+    dplyr::group_by(cuts, variable, datetime) |>
+    dplyr::summarize(observation = mean(observation, na.rm = TRUE), .groups = "drop") |>
+    dplyr::left_join(cuts, by = "cuts") |>
+    dplyr::select(datetime, variable, depth, observation)
+  
+  regression_data <- binned_chla |>
+    dplyr::filter(depth == 1.5) |>
+    tidyr::pivot_wider(names_from = variable, values_from = observation) |>
+    na.omit()
+  
+  fit <- lm(chla_exo ~ chla_ctd, regression_data)
+  
+  daily_chla_data <- binned_chla |>
+    dplyr::mutate(observation = ifelse(variable == "chla_ctd", fit$coefficients[1] + observation * fit$coefficients[2], observation)) |>
+    dplyr::summarise(observation = mean(observation, na.rm = TRUE), .by = c(datetime, depth)) |>
+    dplyr::mutate(variable = "chla") |>
+    dplyr::select(datetime, depth, variable, observation)
+  
   
   
   ##CHEM----
@@ -177,11 +235,6 @@ format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chem
   
   #message
   message("interpolating chem")
-  
-  modeled_depths <- seq(0,20, 0.25)
-  
-  cuts <- tibble::tibble(cuts = as.integer(factor(seq(0,20, 0.25))),
-                         depth = seq(0,20, 0.25))
   
   nutrients <- read_csv(filepath_chemistry,
                    col_types = cols(
@@ -216,7 +269,7 @@ format_data_processModels <- function(filepath_chemistry = "./data/data_raw/chem
   #PREPARE FINAL DF
   message("preparing final df")
   
-  df.out <- dplyr::bind_rows(inf2, met3, temp, res, nutrients2)
+  df.out <- dplyr::bind_rows(inf2, light_data, temp, secchi, daily_chla_data, nutrients2)
   
   return(df.out)
 }
