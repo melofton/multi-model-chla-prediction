@@ -17,31 +17,35 @@ library(tidyverse)
 source("./code/model_files/1DProcessModel/build_output_df.R")
 source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 
+dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
+
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(-0.001, #w_p (negative is down, positive is up)
-                                                2, #R_growth
-                                                1.08, #theta_growth
-                                                1, #light_extinction
-                                                10, #I_K
-                                                0.0, #N_o
-                                                2, #K_N
-                                                0.0, #P_o
-                                                0.0001, #K_P
-                                                0.1, #f_pr
-                                                0.16, #R_resp
-                                                1.08, #theta_resp
-                                                10, #T_std
-                                                28, #T_opt
-                                                35, #T_max
-                                                0.02, #N_C_ratio
-                                                0.002, #P_C_ratio
-                                                0, #phyto_flux_top
-                                                1, #area (not used)
-                                                9.5,# lake_depth
-                                                38,# num_boxes
-                                                0.005,#KePHYTO
-                                                0.01, #D_temp
-                                                20), #Xcc,
+                                     parms = list(w_p = c(-0.001, -0.001, -0.001), #w_p (negative is down, positive is up)
+                                                R_growth = c(2,2,2), #R_growth
+                                                theta_growth = c(1.08,1.08,1.08), #theta_growth
+                                                light_extinction = 1, #light_extinction
+                                                I_K = c(10, 10, 10), #I_K
+                                                N_o = c(0.0,0.0,0.0), #N_o
+                                                K_N = c(2,2,2), #K_N
+                                                P_o = c(0.0,0.0,0.0), #P_o
+                                                K_P = c(0.0001,0.0001,0.0001), #K_P
+                                                f_pr = c(0.1,0.1, 0.1), #f_pr
+                                                R_resp = c(0.16,0.16,0.16), #R_resp
+                                                theta_resp = c(1.08,1.08,1.08), #theta_resp
+                                                T_std = c(10,10,10), #T_std
+                                                T_opt = c(28,28,28), #T_opt
+                                                T_max = c(35,35,35), #T_max
+                                                N_C_ratio = 0.02, #N_C_ratio
+                                                P_C_ratio = 0.002, #P_C_ratio
+                                                phyto_flux_top = c(0,0,0), #phyto_flux_top
+                                                area = 1, #area (not used)
+                                                lake_depth = 9.5,# lake_depth
+                                                num_boxes = 38,# num_boxes
+                                                KePHY = c(0.005,0.005,0.005),#KePHYTO
+                                                D_temp = 0.01, #D_temp
+                                                Xcc = c(20,20,20),#Xcc
+                                                num_phytos = 3,
+                                                phyto_flux_bottom = c(0,0,0)), #num_phytos,
                                      cal_dates = c("2018-08-06","2021-12-31"),
                                      save_plots = TRUE,
                                      inputs = NULL){
@@ -56,7 +60,7 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
   # INPUTS
   
   obs <- data
-  num_boxes <- parms[21]
+  num_boxes <- parms[["num_boxes"]]
   
   #create a list of the inputs for each day
   
@@ -104,9 +108,9 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                                   variable %in% c("par")) |>
       dplyr::pull(observation)
     
-    delx <- parms[20] / parms[21]
-    depths_mid <- seq(from = delx / 2, by = delx, length.out = parms[21])
-    depths_interface <- seq(from = 0, to = parms[20], by = delx)
+    delx <- parms[["lake_depth"]] / parms[["num_boxes"]]
+    depths_mid <- seq(from = delx / 2, by = delx, length.out = parms[["num_boxes"]])
+    depths_interface <- seq(from = 0, to = parms[["lake_depth"]], by = delx)
     
     # use this if you don't know morphometry (assumes 1 meter area per depth)
     areas_mid <- rep(1, length(depths_mid))
@@ -134,26 +138,32 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
   
   # Initial conditions
   message("setting initial conditions")
-  yini <- rep(0, 3*parms[21])
-  delx <- parms[20] / parms[21]
-  depths <- seq(from = delx / 2, by = delx, length.out = parms[21])
+  yini <- rep(0, 5*parms[["num_boxes"]])
+  delx <- parms[["lake_depth"]] / parms[["num_boxes"]]
+  depths <- seq(from = delx / 2, by = delx, length.out = parms[["num_boxes"]])
   
   initial_day <- obs |> dplyr::filter(datetime == run_datetimes[1])
   
   init_phyto <- initial_day |>
     dplyr::filter(variable == "chla") |>
-    dplyr::mutate(observation = observation / (1 / parms[24] * 12))
+    dplyr::mutate(hot = (1/3)*observation / (1 / parms[["Xcc"]][1] * 12),
+                  cold = (1/3)*observation / (1 / parms[["Xcc"]][2] * 12),
+                  Nfixer = (1/3)*observation / (1 / parms[["Xcc"]][3] * 12))
   
   # Assign a value for each depth
-  yini[1:num_boxes] <- approx(x = init_phyto$depth, y = init_phyto$observation, xout = depths, rule = 2)$y
+  yini[1:num_boxes] <- approx(x = init_phyto$depth, y = init_phyto$hot, xout = depths, rule = 2)$y
+  yini[(num_boxes+1):(num_boxes*2)] <- approx(x = init_phyto$depth, y = init_phyto$cold, xout = depths, rule = 2)$y
+  yini[(2*num_boxes+1):(num_boxes*3)] <- approx(x = init_phyto$depth, y = init_phyto$Nfixer, xout = depths, rule = 2)$y
   
   init_din <- initial_day |>
     dplyr::filter(variable == "din")
-  yini[(num_boxes+1):(num_boxes*2)] <- approx(x = init_din$depth, y = init_din$observation, xout = depths, rule = 2)$y
+  
+  yini[(3*num_boxes+1):(num_boxes*4)] <- approx(x = init_din$depth, y = init_din$observation, xout = depths, rule = 2)$y
   
   init_frp <- initial_day |>
     dplyr::filter(variable == "frp")
-  yini[(2*num_boxes+1):(num_boxes*3)] <- approx(x = init_frp$depth, y = init_frp$observation, xout = depths, rule = 2)$y
+  
+  yini[(4*num_boxes+1):(num_boxes*5)] <- approx(x = init_frp$depth, y = init_frp$observation, xout = depths, rule = 2)$y
   
   simulation_time <- length(run_datetimes) #DAYS
   dt <- 1

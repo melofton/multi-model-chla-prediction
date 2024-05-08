@@ -8,6 +8,7 @@ library(tidyverse)
 library(lubridate)
 library(GLM3r)
 library(glmtools)
+library(ncdf4)
 
 GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    prediction_folder = "./code/model_files/GLM-AED/prediction",
