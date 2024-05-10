@@ -64,7 +64,8 @@ p4 <- ExamplePrediction(observations = obs,
                         reference_datetime = reference_datetime, 
                         forecast_horizon = forecast_horizon,
                         model_ids = c("persistence","historical mean","DOY","ETS",
-                                      "ARIMA","TSLM","prophet","XGBoost","NNETAR"))
+                                      "ARIMA","TSLM","prophet","XGBoost","NNETAR",
+                                      "OneDProcessModel"))
 p4
 ggsave(p4, filename = "./figures/examplePrediction.png",
        device = "png", height = 3, width = 7, units = "in")
@@ -101,9 +102,9 @@ ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
 # GLM-AED
 
 # functional relationships
-PlotMonodLightLimitation(I_K = 10, xlim = c(0,160), save_plot = TRUE)
-PlotRespiration(theta_resp = 1.08, xlim = c(1,30), save_plot = TRUE)
-PlotNLimitation(K_N = 0.25, N_0 = 0, xlim = c(0,15), save_plot = FALSE)
+PlotMonodLightLimitation(I_K = 250, xlim = c(0,600), save_plot = FALSE)
+PlotRespiration(theta_resp = 1.02, xlim = c(1,30), save_plot = TRUE)
+PlotNLimitation(K_N = 2.5, N_0 = 0, xlim = c(0,10), save_plot = FALSE)
 PlotPLimitation(K_P = 0.15, P_0 = 0, xlim = c(0,0.15), save_plot = TRUE)
 
 # set parameters for temperature limitation
@@ -113,8 +114,8 @@ g1 <- list(T_std = 10,
            Ts = 10,
            To = 28,
            Tm = 35,
-           v = 1.08,
-           theta = 1.08)
+           v = 1.1,
+           theta = 1.1)
 g2 <- list(T_std = 10,
            T_opt = 12,
            T_max = 30,
@@ -123,7 +124,7 @@ g2 <- list(T_std = 10,
            Tm = 30,
            v = 1.02,
            theta = 1.02)
-PlotTemperatureLimitation2Groups(g1_parms = g1, g2_parms = g2, save_plot = TRUE)
+PlotTemperatureLimitation2Groups(g1_parms = g1, g2_parms = g2, save_plot = FALSE)
 
 # comparing phyto sensors
 EXOChlaVsFluoroProbe(fp_data = "./data/data_raw/FP_2018_2023_FCR50.csv", 

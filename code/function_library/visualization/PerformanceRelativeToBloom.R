@@ -59,7 +59,7 @@ PerformanceRelativeToBloom <- function(observations,
     filter(horizon_past >= max_horizon_past) %>%
     rename(score = any_of(score)) %>%
     mutate(model_type = factor(model_type, levels = c("null","statistical","process","machine learning"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","prophet","XGBoost","NNETAR")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","prophet","OneDProcessModel","XGBoost","NNETAR")))
   
   
   if(d == 1){

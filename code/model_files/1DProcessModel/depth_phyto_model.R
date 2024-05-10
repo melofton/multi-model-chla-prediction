@@ -83,46 +83,37 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   outflow_area<- inputs[[t]]$outflow_area
 
   #Unpack parameters
-  w_p <- parms[["w_p"]]
-  R_growth <- parms[["R_growth"]]
-  theta_growth <- parms[["theta_growth"]]
-  light_extinction <- parms[["light_extinction"]]
-  I_K <- parms[["I_K"]]
-  N_o <- parms[["N_o"]]
-  K_N <- parms[["K_N"]]
-  P_o <- parms[["P_o"]]
-  K_P <- parms[["K_P"]]
-  f_pr <- parms[["f_pr"]]
-  R_resp <- parms[["R_resp"]]
-  theta_resp <- parms[["theta_resp"]]
-  T_std <- parms[["T_std"]]
-  T_opt <- parms[["T_opt"]]
-  T_max <- parms[["T_max"]]
-  N_C_ratio <- parms[["N_C_ratio"]]
-  P_C_ratio <- parms[["P_C_ratio"]]
-  phyto_flux_top <- parms[["phyto_flux_top"]]
-  #area <- parms[19]
-  lake_depth <- parms[["lake_depth"]]
-  num_boxes <- parms[["num_boxes"]]
-  KePHY <- parms[["KePHY"]]
-  D_temp <- parms[["D_temp"]]
-  num_phytos <- parms[["num_phytos"]]
-  phyto_flux_bottom <- parms[["phyto_flux_bottom"]]
+  w_p <- parms[1]
+  R_growth <- parms[2]
+  theta_growth <- parms[3]
+  light_extinction <- parms[4]
+  I_K <- parms[5]
+  N_o <- parms[6]
+  K_N <- parms[7]
+  P_o <- parms[8]
+  K_P <- parms[9]
+  f_pr <- parms[10]
+  R_resp <- parms[11]
+  theta_resp <- parms[12]
+  T_std <- parms[13]
+  T_opt <- parms[14]
+  T_max <- parms[15]
+  N_C_ratio <- parms[16]
+  P_C_ratio <- parms[17]
+  phyto_flux_top <- parms[18]
+  lake_depth <- parms[19]
+  num_boxes <- parms[20]
+  KePHY <- parms[21]
+  D_temp <- parms[22]
+  phyto_flux_bottom <- parms[23]
 
-  Tparms <- list()
-  for(i in 1:length(T_std)){
-  Tparms[[i]] <- get_T_parms(group_parms = list(T_std = T_std[i], T_opt = T_opt[i], T_max = T_max[i], theta_growth = theta_growth[i]))
-  }
-
-
+  Tparms <- get_T_parms(group_parms = list(T_std = T_std, T_opt = T_opt, T_max = T_max, theta_growth = theta_growth))
+  
   #unpack states
   #note that states are vector where each cell is different depth
-  PHYTO = vector("list", length = num_phytos)
-  PHYTO[[1]] <- state[1:num_boxes]
-  PHYTO[[2]] <- state[(num_boxes+1):(2 * num_boxes)]
-  PHYTO[[3]] <- state[(2* num_boxes+1):(3 * num_boxes)]
-  NIT <- state[(3* num_boxes+1):(4 * num_boxes)]
-  PHS <- state[(4* num_boxes+1):(5 * num_boxes)]
+  PHYTO <- state[1:num_boxes]
+  NIT <- state[(num_boxes+1):(2 * num_boxes)]
+  PHS <- state[(2* num_boxes+1):(3 * num_boxes)]
 
   #Calcuate the thickness of each layer
   delx <- lake_depth / num_boxes
@@ -131,8 +122,7 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   #calculate the depth of the middle of the box
   layer_mid_depths <- seq(delx, lake_depth, by = delx)
   #calculate the light extinction due to the phytos above
-  layer_light_extinction <- light_extinction + cumsum(as.vector(PHYTO_hot))*KePHY[1] + 
-    cumsum(as.vector(PHYTO_cold))*KePHY[2] + cumsum(as.vector(PHYTO_Nfixer))*KePHY[3] 
+  layer_light_extinction <- light_extinction + cumsum(as.vector(PHYTO))*KePHY
   #calculate the PAR at each layer
   layer_PAR <- PAR_surface * exp(-layer_light_extinction * layer_mid_depths)
   
@@ -141,138 +131,101 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   temp_diff[which(abs(temp_diff) < 0.01)] <- 0.01
   D <- D_temp * c(0, 1/abs(temp_diff), 0)
 
-  #set placeholders for internal variables
-  fT = vector("list", length = num_phytos)
-  fI = vector("list", length = num_phytos)
-  fN = vector("list", length = num_phytos)
-  fP = vector("list", length = num_phytos)
-  fResources = vector("list", length = num_phytos)
-  prim_prod = vector("list", length = num_phytos)
-  exudation = vector("list", length = num_phytos)
-  fT_respiration = vector("list", length = num_phytos)
-  respiration = vector("list", length = num_phytos)
-  NIT_uptake = vector("list", length = num_phytos)
-  PHS_uptake = vector("list", length = num_phytos)
-  NIT_turnover = vector("list", length = num_phytos)
-  PHS_turnover = vector("list", length = num_phytos)
-  PHYTO_horizontal = vector("list", length = num_phytos)
-  PHYTO_reaction = vector("list", length = num_phytos)
-  PHYTO_advection_flux = vector("list", length = num_phytos)
-  PHYTO_advection = vector("list", length = num_phytos)
-  PHYTO_diffusion = vector("list", length = num_phytos)
-  dPHYTO_dt = vector("list", length = num_phytos)
-  tp = 20
-  
-  # loop through phyto groups
-  for(j in 1:num_phytos){
-    
   # Temperature regulation of photosynthesis
-  kTn = Tparms[[j]]$kTn
-  aTn = Tparms[[j]]$aTn
-  bTn = Tparms[[j]]$bTn
-  
+  fT = NULL
+  tp = 20
+  kTn = Tparms$kTn
+  aTn = Tparms$aTn
+  bTn = Tparms$bTn
   for(i in 1:length(layer_temp)){
-    fT[[j]][i] = 1
-    if(layer_temp[i] > T_max[j]){
-      fT[[j]][i] = 0
-    } else if(layer_temp[i] < T_std[j]){
-      fT[[j]][i] = theta_growth[j]^(layer_temp[i]-tp)
+    fT[i] = 1
+    if(layer_temp[i] > T_max){
+      fT[i] = 0
+    } else if(layer_temp[i] < T_std){
+      fT[i] = theta_growth^(layer_temp[i]-tp)
     } else {
-      fT[[j]][i] = theta_growth[j]^(layer_temp[i]-tp) - theta_growth[j]^(kTn*(layer_temp[i] - aTn)) + bTn
+      fT[i] = theta_growth^(layer_temp[i]-tp) - theta_growth^(kTn*(layer_temp[i] - aTn)) + bTn
     }
   }
-  fT[[j]][fT[[j]] < 0] <- 0.0
-
+  fT[fT < 0] <- 0.0
+  
   #Nitrogen limitation
-  fN[[j]] <- (NIT - N_o[j]) / (NIT - N_o[j] + K_N[j])
-
+  fN <- (NIT - N_o) / (NIT - N_o + K_N)
+  
   #Phosphorus limitation
-  fP[[j]] <- (PHS - P_o[j]) / (PHS - P_o[j] + K_P[j])
-
+  fP <- (PHS - P_o) / (PHS - P_o + K_P)
+  
   #Light limitation
-  fI[[j]] = (layer_PAR/I_K[j]) / (1 + (layer_PAR/I_K[j]))
-
+  fI = (layer_PAR/I_K) / (1 + (layer_PAR/I_K))
+  
   #Combined resource limitation
-  fResources[[j]] <- apply(data.frame(fN = fN[[j]], fP = fP[[j]], fI = fI[[j]]), 1, FUN = min)
-
+  fResources <- apply(data.frame(fN = fN, fP = fP, fI = fI), 1, FUN = min)
+  #fResources <- apply(data.frame(fN = fN, fP = fP), 1, FUN = min) * fI
+  
   #primary productivity
-  prim_prod[[j]] <- R_growth[j] * fT[[j]] * fResources[[j]]
+  prim_prod <- R_growth * fT * fResources
   
   #Photoexudation
-  exudation[[j]] <- prim_prod[[j]] * f_pr[j]
+  exudation <- prim_prod * f_pr
   
   #Temperature regulation of respiration
-  fT_respiration[[j]] <- theta_resp[j]^(layer_temp - 20.0)
+  fT_respiration <- theta_resp^(layer_temp - 20.0)
   
   #Respiration
-  respiration[[j]] <- PHYTO[[j]] * R_resp[j] * fT_respiration[[j]]
+  respiration <- PHYTO * R_resp * fT_respiration
   
   #Nitrogen uptake associated with primary productivity
-  NIT_uptake[[j]] <- (prim_prod[[j]] - exudation[[j]]) * N_C_ratio
+  NIT_uptake <- (prim_prod - exudation) * N_C_ratio
   
   #Phorphorus uptake associated with primary productivity
-  PHS_uptake[[j]] <- (prim_prod[[j]] - exudation[[j]]) * P_C_ratio
+  PHS_uptake <- (prim_prod - exudation) * P_C_ratio
   
   #nutrient turnover associated with respiration
-  NIT_turnover[[j]] <- respiration[[j]] * N_C_ratio
-  PHS_turnover[[j]] <- respiration[[j]] * P_C_ratio
+  NIT_turnover <- respiration * N_C_ratio
+  PHS_turnover <- respiration * P_C_ratio
   
   #Stream inflow and outflow
-  PHYTO_horizontal[[j]] <- -PHYTO[[j]] * outflow * (outflow_area / areas_mid)
-  
-  #Net reaction of the states
-  PHYTO_reaction[[j]] <- prim_prod[[j]] - respiration[[j]] - exudation[[j]] + PHYTO_horizontal[[j]]
-  
-  # Advection calculation 
-  PHYTO_advection_flux[[j]] <- c(phyto_flux_top[j], -w_p[j] * PHYTO[[j]] * c((1/abs(temp_diff)),phyto_flux_bottom[j])) * areas_interface
-  PHYTO_advection[[j]] <- -(1/areas_mid) * (diff(PHYTO_advection_flux[[j]]) / delx)
-  
-  # Diffusion calcuation
-  #Phyto
-  gradient_middle_boxes <- diff(PHYTO[[j]])
-  gradient <- c(0, gradient_middle_boxes, 0) / delx
-  diffusion_flux <- areas_interface * D * gradient
-  PHYTO_diffusion[[j]] <- (1/areas_mid) * (diff(diffusion_flux) / delx)
-  
-  #Net change for each box
-  dPHYTO_dt[[j]] <- PHYTO_advection[[j]] + PHYTO_reaction[[j]] + PHYTO_diffusion[[j]]
-  
-  }
-  
-  # Nutrients
-
-  #Stream inflow and outflow
+  PHYTO_horizontal <- -PHYTO * outflow * (outflow_area / areas_mid)
   NIT_horizontal <- inflow_n * (inflow_area / areas_mid) - NIT * outflow * (outflow_area / areas_mid)
   PHS_horizontal <-  inflow_p * (inflow_area / areas_mid) - PHS * outflow * (outflow_area / areas_mid)
-
+  
   #Net reaction of the states
-  NIT_reaction <- -Reduce(`+`, NIT_uptake) + Reduce(`+`, NIT_turnover) + NIT_horizontal # sum(unlist(lapply(list, length)))
-  PHS_reaction <- -Reduce(`+`, PHS_uptake) + Reduce(`+`, PHS_turnover) + PHS_horizontal
-
+  PHYTO_reaction <- prim_prod - respiration - exudation + PHYTO_horizontal
+  NIT_reaction <- -NIT_uptake + NIT_turnover + NIT_horizontal
+  PHS_reaction <- -PHS_uptake + PHS_turnover + PHS_horizontal
+  
+  # Advection calculation (assume only PHYTOs advect)
   # Advection calculation 
+  PHYTO_advection_flux <- c(phyto_flux_top, -w_p * PHYTO * c((1/abs(temp_diff)),phyto_flux_bottom)) * areas_interface
+  PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
+
   w_p_nut <- 0.001
   NIT_advection_flux <- c(0, -w_p_nut * NIT) * areas_interface
   NIT_advection <- -(1/areas_mid) * (diff(NIT_advection_flux) / delx)
-
+  
   PHS_advection_flux <- c(0, -w_p_nut * PHS) * areas_interface
   PHS_advection <- -(1/areas_mid) * (diff(PHS_advection_flux) / delx)
-
+  
+  
+  #Diffusion (assume proportional to temperature gradient)
+  
   #Nitrogen
   gradient_middle_boxes <- diff(NIT)
   gradient <- c(0, gradient_middle_boxes, 0) / delx
   diffusion_flux <- areas_interface * D * gradient
   NIT_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx)
-
+  
   #Phorphorus
   gradient_middle_boxes <- diff(PHS)
   gradient <- c(0, gradient_middle_boxes, 0) / delx
   diffusion_flux <- areas_interface * D * gradient
   PHS_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx)
-
+  
   #Net change for each box
+  dPHYTO_dt <- PHYTO_advection + PHYTO_reaction
   dNIT_dt <- NIT_advection + NIT_diffusion + NIT_reaction
   dPHS_dt <- PHS_advection + PHS_diffusion + PHS_reaction
-
-  list(c(Reduce(`c`,dPHYTO_dt), dNIT_dt, dPHS_dt),  #This returns the vector of derivatives for each layer box
-       c(fN = Reduce(`c`,fN), fP = Reduce(`c`,fP), fI = Reduce(`c`,fI), fResources = Reduce(`c`,fResources), fT = Reduce(`c`,fT), layer_light_extinction = layer_light_extinction, layer_PAR = layer_PAR))  #This returns the vector of diagnostics
+  
+  list(c(dPHYTO_dt, dNIT_dt, dPHS_dt),  #This returns the vector of derivatives for each layer box
+       c(fN = fN, fP = fP, fI = fI, fResources = fResources, fT = fT, layer_light_extinction = layer_light_extinction, layer_PAR = layer_PAR))  #This returns the vector of diagnostics
 }

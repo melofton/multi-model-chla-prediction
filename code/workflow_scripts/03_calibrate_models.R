@@ -59,44 +59,51 @@ GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = TRUE)
 OneDProcessModel_run <- calibrate_1DProcessModel(
   data = dat_1DProcessModel,
   parms = c(-0.001, #w_p (negative is down, positive is up)
-            2, #R_growth
-            1.08, #theta_growth
+            4.5, #R_growth
+            1.02,#1.1, #theta_growth
             1, #light_extinction
-            10, #I_K
-            0.0, #N_o
-            2, #K_N
-            0.0, #P_o
+            60, #I_K
+            0, #N_o
+            2.5, #K_N
+            0, #P_o
             0.0001, #K_P
             0.1, #f_pr
-            0.16, #R_resp
-            1.08, #theta_resp
+            0.13, #R_resp
+            1.02, #theta_resp
             10, #T_std
-            28, #T_opt
-            35, #T_max
+            12,#20, #T_opt
+            30,#35, #T_max
             0.02, #N_C_ratio
             0.002, #P_C_ratio
             0, #phyto_flux_top
-            1, #area (not used)
             9.5,# lake_depth
             38,# num_boxes
             0.005,#KePHYTO
             0.01, #D_temp
-            20), #Xcc,
-  cal_dates = c("2018-08-06","2021-12-31"),
+            0,#phyto_flux_bottom
+            10), #Xcc,
+  cal_dates = c("2018-08-06","2022-01-01"),
   save_plots = TRUE,
   inputs = NULL
 )
+write.csv(OneDProcessModel_run$output_df, "./code/model_files/1DProcessModel/output.csv", row.names = FALSE)
 
+OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
+  filter(depth == 1.5 & variable == "chla") %>%
+  add_column(model_id = "OneDProcessModel") %>%
+  mutate(depth = 1.6,
+         variable = "chlorophyll-a") %>%
+  select(model_id, datetime, variable, prediction)
 
 #Stack model predictions and write to file (not applicable for persistence model
 #and currently not supported for models fit in JAGS)
-mod_output <- bind_rows(fit_DOY$out, fit_ARIMA$out, fit_ETS$out, fit_TSLM$out,
-                        fit_XGBoost$out, fit_prophet$out, fit_NNETAR$out)
-
-#OR if you only want to run (or re-run) one or a few models
-# mod_output <- read_csv("./multi-model-ensemble/model_output/calibration_output.csv") %>%
+# mod_output <- bind_rows(fit_DOY$out, fit_ARIMA$out, fit_ETS$out, fit_TSLM$out,
+#                         fit_XGBoost$out, fit_prophet$out, fit_NNETAR$out)
+# 
+# #OR if you only want to run (or re-run) one or a few models
+# mod_output <- read_csv("./model_output/calibration_output.csv") %>%
 #   #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
-#   bind_rows(.,fit_NNETAR$out) # %>% #bind rows with models to add/replace if applicable
-
-write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
-unique(mod_output$model_id)
+#   bind_rows(.,OneDProcessModel_run$out) # %>% #bind rows with models to add/replace if applicable
+# 
+# write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
+# unique(mod_output$model_id)

@@ -24,6 +24,7 @@ dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_prophet <- read_csv("./data/data_processed/prophet.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
+dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 #Set prediction window and forecast horizon
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
@@ -85,13 +86,41 @@ pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       data = dat_GLMAED,
                       phyto_nml_file = "/aed/aed2_phyto_pars_16APR24_MEL.nml")
 
+pred_OneDProcessModel <- OneDProcessModel(data = dat_1DProcessModel,
+                                parms = c(-0.001, #w_p (negative is down, positive is up)
+                                          4.5, #R_growth
+                                          1.02,#1.1, #theta_growth
+                                          1, #light_extinction
+                                          60, #I_K
+                                          0, #N_o
+                                          2.5, #K_N
+                                          0, #P_o
+                                          0.0001, #K_P
+                                          0.1, #f_pr
+                                          0.13, #R_resp
+                                          1.02, #theta_resp
+                                          10, #T_std
+                                          12,#20, #T_opt
+                                          30,#35, #T_max
+                                          0.02, #N_C_ratio
+                                          0.002, #P_C_ratio
+                                          0, #phyto_flux_top
+                                          9.5,# lake_depth
+                                          38,# num_boxes
+                                          0.005,#KePHYTO
+                                          0.01, #D_temp
+                                          0,#phyto_flux_bottom
+                                          10), #Xcc
+                                pred_dates = c("2022-01-01","2023-11-26"),
+                                forecast_horizon = 35)
+
 #Stack model output and write to file
 mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM, pred_prophet, pred_XGBoost, pred_NNETAR)
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "ARIMA") %>%
-  bind_rows(.,pred_ARIMA)
+  #filter(!model_id == "ARIMA") %>%
+  bind_rows(.,pred_OneDProcessModel)
 unique(mod_output$model_id)
 
 # #OR if you are reading in LSTM output

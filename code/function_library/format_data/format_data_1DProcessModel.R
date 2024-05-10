@@ -185,7 +185,9 @@ format_data_1DProcessModel <- function(filepath_chemistry = "./data/data_raw/che
     rename(depth = depth_m) %>%
     mutate(variable = ifelse(variable == "Chla_ugL_mean","chla_exo","secchi"))
   
-  secchi <- res %>% filter(variable == "secchi")
+  secchi <- res %>% 
+    filter(variable == "secchi") 
+    
   
   exo_chla_data <- res %>% filter(variable == "chla_exo")
   
@@ -225,6 +227,7 @@ format_data_1DProcessModel <- function(filepath_chemistry = "./data/data_raw/che
     dplyr::mutate(observation = ifelse(variable == "chla_ctd", fit$coefficients[1] + observation * fit$coefficients[2], observation)) |>
     dplyr::summarise(observation = mean(observation, na.rm = TRUE), .by = c(datetime, depth)) |>
     dplyr::mutate(variable = "chla") |>
+    dplyr::mutate(across(observation, imputeTS::na_interpolation)) %>%
     dplyr::select(datetime, depth, variable, observation)
   
   
@@ -234,7 +237,7 @@ format_data_1DProcessModel <- function(filepath_chemistry = "./data/data_raw/che
   #the uncertainty introduced via interpolation
   
   #message
-  message("interpolating chem")
+  message("building chem")
   
   nutrients <- read_csv(filepath_chemistry,
                    col_types = cols(

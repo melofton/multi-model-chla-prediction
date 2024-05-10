@@ -188,7 +188,7 @@ f6 <- function(temp, theta, tp, kTn, aTn, bTn, T_std, T_opt, T_max){
 }
 
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f6(x, theta = g1$theta, tp = tp, kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, bTn = g1_Tparms$bTn, T_std = g1$T_std, T_opt = g1$T_opt, T_max = g1$T_max),from=0, to=30, n = 300, ylab='fT',xlab = "Water temperature (ºC)", yaxt = "n", ylim = c(0,1.5))
+curve(f6(x, theta = g1$theta, tp = tp, kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, bTn = g1_Tparms$bTn, T_std = g1$T_std, T_opt = g1$T_opt, T_max = g1$T_max),from=0, to=30, n = 300, ylab='fT',xlab = "Water temperature (ºC)", yaxt = "n")
 axis(2, las = 2)
 curve(f6(x, theta = g2$theta, tp = tp, kTn = g2_Tparms$kTn, aTn = g2_Tparms$aTn, bTn = g2_Tparms$bTn, T_std = g2$T_std, T_opt = g2$T_opt, T_max = g2$T_max),from=0, to=30, n = 300, add = TRUE, lty = 2)
 legend("topleft", lty = c(1,2), legend = c("Warm group","Cold group"),bty = "n")
@@ -196,7 +196,7 @@ legend("topleft", lty = c(1,2), legend = c("Warm group","Cold group"),bty = "n")
 if(save_plot == TRUE){
 jpeg("./figures/AED_temp_eq_2groups.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f6(x, theta = g1$theta, tp = tp, kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, bTn = g1_Tparms$bTn, T_std = g1$T_std, T_opt = g1$T_opt, T_max = g1$T_max),from=0, to=30, n = 300, ylab='fT',xlab = "Water temperature (ºC)", yaxt = "n", ylim = c(0,1.5))
+curve(f6(x, theta = g1$theta, tp = tp, kTn = g1_Tparms$kTn, aTn = g1_Tparms$aTn, bTn = g1_Tparms$bTn, T_std = g1$T_std, T_opt = g1$T_opt, T_max = g1$T_max),from=0, to=30, n = 300, ylab='fT',xlab = "Water temperature (ºC)", yaxt = "n")
 axis(2, las = 2)
 curve(f6(x, theta = g2$theta, tp = tp, kTn = g2_Tparms$kTn, aTn = g2_Tparms$aTn, bTn = g2_Tparms$bTn, T_std = g2$T_std, T_opt = g2$T_opt, T_max = g2$T_max),from=0, to=30, n = 300, add = TRUE, lty = 2)
 legend("topleft", lty = c(1,2), legend = c("Warm group","Cold group"),bty = "n")
