@@ -38,22 +38,22 @@ p1 <- ggplot(data = plot_pred_GLMAED)+
                  group = as.factor(reference_datetime),
                  color = as.factor(reference_datetime)))+
   labs(color = "Reference datetime")+
-  annotate(geom="text", x=as.Date("2021-01-01 12:00:00"), y=14, label="initial\ncondition\nvalues",
+  annotate(geom="text", x=as.Date("2022-01-01 12:00:00"), y=14, label="initial\ncondition\nvalues",
            color="black", hjust = 0)+
-  annotate(geom="text", x=as.Date("2021-01-20 12:00:00"), y=18.5, label="model predictions",
+  annotate(geom="text", x=as.Date("2022-01-20 12:00:00"), y=18.5, label="model predictions",
            color="black")+
-  annotate(geom="text", x=as.Date("2021-02-06 12:00:00"), y=12, label="observations\n(not seen\nby model)",
+  annotate(geom="text", x=as.Date("2022-02-06 12:00:00"), y=12, label="observations\n(not seen\nby model)",
            color="black", hjust = 1)+
-  geom_segment(aes(x = as.Date("2021-01-26 12:00:00"), y = 18, 
-                   xend = as.Date("2021-01-28 12:00:00"), yend = 17), 
+  geom_segment(aes(x = as.Date("2022-01-26 12:00:00"), y = 18, 
+                   xend = as.Date("2022-01-28 12:00:00"), yend = 17), 
                color = "black",
                arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
-  geom_segment(aes(x = as.Date("2021-02-03 12:00:00"), y = 13.3, 
-                   xend = as.Date("2021-02-01 12:00:00"), yend = 14.8), 
+  geom_segment(aes(x = as.Date("2022-02-03 12:00:00"), y = 13.3, 
+                   xend = as.Date("2022-02-01 12:00:00"), yend = 14.8), 
                color = "black", 
                arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
-  geom_segment(aes(x = as.Date("2021-01-03 12:00:00"), y = 12.65, 
-                   xend = as.Date("2021-01-02 12:00:00"), yend = 11.95), 
+  geom_segment(aes(x = as.Date("2022-01-03 12:00:00"), y = 12.65, 
+                   xend = as.Date("2022-01-02 12:00:00"), yend = 11.95), 
                color = "black",
                arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
   ylab("Chlorophyll-a (ug/L)")+
