@@ -4,6 +4,22 @@
 
 # Purpose: Make iterative chl-a predictions with update IC using GLM-AED
 
+# Notes:
+
+# This script needs to be run in a container with GLM Version 3.3.1a10
+#
+# Instructions
+# 1.	Start Docker
+# 2.	Open Terminal and type in the following command:
+#   
+#   docker run --rm -ti -v /Users/MaryLofton:/home/rstudio -e PASSWORD=yourpassword -p 8787:8787 rqthomas/flare-rocker:4.3.1
+# 
+# 3.	Open an internet browser and navigate to the following: http://localhost:8787
+# 4.	Sign into RStudio
+# a.	Username: rstudio
+# b.	Password: yourpassword
+# 5.  Navigate to correct RProject and script to run GLM-AED
+
 library(tidyverse)
 library(lubridate)
 library(GLM3r)
