@@ -26,6 +26,10 @@ library(GLM3r)
 library(glmtools)
 library(ncdf4)
 
+# Read in data for troubleshooting (commented out when running workflow with other models)
+# dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
+
+
 GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    prediction_folder = "./code/model_files/GLM-AED/prediction",
                    rerun_spinup = FALSE,
