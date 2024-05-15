@@ -18,38 +18,38 @@ library(plotly)
 
 # take-home: met and SSS inflow/outflow files already go through 2021; just need updated files for 
 # weir inflow/outflow
-met <- read_csv("./model_output/GLM-AED/inputs/met_avg_filtered.csv") %>%
-  arrange(time) 
+met <- read_csv("./code/model_files/GLM-AED/prediction/inputs/met.csv") %>%
+  arrange(time) %>%
+  pivot_longer(AirTemp:Snow, names_to = "variable", values_to = "observation") %>%
+  ggplot(aes(x = time, y = observation))+
+  geom_line()+
+  facet_wrap(facets = vars(variable), scales = "free")
+met
+ggsave(met, filename = "./figures/GLM-AED_met_2015-2024.png", height = 9, width = 12, units = "in", 
+       device = "png")
+
 tail(met)
 
-sss <- read_csv("./model_output/GLM-AED/inputs/inflow_SSS_K_elevation_waterquality.csv") %>%
-  arrange(time) 
-tail(sss)
-ggplot(data = sss, aes(x = time, y = FLOW))+
-  geom_line()+
-  theme_bw()
-
-inf <- read_csv("./model_output/GLM-AED/inputs/FCR_weir_inflow_2013_2020_20220411_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+sss <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_SSS_inflow_2013_2021_20240429_allfractions_2DOCpools.csv") %>%
   arrange(time) %>%
-  add_column(file_version = 2020)
+  add_column(file_version = 2021)
+tail(sss)
+
+inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2021_20240429_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+  arrange(time) %>%
+  add_column(file_version = 2021)
 tail(inf)
 
-out <- read_csv("./model_output/GLM-AED/inputs/FCR_spillway_outflow_WeirOnly_2013_2020_20211102.csv") %>%
+out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv") %>%
   arrange(time) %>%
-  add_column(file_version = 2020)
+  add_column(file_version = 2021)
 tail(out)
 
-out_sss <- read_csv("./model_output/GLM-AED/inputs/outflow_K.csv") %>%
-  arrange(time)
-tail(out_sss)
-ggplot(data = out_sss, aes(x = time, y = FLOW))+
-  geom_line()+
-  theme_bw()
-
 # compare between 2020 and 2021 versions of weir inflow/outflow files
-new_inf <- read_csv("./model_output/GLM-AED/inputs/FCR_weir_inflow_2013_2021_20220927_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+new_inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2023_20240510_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
-  add_column(file_version = 2021) 
+  #select(-) need to get inflow column names sorted
+  add_column(file_version = 2023)
 
 all_inf <- bind_rows(inf, new_inf) %>%
   pivot_longer(FLOW:BIV_filtfrac, names_to = "variable", values_to = "value") %>%
