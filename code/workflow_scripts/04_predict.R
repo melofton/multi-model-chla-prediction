@@ -25,6 +25,7 @@ dat_prophet <- read_csv("./data/data_processed/prophet.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
+dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 
 #Set prediction window and forecast horizon
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
@@ -85,6 +86,8 @@ pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       wq_vars = c('OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'),
                       data = dat_GLMAED,
                       phyto_nml_file = "/aed/aed2_phyto_pars_16APR24_MEL.nml")
+pred_GLMAED <- pred_GLMAED %>%
+  mutate(reference_datetime = date(reference_datetime))
 
 pred_OneDProcessModel <- OneDProcessModel(data = dat_1DProcessModel,
                                 parms = c(-0.001, #w_p (negative is down, positive is up)
@@ -114,13 +117,18 @@ pred_OneDProcessModel <- OneDProcessModel(data = dat_1DProcessModel,
                                 pred_dates = c("2022-01-01","2023-11-26"),
                                 forecast_horizon = 35)
 
+pred_LSTM <- LSTM(data = dat_LSTM,
+                  pred_dates = pred_dates,
+                  forecast_horizon = forecast_horizon)
+
 #Stack model output and write to file
 mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM, pred_prophet, pred_XGBoost, pred_NNETAR)
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
   #filter(!model_id == "ARIMA") %>%
-  bind_rows(.,pred_OneDProcessModel)
+  bind_rows(.,pred_GLMAED)
+  
 unique(mod_output$model_id)
 
 # #OR if you are reading in LSTM output

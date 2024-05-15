@@ -58,15 +58,15 @@ p3
 ggsave(p3, filename = "./figures/ModelFits.png",
        device = "png", height = 3, width = 6, units = "in")
 
-reference_datetime = "2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
+reference_datetime = "2022-05-28"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
 p4 <- ExamplePrediction(observations = obs, 
                         model_output = out, 
                         reference_datetime = reference_datetime, 
                         forecast_horizon = forecast_horizon,
                         model_ids = c("persistence","historical mean","DOY","ETS",
                                       "ARIMA","TSLM","prophet","XGBoost","NNETAR",
-                                      "OneDProcessModel"))
-p4
+                                      "OneDProcessModel","GLM-AED"))
+ggplotly(p4)
 ggsave(p4, filename = "./figures/examplePrediction.png",
        device = "png", height = 3, width = 7, units = "in")
 
@@ -94,8 +94,8 @@ ggsave(p6, filename = "./figures/performanceRelativeToBloom.png",
 
 p7 <- OneHorizonTimeseries(observations = obs, 
                                  model_output = out, 
-                                 forecast_horizon = 7)
-p7
+                                 forecast_horizon = 10)
+ggplotly(p7)
 ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
        device = "png", height = 3, width = 7, units = "in")
 

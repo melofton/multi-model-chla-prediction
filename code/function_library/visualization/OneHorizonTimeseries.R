@@ -48,7 +48,7 @@ OneHorizonTimeseries <- function(observations,
     geom_line(data = plot_mod, aes(x = datetime, y = prediction,
                                    group = model_id, color = model_id))+
     xlab("")+
-    ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
+    ylab("Chlorophyll-a (ug/L)")+
     scale_color_discrete(name = "Model ID")+
     scale_fill_discrete(name = "")+
     theme_classic()+

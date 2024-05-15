@@ -34,6 +34,7 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    prediction_folder = "./code/model_files/GLM-AED/prediction",
                    rerun_spinup = FALSE,
                    spinup_dates = c('2018-04-20 12:00:00','2021-01-01 12:00:00'),
+                   start_from_spinup = FALSE,
                    pred_dates = seq.Date(from = as.Date("2021-01-01"), to = as.Date("2021-01-05"), by = "day"),
                    forecast_horizon = 35,
                    wq_vars = c('OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'),
@@ -74,12 +75,14 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
   for(t in 1:length(pred_dates)){
     
     message(paste0("reference datetime: ",pred_dates[t]))
-    stop_date <- pred_dates[t] + forecast_horizon*60*60*24
+    stop_date <- last(seq.Date(from = as.Date(pred_dates[t])+1, to = as.Date(pred_dates[t])+forecast_horizon, by = "day"))
+    stop_date <- as.POSIXct(paste(stop_date, "12:00:00"), format = "%Y-%m-%d %H:%M:%S")
+    message(paste0("stop datetime: ",stop_date))
     
     # out_vars <- sim_vars(file = spinup_nc_file)
     
     #pull IC from previous sim and set IC for next sim; start with spinup if t == 1
-    if(t == 1){
+    if(t == 1 & start_from_spinup == TRUE){
       
       current_nc_file <- spinup_nc_file
       

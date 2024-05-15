@@ -23,6 +23,7 @@ dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_prophet <- read_csv("./data/data_processed/prophet.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
+dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 
 
 #Set sim folder (for GLM-AED)

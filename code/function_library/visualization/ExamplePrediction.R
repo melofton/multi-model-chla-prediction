@@ -54,7 +54,7 @@ ExamplePrediction <- function(observations,
     annotate("text", x = ref_datetime -2.5, y = max(plot_obs$Chla_ugL_mean), 
              label = "past", hjust = 0.25)+
     xlab("")+
-    ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
+    ylab("Chlorophyll-a (ug/L)")+
     scale_color_discrete(name = "Model ID")+
     # if want to group models by type, can do that with colors in line below
     #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+

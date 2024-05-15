@@ -24,7 +24,7 @@ fit_LSTM <- function(data, cal_dates){
     filter(datetime >= start_cal & datetime <= stop_cal)
   
   #fit LSTM
-  system('python scriptname filename 10 20 0.1 5000 30', wait=FALSE)
+  system('python scriptname data_frame', wait=FALSE)
   
   LSTM_plot <- ggplot()+
     xlab("")+

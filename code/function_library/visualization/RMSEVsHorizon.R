@@ -44,7 +44,7 @@ RMSEVsHorizon <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","statistical","process","machine learning"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","prophet","XGBoost","NNETAR")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","GLM-AED","prophet","XGBoost","NNETAR")))
   
   p <- ggplot()+
     geom_line(data = output, aes(x = horizon, y = rmse,
