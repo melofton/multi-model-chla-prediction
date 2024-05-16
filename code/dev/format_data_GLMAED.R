@@ -182,3 +182,9 @@ format_data_GLMAED <- function(res_url = "https://renc.osn.xsede.org/bio230121-b
 
 dat_GLMAED <- format_data_GLMAED()
 write.csv(dat_GLMAED, "./data/data_processed/GLMAED.csv",row.names = FALSE)
+
+### checking on alternative options for met
+url3 <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=PT1H/hourly-met-targets.csv.gz"
+met_targets <- read_csv(url3, show_col_types = FALSE)
+colnames(met_targets)
+unique(met_targets$variable)
