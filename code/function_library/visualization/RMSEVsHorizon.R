@@ -52,6 +52,7 @@ RMSEVsHorizon <- function(observations,
               linewidth = 1)+
     xlab("Forecast horizon (days)")+
     ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
+    ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
     scale_color_discrete(name = "Model ID")+
     scale_linetype_discrete(name = "Model type")+
     #scale_color_manual(name = "Model type", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+

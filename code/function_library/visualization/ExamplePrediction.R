@@ -61,7 +61,7 @@ ExamplePrediction <- function(observations,
     scale_fill_manual(name = "", values = c("observed, seen by model" = "black",
                                             "observed, not seen by model" = "white"))+
     theme_classic()+
-    ggtitle("2022/2023")+
+    ggtitle(paste0("Example prediction: ",year(reference_datetime)))+
     theme(axis.text = element_text(size = 12),
           axis.title.y = element_text(size = 16),
           plot.title = element_text(size = 16, face = "bold", hjust = 1),

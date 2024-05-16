@@ -58,7 +58,7 @@ p3
 ggsave(p3, filename = "./figures/ModelFits.png",
        device = "png", height = 3, width = 6, units = "in")
 
-reference_datetime = "2022-05-28"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
+reference_datetime = "2022-08-10"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
 p4 <- ExamplePrediction(observations = obs, 
                         model_output = out, 
                         reference_datetime = reference_datetime, 
@@ -68,14 +68,14 @@ p4 <- ExamplePrediction(observations = obs,
                                       "OneDProcessModel","GLM-AED"))
 ggplotly(p4)
 ggsave(p4, filename = "./figures/examplePrediction.png",
-       device = "png", height = 3, width = 7, units = "in")
+       device = "png", height = 4, width = 8, units = "in")
 
 p5 <- RMSEVsHorizon(observations = obs, 
                           model_output = out, 
                           forecast_horizon = forecast_horizon)
 p5
 ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
-       device = "png", height = 5.5, width = 5.5, units = "in")
+       device = "png", height = 5, width = 7, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate
 #plot, then add
@@ -94,10 +94,10 @@ ggsave(p6, filename = "./figures/performanceRelativeToBloom.png",
 
 p7 <- OneHorizonTimeseries(observations = obs, 
                                  model_output = out, 
-                                 forecast_horizon = 10)
+                                 forecast_horizon = 7)
 ggplotly(p7)
 ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
-       device = "png", height = 3, width = 7, units = "in")
+       device = "png", height = 4, width = 8, units = "in")
 
 # GLM-AED
 
