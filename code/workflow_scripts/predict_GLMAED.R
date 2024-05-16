@@ -15,8 +15,8 @@ source("./code/function_library/predict/GLMAED.R")
 dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
 
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
-                      prediction_folder = "./code/model_files/GLM-AED/prediction",
-                      rerun_spinup = TRUE,
+                      prediction_folder = "./code/model_files/GLM-AED/prediction_test",
+                      rerun_spinup = FALSE,
                       spinup_dates = c('2018-04-20 12:00:00','2022-01-01 12:00:00'),
                       start_from_spinup = TRUE,
                       pred_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
@@ -25,5 +25,5 @@ pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       data = dat_GLMAED,
                       phyto_nml_file = "/aed/aed2_phyto_pars_16APR24_MEL.nml")
 
-write.csv(pred_GLMAED, "./model_output/GLMAED.csv", row.names = FALSE)
+write.csv(pred_GLMAED, "./model_output/GLMAED_test.csv", row.names = FALSE)
 

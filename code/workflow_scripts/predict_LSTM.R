@@ -8,7 +8,6 @@
 library(tidyverse)
 library(lubridate)
 library(reticulate)
-py_install("torch")
 
 #Load prediction functions
 source("./code/function_library/predict/LSTM.R")
