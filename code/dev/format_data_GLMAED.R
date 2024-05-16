@@ -23,22 +23,23 @@ met <- read_csv("./code/model_files/GLM-AED/prediction/inputs/met.csv") %>%
   pivot_longer(AirTemp:Snow, names_to = "variable", values_to = "observation") %>%
   ggplot(aes(x = time, y = observation))+
   geom_line()+
-  facet_wrap(facets = vars(variable), scales = "free")
+  facet_wrap(facets = vars(variable), scales = "free")+
+  theme_bw()
 met
 ggsave(met, filename = "./figures/GLM-AED_met_2015-2024.png", height = 9, width = 12, units = "in", 
        device = "png")
 
 tail(met)
 
-sss <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_SSS_inflow_2013_2021_20240429_allfractions_2DOCpools.csv") %>%
-  arrange(time) %>%
-  add_column(file_version = 2021)
-tail(sss)
-
 inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2021_20240429_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
   add_column(file_version = 2021)
 tail(inf)
+
+sss <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_SSS_inflow_2013_2021_20240429_allfractions_2DOCpools.csv") %>%
+  arrange(time) %>%
+  add_column(file_version = 2021)
+tail(sss)
 
 out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv") %>%
   arrange(time) %>%
@@ -48,11 +49,14 @@ tail(out)
 # compare between 2020 and 2021 versions of weir inflow/outflow files
 new_inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2023_20240510_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
-  #select(-) need to get inflow column names sorted
+  select(colnames(inf)[1:22],PHY_diatom, PHY_cyano, PHY_green) %>%
+  rename(PHY_cold = PHY_diatom,
+         PHY_Nfixer = PHY_cyano,
+         PHY_hot = PHY_green) %>%
   add_column(file_version = 2023)
 
 all_inf <- bind_rows(inf, new_inf) %>%
-  pivot_longer(FLOW:BIV_filtfrac, names_to = "variable", values_to = "value") %>%
+  pivot_longer(FLOW:PHY_hot, names_to = "variable", values_to = "value") %>%
   mutate(file_version = factor(file_version))
 
 inf_compare <- ggplot(all_inf, aes(x = time, y = value, group = file_version, color = file_version))+
@@ -61,36 +65,31 @@ inf_compare <- ggplot(all_inf, aes(x = time, y = value, group = file_version, co
   theme_bw()
 ggsave(inf_compare, filename = "./figures/compareGLMInflowFiles.png",
        device = "png", height = 18, width = 9, units = "in")
-# overall these look good, only major differences from 2020 to 2021 are:
-#'1. adjustments to peak inflow events (peaks in 2021 are slightly lower)
-#'2. adjustment to CAR_pH (6.9 in 2020 to 6.7 in 2021)
-#'3. addition of elevation column
-#'4. turning on passive tracer
+# I think the issue in 2022 might be due to higher inflow N from BVR drawdown
 
 # same for sss inflow
-new_sss <- read_csv("./model_output/GLM-AED/inputs/FCR_SSS_inflow_2013_2021_20220413_allfractions_2DOCpools.csv") %>%
-arrange(time) %>%
-  add_column(file_version = 2021) 
+new_sss <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_SSS_inflow_2013_2023_20240510_allfractions_2DOCpools.csv") %>%
+  arrange(time) %>%
+  select(colnames(sss)[1:22],PHY_diatom, PHY_cyano, PHY_green) %>%
+  rename(PHY_cold = PHY_diatom,
+         PHY_Nfixer = PHY_cyano,
+         PHY_hot = PHY_green) %>%
+  add_column(file_version = 2023) 
 
 all_sss <- bind_rows(sss, new_sss) %>%
-  pivot_longer(FLOW:BIV_filtfrac, names_to = "variable", values_to = "value") %>%
+  pivot_longer(FLOW:PHY_Nfixer, names_to = "variable", values_to = "value") %>%
   mutate(file_version = factor(file_version))
 
 sss_compare <- ggplot(all_sss, aes(x = time, y = value, group = file_version, color = file_version))+
   geom_line()+
   facet_wrap(facets = vars(variable), nrow = 19, ncol = 2, scales = "free_y")+
   theme_bw()
-ggsave(inf_compare, filename = "./figures/compareGLMSSSInflowFiles.png",
+ggsave(sss_compare, filename = "./figures/compareGLMSSSInflowFiles.png",
        device = "png", height = 18, width = 9, units = "in")
-# overall these look good, only major differences from 2020 to 2021 are:
-#'1. adjustments to peak inflow events (peaks in 2021 are slightly lower)
-#'2. adjustment to CAR_pH (6.9 in 2020 to 6.7 in 2021)
-#'3. addition of elevation column
-#'4. turning on passive tracer
 
-new_out <- read_csv("./model_output/GLM-AED/inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv") %>%
+new_out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240510.csv") %>%
   arrange(time) %>%
-  add_column(file_version = 2021) 
+  add_column(file_version = 2023) 
 
 all_out <- bind_rows(new_out, out) %>%
   mutate(file_version = factor(file_version))
@@ -185,6 +184,9 @@ write.csv(dat_GLMAED, "./data/data_processed/GLMAED.csv",row.names = FALSE)
 
 ### checking on alternative options for met
 url3 <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=PT1H/hourly-met-targets.csv.gz"
-met_targets <- read_csv(url3, show_col_types = FALSE)
-colnames(met_targets)
-unique(met_targets$variable)
+met_targets <- read_csv(url3, show_col_types = FALSE) %>%
+  pivot_wider(names_from = "variable", values_from = "observation") 
+check <- met_targets %>%
+  filter(is.na(Rain_mm_sum))
+
+plot(met_targets$datetime, met_targets$Rain_mm_sum)
