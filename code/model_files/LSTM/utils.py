@@ -10,22 +10,22 @@ from encoder_decoder import seq2seq
 def get_config():
         config = {
                 "batch_size": 32,
-                "epochs": 100,
+                "epochs": 200,
                 "learning_rate": 0.0001,
-                "eval_freq": 1,
+                "eval_freq": 10,
                 "batch_shuffle": True,
-                "dropout":0.01,
+                "dropout":0.2,
                 "num_layers": 1,
-                "hidden_feature_size": 64,
+                "hidden_feature_size": 16,
                 "model_type": 'LSTM',
                 "teacher_forcing_ratio": 0.0,
                 "max_lr": 5e-4,
-                "div_factor": 500,
+                "div_factor": 100,
                 "pct_start": 0.05,
                 "anneal_strategy": 'cos',
                 "final_div_factor": 10000.0,
                 "dataset": 'LSTM_dataset.csv',
-                "split_ratio":0.6,
+                "split_date":'2021-12-31',
                 "input_window":14,
                 "output_window":7,
                 "early_stop_thres":5,
@@ -36,7 +36,7 @@ def get_config():
             }        
         return config
     
-def run_all(params):
+def run_all(split_date, input_window, output_window):
     
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -46,6 +46,16 @@ def run_all(params):
     path = './code/model_files/LSTM'
     file_name = 'LSTM_dataset.csv'
     metadata = 'LSTM_metadata.csv'
+    
+    seed = 2024
+
+    np.random.seed(seed)
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
     # Read metadata file
     dx = pd.read_csv(os.path.join(path, metadata))
@@ -61,6 +71,14 @@ def run_all(params):
  
     utils = Utils(num_features=len(feature_cols), inp_cols=feature_cols, target_cols=target_cols, date_col=date_col,
                   num_out_features=1, device=device)
+    
+    params = {
+      'epochs': 100,
+      'input_window': int(input_window),
+      'output_window': int(output_window),
+      'weight_decay': 0.05,
+      'split_date': split_date
+    }
     
     utils.run_all_fn(df=df,
                     params=params,
@@ -82,7 +100,7 @@ class Utils:
         self.y_std = None
         self.device = device
     
-    def train_test_split(self, df, split_type='ratio', split_date=None, split_ratio=0.0):
+    def train_test_split(self, df, split_type='time', split_date='2021-12-31', split_ratio=None):
         '''
 
         split time series into train/test sets
@@ -124,10 +142,10 @@ class Utils:
         config['input_window']=params['input_window']
         config['output_window']=params['output_window']
         config['weight_decay']=params['weight_decay']
-        config['split_ratio']=params['split_ratio']
+        config['split_date']=params['split_date']
         
         print("Performing train-test split ", end="...")
-        df_train, df_test = self.train_test_split(df, split_ratio=config['split_ratio'])
+        df_train, df_test = self.train_test_split(df, split_date=config['split_date'])
         print("DONE\n")
         print("Normalizing the data ", end="...")
         df_train = self.normalize(df_train)
@@ -163,11 +181,11 @@ class Utils:
 
         print("Writing training data table.../n")
         train_T_pred_table, train_plot_df, train_plot_gt = self.predictionTable(df_train, train_eval_metrics)
-        train_plot_df.to_csv('LSTM_training_output.csv', index = False)
+        train_plot_df.to_csv('code/model_files/LSTM/LSTM_training_output.csv', index = False)
         
-        print("Writing training data table.../n")
+        print("Writing testing data table.../n")
         test_T_pred_table, test_plot_df, test_plot_gt = self.predictionTable(df_test, test_eval_metrics)
-        test_plot_df.to_csv('LSTM_testing_output.csv', index = False)
+        test_plot_df.to_csv('code/model_files/LSTM/LSTM_testing_output.csv', index = False)
 
         
     def normalize(self, df, use_stat=False):
@@ -412,7 +430,7 @@ class Utils:
 
         pred_table = np.zeros((self.output_window, df.shape[0] - self.input_window))
         pred_table = pd.DataFrame(pred_table)
-        pred_table.columns = df[self.input_window:].Date.values
+        pred_table.columns = df[self.input_window:].datetime.values
         pred_table.index = range(1,self.output_window+1)
         pred_table.loc[:] = np.nan
         

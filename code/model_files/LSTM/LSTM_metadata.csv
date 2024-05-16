@@ -1,5 +1,5 @@
 column_number,column_names,column_type
-1,Date,date
+1,datetime,date
 2,DOY,feature
 3,AirTemp_C_mean,feature
 4,PAR_umolm2s_mean,feature

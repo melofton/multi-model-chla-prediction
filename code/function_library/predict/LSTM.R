@@ -3,8 +3,6 @@
 #Date last updated: 14May24
 
 #Purpose: make predictions using DOY model for chla
-
-library(fable)
 library(reticulate)
 
 # source custom functions
@@ -26,40 +24,31 @@ LSTM <- function(data, pred_dates, forecast_horizon){
   
   for(t in 1:length(pred_dates)){
     
+    input_window = 42
+    output_window = forecast_horizon+1
+    split_date = as.character(pred_dates[t] - (input_window + output_window))
+    df_date = as.character(pred_dates[t] + (output_window-1))
+    
     # build df (all for training except for last day which is for testing)
     df <- data %>%
-      filter(datetime <= pred_dates[t])
+      filter(datetime <= df_date)
     write.csv(df, "./code/model_files/LSTM/LSTM_dataset.csv", row.names = FALSE)
+  
+    run_all(split_date, input_window, output_window)
     
-    # calculate split ratio
-    split_ratio = 1- 1/length(unlist(df$datetime))
+    pred <- read_csv("./code/model_files/LSTM/LSTM_testing_output.csv") %>%
+      pull(as.character(pred_dates[t]))
     
-    # fit model
-    params = list(epochs = 100,
-                  input_window = 14,
-                  output_window = 7,
-                  weight_decay = 0.05,
-                  split_ratio = split_ratio)
-    params = {
-      'epochs': 100,
-      'input_window': 14,
-      'output_window': 7,
-      'weight_decay': 0.05,
-      'split_ratio': split_ratio
-    }
-    run_all(params = params)
-    
-    # generate predictions on training dataset
-
     #set up dataframe for today's prediction
     curr_chla <- data %>%
       filter(datetime == pred_dates[t]) %>%
       pull(Chla_ugL_mean)
+    forecast_dates <- seq.Date(from = as.Date(pred_dates[t]+1), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
     temp.df <- data.frame(model_id = "LSTM",
                           reference_datetime = rep(pred_dates[t],forecast_horizon+1),
                           datetime = c(pred_dates[t],forecast_dates),
                           variable = "chlorophyll-a",
-                          prediction = c(curr_chla,pred$.mean))
+                          prediction = c(curr_chla,pred[-1]))
     
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)

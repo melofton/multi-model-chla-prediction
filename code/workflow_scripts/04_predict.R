@@ -115,6 +115,7 @@ pred_OneDProcessModel <- OneDProcessModel(data = dat_1DProcessModel,
                                 pred_dates = c("2022-01-01","2023-11-26"),
                                 forecast_horizon = 35)
 
+forecast_horizon = 20
 pred_LSTM <- LSTM(data = dat_LSTM,
                   pred_dates = pred_dates,
                   forecast_horizon = forecast_horizon)
