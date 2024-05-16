@@ -3,7 +3,6 @@
 #Date last updated: 14May24
 
 #Purpose: make predictions using DOY model for chla
-library(reticulate)
 
 # source custom functions
 source_python("./code/model_files/LSTM/utils.py")
