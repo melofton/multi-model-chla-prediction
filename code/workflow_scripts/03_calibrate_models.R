@@ -13,6 +13,7 @@ fit.model.functions <- list.files("./code/function_library/fit_models")
 sapply(paste0("./code/function_library/fit_models/",fit.model.functions),source,.GlobalEnv)
 
 #Read in data
+dat_persistence <- read_csv("./data/data_processed/persistence.csv")
 dat_historicalMean <- read_csv("./data/data_processed/historicalMean.csv")
 dat_DOY <- read_csv("./data/data_processed/DOY.csv")
 dat_ETS <- read_csv("./data/data_processed/ETS.csv")
@@ -29,7 +30,10 @@ dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 #Set sim folder (for GLM-AED)
 sim_folder <- "./code/model_files/GLM-AED/calibration"
 
-#Fit models (not applicable for persistence model)
+#Fit models 
+fit_persistence <- fit_persistence(data = dat_persistence, cal_dates = c("2018-08-06","2021-12-31"))
+fit_persistence$plot
+
 fit_historicalMean <- fit_historicalMean(data = dat_historicalMean, cal_dates = c("2018-08-06","2021-12-31"))
 fit_historicalMean$plot
 
@@ -101,10 +105,10 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 # mod_output <- bind_rows(fit_DOY$out, fit_ARIMA$out, fit_ETS$out, fit_TSLM$out,
 #                         fit_XGBoost$out, fit_prophet$out, fit_NNETAR$out)
 # 
-# #OR if you only want to run (or re-run) one or a few models
-# mod_output <- read_csv("./model_output/calibration_output.csv") %>%
-#   #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
-#   bind_rows(.,OneDProcessModel_run$out) # %>% #bind rows with models to add/replace if applicable
-# 
-# write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
-# unique(mod_output$model_id)
+#OR if you only want to run (or re-run) one or a few models
+mod_output <- read_csv("./model_output/calibration_output.csv") %>%
+  #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
+  bind_rows(.,fit_persistence$out) # %>% #bind rows with models to add/replace if applicable
+
+write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
+unique(mod_output$model_id)

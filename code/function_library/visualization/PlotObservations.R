@@ -20,11 +20,11 @@ PlotObservations <- function(observations, pred_only, focal_dates, forecast_hori
           axis.text.x = element_text(size = 14),
           plot.title = element_text(hjust = 0.05, vjust = -8, face = "bold",
                                     size = 16))+
-    scale_x_date(date_labels = "%b")+
     ylim(NA,max(observations$Chla_ugL_mean)+3)
   
   if(pred_only == TRUE){
-    p <- p + ggtitle("2022/2023")
+    p <- p + ggtitle("2022/2023") + scale_x_date(date_labels = "%b")
+
   } 
   
   if(!is.null(focal_dates)){

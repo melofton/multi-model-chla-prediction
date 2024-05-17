@@ -124,7 +124,7 @@ pred_LSTM <- LSTM(data = dat_LSTM,
 mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM, pred_prophet, pred_XGBoost, pred_NNETAR)
 
 #append GLM-AED to model output
-pred_GLMAED <- read_csv("./model_output/GLMAED.csv")
+pred_GLMAED <- read_csv("./model_output/GLMAED_test.csv")
 pred_GLMAED <- pred_GLMAED %>%
   mutate(reference_datetime = date(reference_datetime))
 

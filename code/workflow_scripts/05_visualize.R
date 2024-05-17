@@ -36,11 +36,11 @@ forecast_horizon = 35
 
 #Plot 
 
-p1 <- PlotObservations(observations = obs, pred_only = TRUE,
+p1 <- PlotObservations(observations = obs, pred_only = FALSE,
                        focal_dates = NULL,
                        #focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06"),
                        forecast_horizon = forecast_horizon,
-                       plotly = TRUE)
+                       plotly = FALSE)
 p1
 ggsave(p1, filename = "./figures/observations.png",
        device = "png", height = 3, width = 5, units = "in")
@@ -52,10 +52,9 @@ ggsave(p2, filename = "./figures/drivers.png",
 
 p3 <- PlotModelFits(observations = obs, 
                         predictions = cal, 
-                        model_ids = c("persistence","historical mean","DOY","ETS",
-                                      "ARIMA","TSLM","prophet","XGBoost","NNETAR"))
+                        model_ids = c("persistence","historical mean","DOY"))
 p3
-ggsave(p3, filename = "./figures/ModelFits.png",
+ggsave(p3, filename = "./figures/NullModelFits.png",
        device = "png", height = 3, width = 6, units = "in")
 
 reference_datetime = "2022-08-10"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
