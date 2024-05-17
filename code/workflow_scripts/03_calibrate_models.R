@@ -60,7 +60,7 @@ fit_NNETAR$plot
 
 #Calibrate process models (this completes one run + diagnostics + assessment
 # metrics for GLM-AED) - you must be in a container to run this!
-GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = TRUE)
+GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = FALSE)
 OneDProcessModel_run <- calibrate_1DProcessModel(
   data = dat_1DProcessModel,
   parms = c(-0.001, #w_p (negative is down, positive is up)
@@ -108,7 +108,7 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 #OR if you only want to run (or re-run) one or a few models
 mod_output <- read_csv("./model_output/calibration_output.csv") %>%
   #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
-  bind_rows(.,fit_persistence$out) # %>% #bind rows with models to add/replace if applicable
+  bind_rows(.,GLMAED_run$chl_out) # %>% #bind rows with models to add/replace if applicable
 
 write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
 unique(mod_output$model_id)
