@@ -58,6 +58,11 @@ fit_NNETAR <- function(data, cal_dates, include_drivers = TRUE){
                        datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = fitted_values$.fitted)
+  
+  if(include_drivers == FALSE){
+    df.out <- df.out %>%
+      mutate(model_id = "NNETARnoDrivers")
+  }
 
   
   #return output + model with best fit + plot

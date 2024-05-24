@@ -10,7 +10,7 @@ library(lubridate)
 
 #Load model fitting functions
 fit.model.functions <- list.files("./code/function_library/fit_models")
-sapply(paste0("./code/function_library/fit_models/",fit.model.functions),source,.GlobalEnv)
+sapply(paste0("./code/function_library/fit_models/",fit.model.functions[c(1,3:18)]),source,.GlobalEnv)
 
 #Read in data
 dat_persistence <- read_csv("./data/data_processed/persistence.csv")
@@ -22,8 +22,10 @@ dat_ARIMA_noDrivers <- read_csv("./data/data_processed/ARIMAnoDrivers.csv")
 dat_TSLM <- read_csv("./data/data_processed/TSLM.csv")
 dat_processModels <- read_csv("./data/data_processed/processModels.csv")
 dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
-dat_prophet <- read_csv("./data/data_processed/prophet.csv")
+dat_Prophet <- read_csv("./data/data_processed/Prophet.csv")
+dat_Prophet_noDrivers <- read_csv("./data/data_processed/ProphetnoDrivers.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
+dat_NNETAR_noDrivers <- read_csv("./data/data_processed/NNETARnoDrivers.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 
@@ -48,7 +50,7 @@ fit_ARIMA <- fit_ARIMA(data = dat_ARIMA, cal_dates = c("2018-08-06","2021-12-31"
 fit_ARIMA$plot
 
 fit_ARIMA_noDrivers <- fit_ARIMA(data = dat_ARIMA_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
-fit_ARIMA$plot
+fit_ARIMA_noDrivers$plot
 
 fit_TSLM <- fit_TSLM(data = dat_TSLM, cal_dates = c("2018-08-06","2021-12-31"))
 fit_TSLM$plot
@@ -56,11 +58,17 @@ fit_TSLM$plot
 fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
 fit_XGBoost$plot
 
-fit_prophet <- fit_prophet(data = dat_prophet, cal_dates = c("2018-08-06","2021-12-31"))
-fit_prophet$plot
+fit_Prophet_Drivers <- fit_Prophet(data = dat_Prophet, cal_dates = c("2018-08-06","2021-12-31"))
+fit_Prophet_Drivers$plot
+
+fit_Prophet_noDrivers <- fit_Prophet(data = dat_Prophet_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
+fit_Prophet_noDrivers$plot
 
 fit_NNETAR <- fit_NNETAR(data = dat_NNETAR, cal_dates = c("2018-08-06","2021-12-31"))
 fit_NNETAR$plot
+
+fit_NNETAR_noDrivers <- fit_NNETAR(data = dat_NNETAR_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
+fit_NNETAR_noDrivers$plot
 
 fit_LSTM <- fit_LSTM(data = dat_LSTM, cal_dates = c("2018-08-06","2021-12-31"), forecast_horizon = 20)
 fit_LSTM$plot
@@ -115,8 +123,8 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 # 
 #OR if you only want to run (or re-run) one or a few models
 mod_output <- read_csv("./model_output/calibration_output.csv") %>%
-  #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
-  bind_rows(.,fit_LSTM$out) # %>% #bind rows with models to add/replace if applicable
+  # filter(!model_id %in% c("prophet")) %>% #names of re-run models if applicable
+  bind_rows(.,fit_Prophet_Drivers$out) # %>% #bind rows with models to add/replace if applicable
 
-write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
 unique(mod_output$model_id)
+write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)

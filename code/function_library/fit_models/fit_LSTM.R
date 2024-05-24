@@ -5,6 +5,7 @@
 #Purpose: make predictions using DOY model for chla
 
 # source custom functions
+library(reticulate)
 source_python("./code/model_files/LSTM/utils.py")
 
 

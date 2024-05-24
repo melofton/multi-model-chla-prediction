@@ -58,6 +58,10 @@ fit_ARIMA <- function(data, cal_dates, include_drivers = TRUE){
                        datetime = dates$datetime,
                        variable = "chlorophyll-a",
                        prediction = fitted_values$.fitted)
+  if(include_drivers == FALSE){
+    df.out <- df.out %>%
+    mutate(model_id = "ARIMAnoDrivers")
+  }
 
   
   #return output + model with best fit + plot
