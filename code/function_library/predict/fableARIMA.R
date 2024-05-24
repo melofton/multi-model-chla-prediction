@@ -12,7 +12,7 @@ library(fable)
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
 
-fableARIMA <- function(data, pred_dates, forecast_horizon){
+fableARIMA <- function(data, pred_dates, forecast_horizon, include_drivers = TRUE){
   
   #Fit model
   
@@ -28,8 +28,15 @@ fableARIMA <- function(data, pred_dates, forecast_horizon){
     #mutate_at(vars, scale2)
   
   #fit ARIMA from fable package
-  my.arima <- df %>%
-    model(arima = fable::ARIMA(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL))
+  if(include_drivers == TRUE){
+    my.arima <- df %>%
+      model(arima = fable::ARIMA(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
+    fitted_values <- fitted(my.arima)
+  } else {
+    my.arima <- df %>%
+      model(arima = fable::ARIMA(Chla_ugL_mean)) 
+    fitted_values <- fitted(my.arima)
+  }
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -66,6 +73,11 @@ fableARIMA <- function(data, pred_dates, forecast_horizon){
                           datetime = c(pred_dates[t],forecast_dates),
                           variable = "chlorophyll-a",
                           prediction = c(curr_chla,pred$.mean))
+    
+    if(include_drivers == FALSE){
+      temp.df <- temp.df %>%
+        mutate(model_id = "ARIMAnoDrivers")
+    }
     
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)

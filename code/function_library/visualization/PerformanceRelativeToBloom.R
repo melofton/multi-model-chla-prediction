@@ -25,7 +25,8 @@ PerformanceRelativeToBloom <- function(observations,
                                        score,
                                        focal_dates,
                                        data_plot,
-                                       best_models_only = TRUE){
+                                       best_models_only = TRUE,
+                                       model_ids = model_ids){
 
   for(d in 1:length(focal_dates)){
     
@@ -43,7 +44,7 @@ PerformanceRelativeToBloom <- function(observations,
   
   #reformat model output
   output <- model_output %>% 
-    filter(reference_datetime %in% plot_dates & datetime == focal_dates[d]) %>%
+    filter(reference_datetime %in% plot_dates & datetime == focal_dates[d] & model_id %in% model_ids) %>%
     group_by(model_type, model_id, reference_datetime) %>%
     mutate(horizon = datetime - reference_datetime) %>%
     ungroup() %>%
@@ -60,7 +61,7 @@ PerformanceRelativeToBloom <- function(observations,
     filter(horizon_past >= max_horizon_past) %>%
     rename(score = any_of(score)) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","prophet","XGBoost","NNETAR","LSTM")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM")))
   
   
   if(d == 1){
@@ -123,6 +124,10 @@ PerformanceRelativeToBloom <- function(observations,
     pers <- plot_data %>%
       filter(model_id == "persistence")
     
+    my.shapes <- c(9,16,8, 6, 15, 3)
+    num.shapes <- length(unique(bestModByHorizon$model_id))
+    my.plot.shapes <- my.shapes[1:num.shapes]
+    
     p <- ggplot() +
       geom_line(data = pers, aes(x = horizon_past, y = score, linetype = "persistence"))+
       geom_point(data = bestModByHorizon, aes(x = horizon_past, y = score, group = model_id, color = model_type, shape = model_id)) +
@@ -143,7 +148,7 @@ PerformanceRelativeToBloom <- function(observations,
       guides(color = guide_legend(order = 1), shape = guide_legend(order = 2), linetype = guide_legend(order = 3)) +
       scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
       scale_linetype_discrete(name = "Null model")+
-      scale_shape_manual(name = "Model ID", values = c(16,7))
+      scale_shape_manual(name = "Model ID", values = my.plot.shapes)
     
   }
   

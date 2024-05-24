@@ -24,6 +24,7 @@ library(lubridate)
 RMSEVsHorizon <- function(observations, 
                           model_output, 
                           forecast_horizon,
+                          model_ids = model_ids,
                           best_models_only = TRUE){
   
   #reformat observations
@@ -33,6 +34,7 @@ RMSEVsHorizon <- function(observations,
   
   #reformat model output
   output <- model_output %>% 
+    filter(model_id %in% model_ids) %>%
     group_by(model_type, model_id, reference_datetime) %>%
     mutate(horizon = datetime - reference_datetime) %>%
     ungroup() %>%
@@ -45,7 +47,7 @@ RMSEVsHorizon <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","GLM-AED","prophet","XGBoost","NNETAR","LSTM")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM")))
   
   p <- ggplot()+
     geom_line(data = output, aes(x = horizon, y = rmse,
@@ -78,13 +80,17 @@ RMSEVsHorizon <- function(observations,
   pers <- output %>%
     filter(model_id == "persistence")
   
+  my.shapes <- c(9,16,8, 6, 15, 3)
+  num.shapes <- length(unique(bestModByHorizon$model_id))
+  my.plot.shapes <- my.shapes[1:num.shapes]
+  
   p <- ggplot()+
     geom_line(data = pers, aes(x = horizon, y = rmse, linetype = "persistence"))+
-    geom_point(data = bestModByHorizon, aes(x = horizon, y = rmse, shape = model_id, color = model_type))+
+    geom_point(data = bestModByHorizon, aes(x = horizon, y = rmse, shape = model_id, color = model_type), size = 2)+
     xlab("Forecast horizon (days)")+
     ylab(expression(paste("Best model RMSE (",mu,g,~L^-1,")")))+
     ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
-    scale_shape_manual(name = "Model ID", values = c(9,16,8))+
+    scale_shape_manual(name = "Model ID", values = my.plot.shapes)+
     scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
     scale_linetype_discrete(name = "Null model")+
     theme_classic()+

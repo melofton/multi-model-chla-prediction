@@ -75,7 +75,7 @@ fit_LSTM$plot
 
 #Calibrate process models (this completes one run + diagnostics + assessment
 # metrics for GLM-AED) - you must be in a container to run this!
-GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = FALSE)
+GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = TRUE)
 OneDProcessModel_run <- calibrate_1DProcessModel(
   data = dat_1DProcessModel,
   parms = c(-0.001, #w_p (negative is down, positive is up)

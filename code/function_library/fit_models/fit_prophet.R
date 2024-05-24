@@ -25,8 +25,6 @@ fit_Prophet <- function(data, cal_dates, include_drivers = TRUE){
            y = Chla_ugL_mean)
   
   #fit prophet model 
-  my.prophet <- prophet(df, fit = FALSE) 
-  
   if(include_drivers == TRUE){
     
     # initialize model

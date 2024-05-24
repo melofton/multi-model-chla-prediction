@@ -10,7 +10,7 @@ library(lubridate)
 
 #Load prediction functions
 predict.model.functions <- list.files("./code/function_library/predict")
-sapply(paste0("./code/function_library/predict/",predict.model.functions),source,.GlobalEnv)
+sapply(paste0("./code/function_library/predict/",predict.model.functions[-7]),source,.GlobalEnv)
 
 #Read in data
 dat_persistence <- read_csv("./data/data_processed/persistence.csv")
@@ -18,11 +18,14 @@ dat_historicalMean <- read_csv("./data/data_processed/historicalMean.csv")
 dat_DOY <- read_csv("./data/data_processed/DOY.csv")
 dat_ETS <- read_csv("./data/data_processed/ETS.csv")
 dat_ARIMA <- read_csv("./data/data_processed/ARIMA.csv")
+dat_ARIMA_noDrivers <- read_csv("./data/data_processed/ARIMAnoDrivers.csv")
 dat_TSLM <- read_csv("./data/data_processed/TSLM.csv")
 dat_processModels <- read_csv("./data/data_processed/processModels.csv")
 dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
-dat_prophet <- read_csv("./data/data_processed/prophet.csv")
+dat_Prophet <- read_csv("./data/data_processed/Prophet.csv")
+dat_Prophet_noDrivers <- read_csv("./data/data_processed/ProphetnoDrivers.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
+dat_NNETAR_noDrivers <- read_csv("./data/data_processed/NNETARnoDrivers.csv")
 dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
@@ -57,25 +60,40 @@ pred_ETS <- fableETS(data = dat_ETS,
                      pred_dates = pred_dates,
                      forecast_horizon = forecast_horizon)
 
-pred_ARIMA <- fableARIMA(data = dat_ARIMA,
+pred_ARIMA_Drivers <- fableARIMA(data = dat_ARIMA,
                 pred_dates = pred_dates,
-                forecast_horizon = forecast_horizon)
+                forecast_horizon = forecast_horizon,
+                include_drivers = TRUE)
+pred_ARIMA_noDrivers <- fableARIMA(data = dat_ARIMA_noDrivers,
+                         pred_dates = pred_dates,
+                         forecast_horizon = forecast_horizon, 
+                         include_drivers = FALSE)
 
 pred_TSLM <- fableTSLM(data = dat_TSLM,
                          pred_dates = pred_dates,
                          forecast_horizon = forecast_horizon)
 
-pred_prophet <- pred_prophet(data = dat_prophet,
+pred_Prophet_Drivers <- pred_Prophet(data = dat_Prophet,
                      pred_dates = pred_dates,
-                     forecast_horizon = forecast_horizon)
+                     forecast_horizon = forecast_horizon,
+                     include_drivers = TRUE)
+pred_Prophet_noDrivers <- pred_prophet(data = dat_Prophet_noDrivers,
+                             pred_dates = pred_dates,
+                             forecast_horizon = forecast_horizon,
+                             include_drivers = FALSE)
 
 pred_XGBoost <- parsnipXGBoost(data = dat_XGBoost,
                                pred_dates = pred_dates,
                                forecast_horizon = forecast_horizon)
 
-pred_NNETAR <- fableNNETAR(data = dat_NNETAR,
+pred_NNETAR_Drivers <- fableNNETAR(data = dat_NNETAR,
                          pred_dates = pred_dates,
-                         forecast_horizon = forecast_horizon)
+                         forecast_horizon = forecast_horizon,
+                         include_drivers = TRUE)
+pred_NNETAR_noDrivers <- fableNNETAR(data = dat_NNETAR_noDrivers,
+                                   pred_dates = pred_dates,
+                                   forecast_horizon = forecast_horizon,
+                                   include_drivers = FALSE)
 
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       prediction_folder = "./code/model_files/GLM-AED/prediction",
@@ -133,23 +151,9 @@ pred_LSTM <- read_csv("./model_output/LSTM.csv")
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "GLM-AED") %>%
-  bind_rows(.,pred_GLMAED)
+  #filter(!model_id == "GLM-AED") %>%
+  bind_rows(.,pred_Prophet_Drivers)
 
 unique(mod_output$model_id)
 
-# #OR if you are reading in LSTM output
-# LSTM_output <- read_csv("./multi-model-ensemble/model_output/LSTM_output.csv") %>%
-#   add_column(horizon = c(1:21)) %>%
-#   gather(-horizon,key = "reference_datetime", value = "prediction") %>%
-#   mutate(datetime = as.Date(reference_datetime) + horizon,
-#          reference_datetime = as.Date(reference_datetime)) %>%
-#   add_column(variable = "chlorophyll-a",
-#              model_id = "LSTM") %>%
-#   select(model_id, reference_datetime, datetime, variable, prediction)
-# mod_output <- read_csv("./multi-model-ensemble/model_output/validation_output.csv") %>%
-#   bind_rows(.,LSTM_output)
-# unique(mod_output$model_id)
-
 write.csv(mod_output, "./model_output/validation_output.csv", row.names = FALSE)
-

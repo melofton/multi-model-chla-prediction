@@ -21,10 +21,13 @@ sapply(paste0("./code/function_library/visualization/",plot.functions),source,.G
 #Read in data
 cal <- read_csv("./model_output/calibration_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet","LSTM","XGBoost","NNETAR"),"data-driven","process-based")))
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet","LSTM","XGBoost","NNETAR"),"data-driven","process-based")))
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers"),"data-driven","process-based")),
+         model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
+                           ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
+                                  ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",model_id))))
 obs <- read_csv("./data/data_processed/chla_obs.csv")
 input <- read_csv("./data/data_processed/ARIMA.csv")
 
@@ -71,9 +74,10 @@ ggsave(p4, filename = "./figures/examplePrediction.png",
 p5 <- RMSEVsHorizon(observations = obs, 
                     model_output = out, 
                     forecast_horizon = forecast_horizon,
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"), 
                     best_models_only = TRUE)
 p5
-ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizon.png",
+ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizonNoDrivers.png",
        device = "png", height = 5, width = 7, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate
@@ -87,9 +91,10 @@ p6 <- PerformanceRelativeToBloom(observations = obs,
                            score = "rmse",
                            focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06","2023-05-16","2023-07-31","2023-10-02","2023-11-11"),
                            data_plot = FALSE,
-                           best_models_only = FALSE)
+                           best_models_only = TRUE,
+                           model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel"))
 p6
-ggsave(p6, filename = "./figures/PerformanceRelativeToBloom.png",
+ggsave(p6, filename = "./figures/BestModelsPerformanceRelativeToBloom.png",
        device = "png", height = 5, width = 7, units = "in")
 
 p7 <- OneHorizonTimeseries(observations = obs, 
