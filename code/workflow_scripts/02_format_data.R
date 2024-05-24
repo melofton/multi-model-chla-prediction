@@ -19,17 +19,32 @@ sapply(paste0("./code/function_library/format_data/", data.format.functions),sou
 
 #Format data
 obs <- format_chla_obs()
+
 dat_persistence <- format_data_persistence()
+
 dat_historicalMean <- format_data_historicalMean()
+
 dat_DOY_chla <- format_data_DOY_chla()
+
 dat_ETS <- format_data_ETS()
+
 dat_ARIMA <- format_data_ARIMA()
+dat_ARIMA_noDrivers <- format_data_ARIMA(include_drivers = FALSE)
+
 dat_TSLM <- format_data_TSLM()
+
 dat_XGBoost <- format_data_XGBoost()
+
 dat_LSTM <- format_data_LSTM()
+
 dat_processModels <- format_data_processModels()
-dat_prophet <- format_data_prophet()
+
+dat_Prophet <- format_data_Prophet()
+dat_Prophet_noDrivers <- format_data_Prophet(include_drivers = FALSE)
+
 dat_NNETAR <- format_data_NNETAR()
+dat_NNETAR_noDrivers <- format_data_NNETAR(include_drivers = FALSE)
+
 dat_1DProcessModel <- format_data_1DProcessModel()
 
 # do not run this unless you are in a containerized environment that includes
@@ -46,12 +61,15 @@ write.csv(dat_historicalMean, "./data/data_processed/historicalMean.csv",row.nam
 write.csv(dat_DOY_chla, "./data/data_processed/DOY.csv",row.names = FALSE)
 write.csv(dat_ETS, "./data/data_processed/ETS.csv",row.names = FALSE)
 write.csv(dat_ARIMA, "./data/data_processed/ARIMA.csv",row.names = FALSE)
+write.csv(dat_ARIMA_noDrivers, "./data/data_processed/ARIMAnoDrivers.csv",row.names = FALSE)
 write.csv(dat_TSLM, "./data/data_processed/TSLM.csv",row.names = FALSE)
 write.csv(dat_XGBoost, "./data/data_processed/XGBoost.csv",row.names = FALSE)
 write.csv(dat_processModels, "./data/data_processed/processModels.csv",row.names = FALSE)
 write.csv(dat_LSTM$df.out, "./data/data_processed/LSTM.csv",row.names = FALSE)
 write.csv(dat_LSTM$metadata, "./data/data_processed/LSTM_metadata.csv",row.names = FALSE)
 write.csv(dat_prophet, "./data/data_processed/prophet.csv",row.names = FALSE)
+write.csv(dat_Prophet_noDrivers, "./data/data_processed/ProphetnoDrivers.csv",row.names = FALSE)
 write.csv(dat_NNETAR, "./data/data_processed/NNETAR.csv",row.names = FALSE)
+write.csv(dat_NNETAR_noDrivers, "./data/data_processed/NNETARnoDrivers.csv",row.names = FALSE)
 write.csv(dat_1DProcessModel, "./data/data_processed/1DProcessModel.csv",row.names = FALSE)
 

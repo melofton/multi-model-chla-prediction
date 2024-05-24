@@ -13,7 +13,7 @@ library(moments)
 #'@param cal_dates list of two dates (yyyy-mm-dd) for start and
 #'stop of calibration/fit period
 
-fit_ARIMA <- function(data, cal_dates){
+fit_ARIMA <- function(data, cal_dates, include_drivers = TRUE){
   
   #assign model fit start and stop dates
   start_cal <- date(cal_dates[1])
@@ -31,9 +31,15 @@ fit_ARIMA <- function(data, cal_dates){
     #mutate_at(vars, scale2)
   
   #fit ARIMA from fable package
+  if(include_drivers == TRUE){
   my.arima <- df %>%
     model(arima = fable::ARIMA(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
   fitted_values <- fitted(my.arima)
+  } else {
+    my.arima <- df %>%
+      model(arima = fable::ARIMA(Chla_ugL_mean)) 
+    fitted_values <- fitted(my.arima)
+  }
   
   ARIMA_plot <- ggplot()+
     xlab("")+

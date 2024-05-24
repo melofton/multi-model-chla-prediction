@@ -29,7 +29,7 @@ PlotModelFits <- function(observations, predictions, model_ids){
           legend.title = element_text(face = "bold"))+
     scale_linetype_discrete(name = "Model ID")+
     # if want to group models by type, can do that with colors in line below
-    scale_color_manual(name = "Model type", values = c("#948E0A"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
     scale_fill_discrete(name = "")+
     guides(fill = guide_legend(order = 3), colour = guide_legend(order = 1), linetype = guide_legend(order = 2))
   

@@ -22,8 +22,9 @@ library(lubridate)
 #'@param forecast_horizon maximum horizon that you want to plot
 
 RMSEVsHorizon <- function(observations, 
-                               model_output, 
-                               forecast_horizon){
+                          model_output, 
+                          forecast_horizon,
+                          best_models_only = TRUE){
   
   #reformat observations
   pred_dates <- data.frame(datetime = unique(model_output$reference_datetime)) %>%
@@ -43,20 +44,20 @@ RMSEVsHorizon <- function(observations,
     mutate(horizon = as.numeric(horizon)) %>%
     filter(horizon <= forecast_horizon) %>%
     arrange(model_type, model_id, horizon) %>%
-    mutate(model_type = factor(model_type, levels = c("null","statistical","process","machine learning"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","GLM-AED","prophet","XGBoost","NNETAR")))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","GLM-AED","prophet","XGBoost","NNETAR","LSTM")))
   
   p <- ggplot()+
     geom_line(data = output, aes(x = horizon, y = rmse,
-                                   group = model_id, color = model_id, linetype = model_type),
+                                   group = model_id, color = model_type, linetype = model_id),
               linewidth = 1)+
     xlab("Forecast horizon (days)")+
     ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
     ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
-    scale_color_discrete(name = "Model ID")+
-    scale_linetype_discrete(name = "Model type")+
-    #scale_color_manual(name = "Model type", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
-    #scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "dotted","dotdash", "solid", "dashed", "dotted", "dotdash","solid", "dashed","dotted"))+
+    #scale_color_discrete(name = "Model ID")+
+    #scale_linetype_discrete(name = "Model type")+
+    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","solid", "dashed","dotted","dotdash","longdash","twodash","solid"))+
     theme_classic()+
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 16),
@@ -66,6 +67,36 @@ RMSEVsHorizon <- function(observations,
           legend.key.width = unit(2,"cm"),
           legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1)) 
+  
+  if(best_models_only == TRUE){
+  
+  bestModByHorizon <- output %>%
+    group_by(horizon) %>%
+    filter(rmse == min(rmse)) %>%
+    arrange(horizon)
+  
+  pers <- output %>%
+    filter(model_id == "persistence")
+  
+  p <- ggplot()+
+    geom_line(data = pers, aes(x = horizon, y = rmse, linetype = "persistence"))+
+    geom_point(data = bestModByHorizon, aes(x = horizon, y = rmse, shape = model_id, color = model_type))+
+    xlab("Forecast horizon (days)")+
+    ylab(expression(paste("Best model RMSE (",mu,g,~L^-1,")")))+
+    ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
+    scale_shape_manual(name = "Model ID", values = c(9,16,8))+
+    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_discrete(name = "Null model")+
+    theme_classic()+
+    theme(axis.text = element_text(size = 12),
+          axis.title = element_text(size = 16),
+          plot.title = element_text(size = 16, face = "bold", hjust = 1),
+          legend.title = element_text(face = "bold"),
+          panel.background = element_rect(color = "black", linewidth = 1),
+          legend.key.width = unit(2,"cm"),
+          legend.key=element_rect(colour="white"))+
+    guides(color = guide_legend(order = 1))
+  }
   
   return(p)
     

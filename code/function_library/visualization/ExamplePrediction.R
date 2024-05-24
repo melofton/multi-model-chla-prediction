@@ -40,28 +40,30 @@ ExamplePrediction <- function(observations,
   #limit model output to relevant dates
   plot_mod <- model_output %>%
     filter(reference_datetime == ref_datetime & datetime %in% plot_dates & model_id %in% model_ids) %>%
-    mutate(model_id = factor(model_id, levels = model_ids))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","prophet","XGBoost","NNETAR","LSTM")))
   
   p <- ggplot()+
     geom_point(data = plot_obs, aes(x = datetime, y = Chla_ugL_mean, 
                                     group = variable, fill = variable),
                shape = 21)+
     geom_line(data = plot_mod, aes(x = datetime, y = prediction,
-                                   group = model_id, color = model_id))+
+                                   group = model_id, color = model_type, linetype = model_id))+
     geom_vline(xintercept = ref_datetime, linetype = "dashed")+
     annotate("text", x = ref_datetime + 1.5, y = max(plot_obs$Chla_ugL_mean), 
              label = "future", hjust = 0.25)+
     annotate("text", x = ref_datetime -2.5, y = max(plot_obs$Chla_ugL_mean), 
              label = "past", hjust = 0.25)+
     xlab("")+
-    ylab("Chlorophyll-a (ug/L)")+
-    scale_color_discrete(name = "Model ID")+
+    ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
+    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","solid", "dashed","dotted","dotdash","longdash","twodash","solid"))+
     # if want to group models by type, can do that with colors in line below
     #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
     scale_fill_manual(name = "", values = c("observed, seen by model" = "black",
                                             "observed, not seen by model" = "white"))+
     theme_classic()+
-    ggtitle(paste0("Example prediction: ",year(reference_datetime)))+
+    ggtitle(paste0("Example prediction: ",reference_datetime))+
     theme(axis.text = element_text(size = 12),
           axis.title.y = element_text(size = 16),
           plot.title = element_text(size = 16, face = "bold", hjust = 1),
@@ -69,7 +71,8 @@ ExamplePrediction <- function(observations,
           panel.background = element_rect(color = "black", linewidth = 1),
           legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1),
-           fill = guide_legend(order = 2))
+           linetype = guide_legend(order = 2),
+           fill = guide_legend(order = 3))
   
   return(p)
     

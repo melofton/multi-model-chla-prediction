@@ -21,12 +21,10 @@ sapply(paste0("./code/function_library/visualization/",plot.functions),source,.G
 #Read in data
 cal <- read_csv("./model_output/calibration_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet"),"statistical",
-                                    ifelse(model_id %in% c("LSTM","XGBoost","NNETAR"),"machine learning","process"))))
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet","LSTM","XGBoost","NNETAR"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet"),"statistical",
-                                    ifelse(model_id %in% c("LSTM","XGBoost","NNETAR"),"machine learning","process"))))
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","prophet","LSTM","XGBoost","NNETAR"),"data-driven","process-based")))
 obs <- read_csv("./data/data_processed/chla_obs.csv")
 input <- read_csv("./data/data_processed/ARIMA.csv")
 
@@ -36,14 +34,13 @@ forecast_horizon = 35
 
 #Plot 
 
-p1 <- PlotObservations(observations = obs, pred_only = FALSE,
-                       focal_dates = NULL,
-                       #focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06"),
+p1 <- PlotObservations(observations = obs, pred_only = TRUE,
+                       focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06","2023-05-16","2023-07-31","2023-10-02","2023-11-11"),
                        forecast_horizon = forecast_horizon,
                        plotly = FALSE)
 p1
-ggsave(p1, filename = "./figures/observations.png",
-       device = "png", height = 3, width = 5, units = "in")
+ggsave(p1, filename = "./figures/predictionBlooms.png",
+       device = "png", height = 4, width = 6, units = "in")
 
 p2 <- PlotInputData(input_data = input)
 p2
@@ -52,28 +49,31 @@ ggsave(p2, filename = "./figures/drivers.png",
 
 p3 <- PlotModelFits(observations = obs, 
                         predictions = cal, 
-                        model_ids = c("persistence","historical mean","DOY"))
+                        model_ids = c("ETS","ARIMA","prophet"))
 p3
-ggsave(p3, filename = "./figures/NullModelFits.png",
+ggsave(p3, filename = "./figures/DataDrivenModelFits.png",
        device = "png", height = 3, width = 6, units = "in")
 
-reference_datetime = "2022-08-10"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
+reference_datetime = "2022-10-20"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
 p4 <- ExamplePrediction(observations = obs, 
                         model_output = out, 
                         reference_datetime = reference_datetime, 
                         forecast_horizon = forecast_horizon,
-                        model_ids = c("persistence","historical mean","DOY","ETS",
-                                      "ARIMA","TSLM","prophet","XGBoost","NNETAR",
-                                      "OneDProcessModel","GLM-AED"))
-ggplotly(p4)
+                        model_ids = c("persistence",
+                                      "ARIMA",
+                                      "OneDProcessModel",
+                                      "ETS",
+                                      "NNETAR"))
+p4
 ggsave(p4, filename = "./figures/examplePrediction.png",
        device = "png", height = 4, width = 8, units = "in")
 
 p5 <- RMSEVsHorizon(observations = obs, 
-                          model_output = out, 
-                          forecast_horizon = forecast_horizon)
+                    model_output = out, 
+                    forecast_horizon = forecast_horizon,
+                    best_models_only = TRUE)
 p5
-ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
+ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizon.png",
        device = "png", height = 5, width = 7, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate
@@ -83,19 +83,25 @@ ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
 p6 <- PerformanceRelativeToBloom(observations = obs,
                            model_output = out,
                            variable_name = "chlorophyll-a",
-                           max_horizon_past = -21,
+                           max_horizon_past = -35,
                            score = "rmse",
                            focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06","2023-05-16","2023-07-31","2023-10-02","2023-11-11"),
-                           data_plot = FALSE)
+                           data_plot = FALSE,
+                           best_models_only = FALSE)
 p6
-ggsave(p6, filename = "./figures/performanceRelativeToBloom.png",
+ggsave(p6, filename = "./figures/PerformanceRelativeToBloom.png",
        device = "png", height = 5, width = 7, units = "in")
 
 p7 <- OneHorizonTimeseries(observations = obs, 
                                  model_output = out, 
-                                 forecast_horizon = 7)
-ggplotly(p7)
-ggsave(p7, filename = "./figures/predictionHorizon7Days.png",
+                                 forecast_horizon = 35,
+                           model_ids = c("persistence",
+                                         "ARIMA",
+                                         "OneDProcessModel",
+                                         "ETS",
+                                         "NNETAR"))
+p7
+ggsave(p7, filename = "./figures/predictionHorizon35Days.png",
        device = "png", height = 4, width = 8, units = "in")
 
 # GLM-AED

@@ -18,6 +18,7 @@ dat_historicalMean <- read_csv("./data/data_processed/historicalMean.csv")
 dat_DOY <- read_csv("./data/data_processed/DOY.csv")
 dat_ETS <- read_csv("./data/data_processed/ETS.csv")
 dat_ARIMA <- read_csv("./data/data_processed/ARIMA.csv")
+dat_ARIMA_noDrivers <- read_csv("./data/data_processed/ARIMAnoDrivers.csv")
 dat_TSLM <- read_csv("./data/data_processed/TSLM.csv")
 dat_processModels <- read_csv("./data/data_processed/processModels.csv")
 dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
@@ -46,6 +47,9 @@ fit_ETS$plot
 fit_ARIMA <- fit_ARIMA(data = dat_ARIMA, cal_dates = c("2018-08-06","2021-12-31"))
 fit_ARIMA$plot
 
+fit_ARIMA_noDrivers <- fit_ARIMA(data = dat_ARIMA_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
+fit_ARIMA$plot
+
 fit_TSLM <- fit_TSLM(data = dat_TSLM, cal_dates = c("2018-08-06","2021-12-31"))
 fit_TSLM$plot
 
@@ -57,6 +61,9 @@ fit_prophet$plot
 
 fit_NNETAR <- fit_NNETAR(data = dat_NNETAR, cal_dates = c("2018-08-06","2021-12-31"))
 fit_NNETAR$plot
+
+fit_LSTM <- fit_LSTM(data = dat_LSTM, cal_dates = c("2018-08-06","2021-12-31"), forecast_horizon = 20)
+fit_LSTM$plot
 
 #Calibrate process models (this completes one run + diagnostics + assessment
 # metrics for GLM-AED) - you must be in a container to run this!
@@ -100,6 +107,7 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
          variable = "chlorophyll-a") %>%
   select(model_id, datetime, variable, prediction)
 
+
 #Stack model predictions and write to file (not applicable for persistence model
 #and currently not supported for models fit in JAGS)
 # mod_output <- bind_rows(fit_DOY$out, fit_ARIMA$out, fit_ETS$out, fit_TSLM$out,
@@ -108,7 +116,7 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 #OR if you only want to run (or re-run) one or a few models
 mod_output <- read_csv("./model_output/calibration_output.csv") %>%
   #filter(!model_id %in% c("OptimumMonod")) %>% #names of re-run models if applicable
-  bind_rows(.,GLMAED_run$chl_out) # %>% #bind rows with models to add/replace if applicable
+  bind_rows(.,fit_LSTM$out) # %>% #bind rows with models to add/replace if applicable
 
 write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
 unique(mod_output$model_id)

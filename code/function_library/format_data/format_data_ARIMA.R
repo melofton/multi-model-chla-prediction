@@ -1,6 +1,6 @@
 #Format data for ARIMA model for chl-a
 #Author: Mary Lofton
-#Date: 14MAR23
+#Date: 24MAY24
 
 #Purpose: create daily dataframe from Aug 6, 2018 to Dec. 31, 2022 of 
 #daily median of the following variables:
@@ -42,7 +42,8 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
                               inf_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-inflow-targets.csv.gz",
                               met_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-met-targets.csv.gz",
                               start_date = "2018-08-06",
-                              end_date = "2023-12-31"){
+                              end_date = "2023-12-31",
+                              include_drivers = TRUE){
 
   #get list of dates
   start_date = as.Date(start_date)
@@ -166,6 +167,12 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
            SRP_ugL, DIN_ugL, LightAttenuation_Kd, Chla_ugL_mean,
            Flag_AirTemp_C_mean, Flag_PAR_umolm2s_mean, Flag_WindSpeed_ms_mean, Flag_Flow_cms_mean, Flag_Temp_C_mean, Flag_SRP_ugL,
            Flag_DIN_ugL, Flag_LightAttenuation_Kd, Flag_Chla_ugL_mean)
+  
+  if(include_drivers == FALSE){
+    df.out <- df.out %>%
+      select(datetime, Chla_ugL_mean,
+             Flag_Chla_ugL_mean)
+  }
   
   return(df.out)
 }

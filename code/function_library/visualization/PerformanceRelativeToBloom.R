@@ -24,7 +24,8 @@ PerformanceRelativeToBloom <- function(observations,
                                        max_horizon_past,
                                        score,
                                        focal_dates,
-                                       data_plot){
+                                       data_plot,
+                                       best_models_only = TRUE){
 
   for(d in 1:length(focal_dates)){
     
@@ -58,8 +59,8 @@ PerformanceRelativeToBloom <- function(observations,
     mutate(horizon_past = -horizon) %>%
     filter(horizon_past >= max_horizon_past) %>%
     rename(score = any_of(score)) %>%
-    mutate(model_type = factor(model_type, levels = c("null","statistical","process","machine learning"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","prophet","OneDProcessModel","XGBoost","NNETAR")))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","prophet","XGBoost","NNETAR","LSTM")))
   
   
   if(d == 1){
@@ -90,11 +91,11 @@ PerformanceRelativeToBloom <- function(observations,
     }
   }
 
-  p <- ggplot(data = plot_data, aes(x = horizon_past, y = score, group = model_id, color = model_id, linetype = model_type)) +
+  p <- ggplot(data = plot_data, aes(x = horizon_past, y = score, group = model_id, color = model_type, linetype = model_id)) +
     geom_line(linewidth = 1) +
     xlim(max_horizon_past,0) +
     geom_vline(xintercept = 0, linetype = "dashed", linewidth = 1) +
-    annotate("text", x = -4.25, y = max(plot_data$score)+1, 
+    annotate("text", x = -7.25, y = max(plot_data$score)+1, 
              label = "date of chl-a peak", fontface = 2)+
     labs(x = "Days prior to chl-a peak", y = ylab, title = paste0("Predictions for day of chl-a peak")) +
     theme_classic() +
@@ -107,11 +108,45 @@ PerformanceRelativeToBloom <- function(observations,
           legend.key.width = unit(2,"cm"),
           legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1)) +
-    scale_color_discrete(name = "Model ID")+
-    scale_linetype_discrete(name = "Model type")
-    # scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "dotted","dotdash", "solid", "dashed", "dotted", "dotdash","solid", "dashed"))+
-    # scale_color_manual(name = "Model type", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))
+    #scale_color_discrete(name = "Model ID")+
+    #scale_linetype_discrete(name = "Model type")
+    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","solid", "dashed","dotted","dotdash","longdash","twodash","solid"))
       
+  if(best_models_only == TRUE){
+    
+    bestModByHorizon <- plot_data %>%
+      group_by(horizon_past) %>%
+      filter(score == min(score)) %>%
+      arrange(horizon_past)
+    
+    pers <- plot_data %>%
+      filter(model_id == "persistence")
+    
+    p <- ggplot() +
+      geom_line(data = pers, aes(x = horizon_past, y = score, linetype = "persistence"))+
+      geom_point(data = bestModByHorizon, aes(x = horizon_past, y = score, group = model_id, color = model_type, shape = model_id)) +
+      xlim(max_horizon_past,0) +
+      geom_vline(xintercept = 0, linetype = "dashed", linewidth = 1) +
+      annotate("text", x = -7.25, y = max(plot_data$score)+1, 
+               label = "date of chl-a peak", fontface = 2)+
+      labs(x = "Days prior to chl-a peak", y = ylab, title = paste0("Predictions for day of chl-a peak")) +
+      theme_classic() +
+      theme(axis.text = element_text(size = 12),
+            axis.title.y = element_text(size = 16),
+            axis.title.x = element_text(size = 14),
+            plot.title = element_text(size = 16, face = "bold", hjust = 1),
+            legend.title = element_text(face = "bold"),
+            panel.background = element_rect(color = "black", linewidth = 1),
+            legend.key.width = unit(2,"cm"),
+            legend.key=element_rect(colour="white"))+
+      guides(color = guide_legend(order = 1), shape = guide_legend(order = 2), linetype = guide_legend(order = 3)) +
+      scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+      scale_linetype_discrete(name = "Null model")+
+      scale_shape_manual(name = "Model ID", values = c(16,7))
+    
+  }
+  
   if(data_plot == TRUE){
   p1 <- ggplot(data = pred_dates, aes(x = datetime, y = Chla_ugL_mean)) +
     geom_point() +
