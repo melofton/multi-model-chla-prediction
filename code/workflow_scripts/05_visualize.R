@@ -52,33 +52,29 @@ ggsave(p2, filename = "./figures/drivers.png",
 
 p3 <- PlotModelFits(observations = obs, 
                         predictions = cal, 
-                        model_ids = c("ETS","ARIMA","prophet"))
+                        model_ids = c("GLM-AED"))
 p3
-ggsave(p3, filename = "./figures/DataDrivenModelFits.png",
+ggsave(p3, filename = "./figures/GLMAEDModelFits.png",
        device = "png", height = 3, width = 6, units = "in")
 
-reference_datetime = "2022-10-20"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
+reference_datetime = "2022-07-15"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
 p4 <- ExamplePrediction(observations = obs, 
                         model_output = out, 
                         reference_datetime = reference_datetime, 
                         forecast_horizon = forecast_horizon,
-                        model_ids = c("persistence",
-                                      "ARIMA",
-                                      "OneDProcessModel",
-                                      "ETS",
-                                      "NNETAR"))
+                        model_ids = c("GLM-AED"))
 p4
-ggsave(p4, filename = "./figures/examplePrediction.png",
-       device = "png", height = 4, width = 8, units = "in")
+ggsave(p4, filename = "./figures/examplePredictionGLMAED.png",
+       device = "png", height = 5, width = 7, units = "in")
 
 p5 <- RMSEVsHorizon(observations = obs, 
                     model_output = out, 
                     forecast_horizon = forecast_horizon,
-                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"), 
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
                     best_models_only = TRUE)
-p5
+p5 
 ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizonNoDrivers.png",
-       device = "png", height = 5, width = 7, units = "in")
+       device = "png", height = 4, width = 8, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate
 #plot, then add
@@ -99,14 +95,10 @@ ggsave(p6, filename = "./figures/BestModelsPerformanceRelativeToBloom.png",
 
 p7 <- OneHorizonTimeseries(observations = obs, 
                                  model_output = out, 
-                                 forecast_horizon = 35,
-                           model_ids = c("persistence",
-                                         "ARIMA",
-                                         "OneDProcessModel",
-                                         "ETS",
-                                         "NNETAR"))
+                                 forecast_horizon = 7,
+                           model_ids = c("GLM-AED"))
 p7
-ggsave(p7, filename = "./figures/predictionHorizon35Days.png",
+ggsave(p7, filename = "./figures/predictionHorizon7DaysGLMAED.png",
        device = "png", height = 4, width = 8, units = "in")
 
 # GLM-AED

@@ -47,7 +47,7 @@ out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outfl
 tail(out)
 
 # compare between 2020 and 2021 versions of weir inflow/outflow files
-new_inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2023_20240510_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+new_inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2023_20240530_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
   select(colnames(inf)[1:22],PHY_diatom, PHY_cyano, PHY_green) %>%
   rename(PHY_cold = PHY_diatom,
@@ -87,7 +87,7 @@ sss_compare <- ggplot(all_sss, aes(x = time, y = value, group = file_version, co
 ggsave(sss_compare, filename = "./figures/compareGLMSSSInflowFiles.png",
        device = "png", height = 18, width = 9, units = "in")
 
-new_out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240510.csv") %>%
+new_out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240530.csv") %>%
   arrange(time) %>%
   add_column(file_version = 2023) 
 

@@ -44,13 +44,13 @@ OneHorizonTimeseries <- function(observations,
     filter(horizon == forecast_horizon,
            model_id %in% model_ids) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","GLM-AED","prophet","XGBoost","NNETAR","LSTM")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ETS","TSLM","OneDProcessModel","GLM-AED","Prophet","XGBoost","NNETAR","LSTM")))
   
   p <- ggplot()+
     geom_point(data = plot_obs, aes(x = datetime, y = Chla_ugL_mean, 
                                     group = variable, fill = variable))+
     geom_line(data = plot_mod, aes(x = datetime, y = prediction,
-                                   group = model_id, color = model_type, linetype = model_id))+
+                                   group = model_id, color = model_type, linetype = model_id), linewidth = 1)+
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
     scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"

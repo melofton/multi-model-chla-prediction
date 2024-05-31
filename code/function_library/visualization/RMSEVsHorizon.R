@@ -49,6 +49,9 @@ RMSEVsHorizon <- function(observations,
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
     mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM")))
   
+  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 7))
+  my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
+  
   p <- ggplot()+
     geom_line(data = output, aes(x = horizon, y = rmse,
                                    group = model_id, color = model_type, linetype = model_id),
@@ -58,8 +61,8 @@ RMSEVsHorizon <- function(observations,
     ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
     #scale_color_discrete(name = "Model ID")+
     #scale_linetype_discrete(name = "Model type")+
-    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
-    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","solid", "dashed","dotted","dotdash","longdash","twodash","solid"))+
+    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","longdash","twodash","solid"))+
     theme_classic()+
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 16),

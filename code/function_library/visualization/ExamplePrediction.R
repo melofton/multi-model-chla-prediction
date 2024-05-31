@@ -41,14 +41,17 @@ ExamplePrediction <- function(observations,
   plot_mod <- model_output %>%
     filter(reference_datetime == ref_datetime & datetime %in% plot_dates & model_id %in% model_ids) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","prophet","XGBoost","NNETAR","LSTM")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM")))
   
+  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 7))
+  my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
+
   p <- ggplot()+
     geom_point(data = plot_obs, aes(x = datetime, y = Chla_ugL_mean, 
                                     group = variable, fill = variable),
                shape = 21)+
     geom_line(data = plot_mod, aes(x = datetime, y = prediction,
-                                   group = model_id, color = model_type, linetype = model_id))+
+                                   group = model_id, color = model_type, linetype = model_id), linewidth = 1)+
     geom_vline(xintercept = ref_datetime, linetype = "dashed")+
     annotate("text", x = ref_datetime + 1.5, y = max(plot_obs$Chla_ugL_mean), 
              label = "future", hjust = 0.25)+
@@ -56,8 +59,8 @@ ExamplePrediction <- function(observations,
              label = "past", hjust = 0.25)+
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
-    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
-    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","solid", "dashed","dotted","dotdash","longdash","twodash","solid"))+
+    scale_color_manual(name = "Model ID", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","longdash","twodash","solid"))+
     # if want to group models by type, can do that with colors in line below
     #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
     scale_fill_manual(name = "", values = c("observed, seen by model" = "black",
@@ -69,7 +72,8 @@ ExamplePrediction <- function(observations,
           plot.title = element_text(size = 16, face = "bold", hjust = 1),
           legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),
-          legend.key=element_rect(colour="white"))+
+          legend.key=element_rect(colour="white"),
+          legend.key.width=unit(2,"cm"))+
     guides(color = guide_legend(order = 1),
            linetype = guide_legend(order = 2),
            fill = guide_legend(order = 3))
