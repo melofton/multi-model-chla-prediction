@@ -21,9 +21,7 @@
 # 5.  Navigate to correct RProject and script to run GLM-AED
 
 # install and load packages ----
-install.packages("lhs")
 install.packages("cowplot")
-install.packages("plotly")
 # install.packages("akima")
 # install.packages("reshape2")
 # install.packages("gridExtra")
@@ -35,9 +33,7 @@ library(tidyverse)
 library(lubridate)
 library(glmtools)
 library(GLM3r)
-library(lhs)
 library(cowplot)
-library(plotly)
 library(akima)
 library(reshape2)
 library(gridExtra)
@@ -286,7 +282,7 @@ first <- plot_grid(plot_wt, plot_par, plot_din, plot_frp,
                               plot_f_factors_Nfixer, plot_AED_groups,
                               plot_ts, predVsObs, nrow = 5)
 second <- plot_grid(chl_heatmap, fp_heatmap, 
-                               nrow = 2)
+                               nrow = 2, align = "v", axis = "l")
 assess_model_run <- plot_grid(first, second,ncol = 1, rel_heights = c(5,2))
 
 

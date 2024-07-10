@@ -33,19 +33,19 @@ dev.off()
 }
 
 
-PlotRespiration <- function(theta_resp = 1.08, xlim = c(1,30), save_plot = TRUE){
+PlotRespiration <- function(R_resp = 0.08, theta_resp = 1.08, xlim = c(1,30), save_plot = TRUE){
 
-f3 <- function(x, theta_resp){
-  y = theta_resp^(x-20)
+f3 <- function(x, theta_resp, R_resp){
+  y = R_resp*theta_resp^(x-20)
 }
 
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f3(x,theta_resp = theta_resp),from=xlim[1], to=xlim[2],ylab='Respiration scalar',xlab = 'Water temperature (°C)')
+curve(f3(x,theta_resp = theta_resp, R_resp = R_resp),from=xlim[1], to=xlim[2],ylab='Respiration scalar',xlab = 'Water temperature (°C)')
 
 if(save_plot == TRUE){
   jpeg("./figures/resp_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
   par(cex.lab = 1.5, mgp = c(2.7,1,0))
-  curve(f3(x,theta_resp = theta_resp),from=xlim[1], to=xlim[2],ylab='Respiration scalar',xlab = 'Water temperature (°C)')
+  curve(f3(x,theta_resp = theta_resp, R_resp = R_resp),from=xlim[1], to=xlim[2],ylab='Respiration scalar',xlab = 'Water temperature (°C)')
   dev.off()
 }
 }

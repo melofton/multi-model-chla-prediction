@@ -10,13 +10,13 @@ from encoder_decoder import seq2seq
 def get_config():
         config = {
                 "batch_size": 32,
-                "epochs": 200,
-                "learning_rate": 0.0001,
+                "epochs": 200, # either 100 or 200; don't go above that
+                "learning_rate": 0.0001, # might be good to include? depends on scheduler?
                 "eval_freq": 10,
                 "batch_shuffle": True,
-                "dropout":0.2,
-                "num_layers": 1,
-                "hidden_feature_size": 16,
+                "dropout":0.2, # include in grid search dropout_list = [0, 0.0001, 0.0005, 0.001, 0.002, 0.01]
+                "num_layers": 1, # keep as 1 num_layers_list = [1, 2, 3] 
+                "hidden_feature_size": 16, # keep small (try 8) hidden_feature_size_list = [8, 16] if increase this, need to increase dropout
                 "model_type": 'LSTM',
                 "teacher_forcing_ratio": 0.0,
                 "max_lr": 5e-4,
@@ -26,12 +26,12 @@ def get_config():
                 "final_div_factor": 10000.0,
                 "dataset": 'LSTM_dataset.csv',
                 "split_date":'2021-12-31',
-                "input_window":14,
-                "output_window":7,
-                "early_stop_thres":5,
-                "early_stop_delta":0.5,
-                "early_stop":False,
-                "weight_decay":0.05,
+                "input_window":14, # up to 70
+                "output_window":7, # up to 35
+                "early_stop_thres":5, # not being used
+                "early_stop_delta":0.5, # not being used
+                "early_stop":False, # this shows that early stop not being used
+                "weight_decay":0.05, # 0.001? decay_list = [0, 0.0001, 0.0005, 0.001, 0.002, 0.01] should be 10^-3 or smaller
                 "training_prediction":'recursive'
             }        
         return config
