@@ -57,12 +57,12 @@ PlotNLimitation <- function(K_N = 0.25, N_0 = 0, xlim = c(0,6), save_plot = TRUE
   }
   
   par(cex.lab = 1.5, mgp = c(2.7,1,0))
-  curve(f4(x, N_0 = N_0, K_N = K_N),from=xlim[1], to=xlim[2],ylab='fN',xlab = expression(paste("DIN"," (",mu,"mol N ",m^-3,")")),ylim = c(0,1))
+  curve(f4(x, N_0 = N_0, K_N = K_N),from=xlim[1], to=xlim[2],ylab='fN',xlab = expression(paste("DIN"," (",mu,"mol N ",m^-3,")")),ylim = c(-1,1))
 
   if(save_plot == TRUE){
 jpeg("./figures/DIN_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f4(x, N_0 = N_0, K_N = K_N),from=xlim[1], to=xlim[2],ylab='fN',xlab = expression(paste("DIN"," (",mu,"mol N ",m^-3,")")),ylim = c(0,1))
+curve(f4(x, N_0 = N_0, K_N = K_N),from=xlim[1], to=xlim[2],ylab='fN',xlab = expression(paste("DIN"," (",mu,"mol N ",m^-3,")")),ylim = c(-1,1))
 dev.off()
 }
 }
@@ -73,12 +73,12 @@ f5 <- function(FRP, P_0, K_P){
 }
 
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f5(x, P_0 = P_0, K_P = K_P),from=0, to=0.2,ylab='fP',xlab = expression(paste("FRP"," (",mu,"mol P ",m^-3,")")),ylim = c(0,1))
+curve(f5(x, P_0 = P_0, K_P = K_P),from=0, to=0.2,ylab='fP',xlab = expression(paste("FRP"," (",mu,"mol P ",m^-3,")")),ylim = c(-1,1))
 
 if(save_plot == TRUE){
 jpeg("./figures/FRP_eq.jpeg", res = 300, width = 5, height = 3.5, units = "in")
 par(cex.lab = 1.5, mgp = c(2.7,1,0))
-curve(f5(x, P_0 = P_0, K_P = K_P),from=xlim[1], to=xlim[2],ylab='fP',xlab = expression(paste("FRP"," (",mu,"mol P ",m^-3,")")),ylim = c(0,1))
+curve(f5(x, P_0 = P_0, K_P = K_P),from=xlim[1], to=xlim[2],ylab='fP',xlab = expression(paste("FRP"," (",mu,"mol P ",m^-3,")")),ylim = c(-1,1))
 dev.off()
 }
 }

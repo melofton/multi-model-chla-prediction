@@ -2,9 +2,9 @@
    pd%p_name = 'hot','cold','Nfixer'
    pd%p_initial = 1,1,1
    pd%p0 = 0.03,0.03,0.03
-   pd%w_p = -0.05,-0.05,0.01
-   pd%Xcc = 28,28,1000
-   pd%R_growth = 1.2,1,1
+   pd%w_p = -0.03,-0.03,0.01
+   pd%Xcc = 50,50,1000
+   pd%R_growth = 1.5,1.5,1
    pd%fT_Method = 1,1,1
    pd%theta_growth = 1.08,1.02,1.08
    pd%T_std = 10,10,10
@@ -28,7 +28,7 @@
    pd%simNFixation = 0,0,1
    pd%simINDynamics = 0,0,0
    pd%N_o = 0.25,0.25,0.25
-   pd%K_N = 0.25,0.15,0.25
+   pd%K_N = 0.25,0.25,0.25
    pd%X_ncon = 0.02,0.01,0.02
    pd%X_nmin = 0.02,0.02,0.02
    pd%X_nmax = 0.12,0.12,0.12

@@ -106,8 +106,8 @@ ggsave(p7, filename = "./figures/predictionHorizon7DaysGLMAED.png",
 # functional relationships
 PlotMonodLightLimitation(I_K = 250, xlim = c(0,600), save_plot = FALSE)
 PlotRespiration(R_resp = 0.11, theta_resp = 1.08, xlim = c(1,30), save_plot = FALSE)
-PlotNLimitation(K_N = 8, N_0 = 0.25, xlim = c(0,10), save_plot = FALSE)
-PlotPLimitation(K_P = 0.10, P_0 = 0.03, xlim = c(0,0.15), save_plot = FALSE)
+PlotNLimitation(K_N = 0.15, N_0 = 0.25, xlim = c(0,10), save_plot = FALSE)
+PlotPLimitation(K_P = 0.0001, P_0 = 0.0, xlim = c(0,0.15), save_plot = FALSE)
 
 # set parameters for temperature limitation
 g1 <- list(T_std = 10,
