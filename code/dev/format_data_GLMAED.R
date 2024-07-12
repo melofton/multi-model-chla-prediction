@@ -33,7 +33,7 @@ tail(met)
 
 inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2021_20240429_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
-  add_column(file_version = 2021)
+  add_column(file_version = 1)
 tail(inf)
 
 sss <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_SSS_inflow_2013_2021_20240429_allfractions_2DOCpools.csv") %>%
@@ -43,21 +43,21 @@ tail(sss)
 
 out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv") %>%
   arrange(time) %>%
-  add_column(file_version = 2021)
+  add_column(file_version = 1)
 tail(out)
 
 # compare between 2020 and 2021 versions of weir inflow/outflow files
-new_inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2023_20240530_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+new_inf <- read_csv("./code/model_files/GLM-AED/calibration/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
   select(colnames(inf)[1:22],PHY_diatom, PHY_cyano, PHY_green) %>%
   rename(PHY_cold = PHY_diatom,
          PHY_Nfixer = PHY_cyano,
          PHY_hot = PHY_green) %>%
-  add_column(file_version = 2023)
+  add_column(file_version = 2)
 
 all_inf <- bind_rows(inf, new_inf) %>%
   pivot_longer(FLOW:PHY_hot, names_to = "variable", values_to = "value") %>%
-  mutate(file_version = factor(file_version))
+  mutate(file_version = factor(file_version, levels = c("2","1")))
 
 inf_compare <- ggplot(all_inf, aes(x = time, y = value, group = file_version, color = file_version))+
   geom_line()+

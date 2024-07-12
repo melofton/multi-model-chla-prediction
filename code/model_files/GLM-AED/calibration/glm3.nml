@@ -104,7 +104,7 @@
    inflow_factor = 1, 0.493447354566162
    strmbd_drag = 0.03, 0.03
    subm_elev = 7.166530546, 1.63130926288586
-   inflow_fl = 'inputs/FCR_weir_inflow_2013_2021_20240429_allfractions_2poolsDOC_1dot5xDOCr.csv','inputs/FCR_SSS_inflow_2013_2021_20240429_allfractions_2DOCpools.csv'
+   inflow_fl = 'inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv','inputs/FCR_SSS_inflow_2013_2023_20240510_allfractions_2DOCpools.csv'
    inflow_varnum = 24
    inflow_vars = 'FLOW','TEMP','SALT','OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'
 /
@@ -114,7 +114,7 @@
    outl_elvs = 506.9!, 498
    bsn_len_outl = 711.699!, 711.699
    bsn_wid_outl = 226.03!, 226.03
-   outflow_fl = 'inputs/FCR_spillway_outflow_WeirOnly_2013_2021_20220927.csv'!,'inputs/outflow_K.csv'
+   outflow_fl = 'inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240712.csv'!,'inputs/outflow_K.csv'
    outflow_factor = 1!, 0.493447354566162
 /
 &snowice
