@@ -16,7 +16,7 @@ dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
 
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       prediction_folder = "./code/model_files/GLM-AED/prediction",
-                      rerun_spinup = FALSE,
+                      rerun_spinup = TRUE,
                       spinup_dates = c('2018-04-20 12:00:00','2022-01-01 12:00:00'),
                       start_from_spinup = TRUE,
                       pred_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
