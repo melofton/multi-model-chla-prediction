@@ -39,7 +39,7 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    forecast_horizon = 35,
                    wq_vars = c('OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'),
                    data = dat_GLMAED,
-                   phyto_nml_file = "/aed/aed2_phyto_pars_16APR24_MEL.nml"){
+                   phyto_nml_file = "/aed/aed2_phyto_pars_24MAY24_MEL.nml"){
   
   # run spinup if user specifies it
   if(rerun_spinup == TRUE){
