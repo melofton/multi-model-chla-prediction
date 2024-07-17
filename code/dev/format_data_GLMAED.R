@@ -192,62 +192,15 @@ check <- met_targets %>%
 plot(met_targets$datetime, met_targets$Rain_mm_sum)
 
 ## testing hypothesis that high N in inflows is the problem
-inf <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_weir_inflow_2013_2021_20240429_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
-  arrange(time)
-
-new_inf <- read_csv("./code/model_files/GLM-AED/prediction_test/inputs/FCR_weir_inflow_2013_2023_20240510_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+inf <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
-  select(colnames(inf)[1:22],PHY_diatom, PHY_cyano, PHY_green) %>%
-  rename(PHY_cold = PHY_diatom,
-         PHY_Nfixer = PHY_cyano,
-         PHY_hot = PHY_green) 
+  mutate(FLOW = ifelse((time >= "2022-05-18" & time <= "2022-07-05"),FLOW*10,FLOW))
+plot(inf$time, inf$FLOW)
 
-y2023 <- new_inf %>%
-  filter(year(time) == 2023)
+out <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240712.csv") %>%
+  arrange(time) %>%
+  mutate(FLOW = ifelse((time >= "2022-05-18" & time <= "2022-07-05"),FLOW*10,FLOW))
 
-y2022 <- new_inf %>%
-  filter(year(time) == 2022)
+write.csv(inf, "./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/fake_inf.csv", row.names = FALSE)
+write.csv(out, "./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/fake_out.csv", row.names = FALSE)
 
-sans2022_2023 <- new_inf %>%
-  filter(!year(time) %in% c(2022,2023))
-
-dup2023 <- y2023 %>%
-  mutate(time = y2022$time) %>%
-  bind_rows(.,y2023) %>%
-  arrange(time)
-ggplot(dup2023, aes(x = time, y = NIT_amm))+
-  geom_line()+
-  theme_bw()
-
-fake_inf <- bind_rows(sans2022_2023,dup2023)
-ggplot(fake_inf, aes(x = time, y = FLOW))+
-  geom_line()+
-  theme_bw()
-write.csv(fake_inf, "./code/model_files/GLM-AED/prediction_test/inputs/fake_inf.csv",row.names = FALSE)
-
-# now do corresponding outflow
-new_out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240510.csv") %>%
-  arrange(time)
-
-y2023 <- new_out %>%
-  filter(year(time) == 2023)
-
-y2022 <- new_out %>%
-  filter(year(time) == 2022)
-
-sans2022_2023 <- new_out %>%
-  filter(!year(time) %in% c(2022,2023))
-
-dup2023 <- y2023 %>%
-  mutate(time = y2022$time) %>%
-  bind_rows(.,y2023) %>%
-  arrange(time)
-ggplot(dup2023, aes(x = time, y = FLOW))+
-  geom_line()+
-  theme_bw()
-
-fake_out <- bind_rows(sans2022_2023,dup2023)
-ggplot(fake_out, aes(x = time, y = FLOW))+
-  geom_line()+
-  theme_bw()
-write.csv(fake_out, "./code/model_files/GLM-AED/prediction_test/inputs/fake_out.csv",row.names = FALSE)
