@@ -157,38 +157,3 @@ mod_output <- read_csv("./model_output/validation_output.csv") %>%
 unique(mod_output$model_id)
 
 write.csv(mod_output, "./model_output/validation_output.csv", row.names = FALSE)
-
-
-## the inevitable special case for GLM-AED
-
-## Notes on various GLM-AED prediction runs
-#' 1. GLMAED.csv calibration completed in April 2024 and driver files from CCC in late
-#' May 2024; resulted in way-too-high predictions during drawdown in 2022
-#' 
-#' 2. GLMAED_test.csv calibration completed in April 2024 and driver files modified
-#' from CCC's version to have lower N in an attempt to rectify too-high predictions
-#' THIS METHOD SHOULD BE CONSIDERED A BACK-OF-ENVELOPE HACK, NOT PUBLISHABLE
-#' 
-#' 3. GLMAED_12JUL24.csv calibration completed in May 2024 and driver files modified
-#' from CCC's version to have higher inflow by taking into account weir overtopping
-#' during drawdown in 2022
-#' THIS METHOD COULD BE PUBLISHED
-
-csv_fils <- list.files("model_output", pattern = "GLMAED", full.names = TRUE) 
-
-dat <- map_df(csv_fils, read_csv, .id = "config") %>%
-  mutate(config = ifelse(config == "1","April 2024 calibration w/ unaltered driver files",
-                         ifelse(config == "2","April 2024 calibration w/ 2023 inflow N","July 2024 calibration w/ V-notch + rectangle discharge calc.")))
-unique(dat$config)
-
-h7 <- dat %>%
-  mutate(reference_datetime = date(reference_datetime)) %>%
-  filter(datetime - reference_datetime == 7)
-obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
-  filter(datetime %in% h7$datetime)
-
-ggplot()+
-  geom_point(data = obs, aes(x = datetime, y = Chla_ugL_mean))+
-  geom_line(data = h7, aes(x = datetime, y = prediction, group = config, color = config))+
-  theme_bw()+
-  ggtitle("7-day-ahead GLM-AED predictions")
