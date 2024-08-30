@@ -217,3 +217,11 @@ out <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR
 write.csv(inf, "./code/model_files/GLM-AED/prediction_test_100xInflow/inputs/fake_inf.csv", row.names = FALSE)
 write.csv(out, "./code/model_files/GLM-AED/prediction_test_100xInflow/inputs/fake_out.csv", row.names = FALSE)
 
+## testing hypothesis that high turbidity during drawdown is the problem
+inf <- read_csv("./code/model_files/GLM-AED/prediction_test_100xOGM_docr/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+  arrange(time) %>%
+  mutate(OGM_docr = ifelse((time >= "2022-05-18" & time <= "2022-07-05"),OGM_docr*100,OGM_docr))
+plot(inf$time, inf$OGM_docr)
+
+write.csv(inf, "./code/model_files/GLM-AED/prediction_test_100xOGM_docr/inputs/fake_inf.csv", row.names = FALSE)
+
