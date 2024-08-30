@@ -204,3 +204,16 @@ out <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR
 write.csv(inf, "./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/fake_inf.csv", row.names = FALSE)
 write.csv(out, "./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/fake_out.csv", row.names = FALSE)
 
+## testing hypothesis that blowing out weir during drawdown is the problem
+inf <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+  arrange(time) %>%
+  mutate(FLOW = ifelse((time >= "2022-05-18" & time <= "2022-07-05"),FLOW*100,FLOW))
+plot(inf$time, inf$FLOW)
+
+out <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240712.csv") %>%
+  arrange(time) %>%
+  mutate(FLOW = ifelse((time >= "2022-05-18" & time <= "2022-07-05"),FLOW*100,FLOW))
+
+write.csv(inf, "./code/model_files/GLM-AED/prediction_test_100xInflow/inputs/fake_inf.csv", row.names = FALSE)
+write.csv(out, "./code/model_files/GLM-AED/prediction_test_100xInflow/inputs/fake_out.csv", row.names = FALSE)
+
