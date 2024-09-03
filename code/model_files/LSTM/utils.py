@@ -36,7 +36,7 @@ def get_config():
             }        
         return config
     
-def run_all(split_date, input_window, output_window):
+def run_all(split_date, input_window, output_window, epochs, dropout, num_layers, hidden_feature_size, weight_decay):
     
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -73,11 +73,14 @@ def run_all(split_date, input_window, output_window):
                   num_out_features=1, device=device)
     
     params = {
-      'epochs': 100,
       'input_window': int(input_window),
       'output_window': int(output_window),
-      'weight_decay': 0.05,
-      'split_date': split_date
+      'split_date': split_date,
+      'epochs': int(epochs),
+      'dropout': dropout,
+      'num_layers': int(num_layers),
+      'hidden_feature_size': int(hidden_feature_size),
+      'weight_decay': weight_decay,
     }
     
     utils.run_all_fn(df=df,
@@ -138,11 +141,14 @@ class Utils:
         input_window=params['input_window']
         output_window=params['output_window']
         
-        config['epochs']=params['epochs']
         config['input_window']=params['input_window']
         config['output_window']=params['output_window']
-        config['weight_decay']=params['weight_decay']
         config['split_date']=params['split_date']
+        config['epochs']=params['epochs']
+        config['dropout']=params['dropout']
+        config['num_layers']=params['num_layers']
+        config['hidden_feature_size']=params['hidden_feature_size']
+        config['weight_decay']=params['weight_decay']
         
         print("Performing train-test split ", end="...")
         df_train, df_test = self.train_test_split(df, split_date=config['split_date'])

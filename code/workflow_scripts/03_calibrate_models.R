@@ -10,7 +10,7 @@ library(lubridate)
 
 #Load model fitting functions
 fit.model.functions <- list.files("./code/function_library/fit_models")
-sapply(paste0("./code/function_library/fit_models/",fit.model.functions[c(1,3:18)]),source,.GlobalEnv)
+sapply(paste0("./code/function_library/fit_models/",fit.model.functions[c(1,3:12)]),source,.GlobalEnv)
 
 #Read in data
 dat_persistence <- read_csv("./data/data_processed/persistence.csv")
@@ -70,8 +70,15 @@ fit_NNETAR$plot
 fit_NNETAR_noDrivers <- fit_NNETAR(data = dat_NNETAR_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
 fit_NNETAR_noDrivers$plot
 
-fit_LSTM <- fit_LSTM(data = dat_LSTM, cal_dates = c("2018-08-06","2021-12-31"), forecast_horizon = 20)
+params_list <- list(epochs = c(100,200),
+                    dropout = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01),
+                    num_layers = c(1,2,3),
+                    hidden_feature_size = c(8,16),
+                    weight_decay = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01))
+fit_LSTM <- fit_LSTM(data = dat_LSTM, cal_dates = c("2018-08-06","2021-12-31"), forecast_horizon = 20,
+                     input_window = 42, params_list = params_list)
 fit_LSTM$plot
+LSTM_out <- fit_LSTM$out
 
 #Calibrate process models (this completes one run + diagnostics + assessment
 # metrics for GLM-AED) - you must be in a container to run this!

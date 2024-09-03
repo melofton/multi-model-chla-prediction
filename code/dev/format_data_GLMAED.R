@@ -227,3 +227,5 @@ plot(inf$time, inf$OGM_docr)
 
 write.csv(inf, "./code/model_files/GLM-AED/prediction_test_100xOGM_docr/inputs/fake_inf.csv", row.names = FALSE)
 
+check <- read_csv("./code/model_files/GLM-AED/prediction_test_100xOGM_docr/inputs/fake_out.csv")
+plot(check$time, check$FLOW)
