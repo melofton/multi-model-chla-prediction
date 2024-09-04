@@ -191,7 +191,8 @@ check <- met_targets %>%
 
 plot(met_targets$datetime, met_targets$Rain_mm_sum)
 
-## testing hypothesis that high N in inflows is the problem
+
+## increasing inflow to try to mirror what happened during drawdown
 inf <- read_csv("./code/model_files/GLM-AED/prediction_test_10xInflow/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
   arrange(time) %>%
   mutate(FLOW = ifelse((time >= "2022-05-18" & time <= "2022-07-05"),FLOW*10,FLOW))

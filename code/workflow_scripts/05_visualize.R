@@ -7,7 +7,7 @@
 #load packages
 library(tidyverse)
 library(lubridate)
-library(plotly)
+#library(plotly)
 
 #Load plotting functions
 plot.functions <- list.files("./code/function_library/visualization")
@@ -173,11 +173,12 @@ ggsave(p1, filename = "./figures/ExampleInitialConditionsUpdating.png",
 csv_fils <- list.files("model_output", pattern = "GLMAED", full.names = TRUE) 
 
 dat <- map_df(csv_fils, read_csv, .id = "config") %>%
-  mutate(config = ifelse(config == "1","April 2024 calibration w/ unaltered driver files",
+  mutate(scenario = ifelse(config == "1","April 2024 calibration w/ unaltered driver files",
                          ifelse(config == "2","April 2024 calibration w/ 2023 inflow N",
                                 ifelse(config == "3","July 2024 calibration w/ V-notch + rectangle discharge calc.",
                                        ifelse(config == "4","July 2024 calibration w/ 10x higher inflow",
-                                              ifelse(config == "5","July 2024 calibration w/ 100x higher inflow","July 2024 calibration w/ 100x higher inflow and DOCr"))))))
+                                              ifelse(config == "5","July 2024 calibration w/ 100x higher inflow","July 2024 calibration w/ 100x higher inflow and DOCr")))))) %>%
+  filter(!config %in% c(1,2))
 unique(dat$config)
 
 h7 <- dat %>%
@@ -188,9 +189,38 @@ obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
 
 ggplot()+
   geom_point(data = obs, aes(x = datetime, y = Chla_ugL_mean))+
-  geom_line(data = h7, aes(x = datetime, y = prediction, group = config, color = config))+
+  geom_line(data = h7, aes(x = datetime, y = prediction, group = scenario, color = scenario))+
   theme_bw()+
   ggtitle("7-day-ahead GLM-AED predictions")+
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom")+
+  guides(color = guide_legend(nrow = 2))
 
+scen_inf_fils <- list.files("code/model_files/GLM-AED/", pattern = "fake_inf", full.names = TRUE,
+                       recursive = TRUE)
+inf_fil <- list.files("code/model_files/GLM-AED/prediction/inputs/", 
+                      pattern = "FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv",
+                      full.names = TRUE)
+inf_fils <- c(inf_fil, scen_inf_fils)
 
+dat <- map_df(inf_fils, read_csv, .id = "config") %>%
+  mutate(scenario = ifelse(config == "1","July 2024 calibration w/ V-notch + rectangle discharge calc.",
+                           ifelse(config == "2","July 2024 calibration w/ 100x higher inflow",
+                                  ifelse(config == "3","July 2024 calibration w/ 100x higher inflow and DOCr","July 2024 calibration w/ 10x higher inflow")))) %>%
+  filter(time >= "2022-01-01") %>%
+  pivot_longer(cols = -c(time, config, scenario))
+unique(dat$scenario)
+
+check <- dat %>%
+  filter(name == "FLOW")
+
+ggplot(data = check, aes(x = time, y = value, group = scenario, color = scenario))+
+  geom_line()+
+  facet_wrap(facets = vars(name))+
+  theme_bw()
+
+ggplot(data = dat, aes(x = time, y = value, group = scenario, color = scenario))+
+  geom_line()+
+  facet_wrap(facets = vars(name), scales = "free_y")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        legend.position = "bottom")
