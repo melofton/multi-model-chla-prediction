@@ -175,7 +175,9 @@ csv_fils <- list.files("model_output", pattern = "GLMAED", full.names = TRUE)
 dat <- map_df(csv_fils, read_csv, .id = "config") %>%
   mutate(config = ifelse(config == "1","April 2024 calibration w/ unaltered driver files",
                          ifelse(config == "2","April 2024 calibration w/ 2023 inflow N",
-                                ifelse(config == "3","July 2024 calibration w/ V-notch + rectangle discharge calc.","July 2024 calibration w/ 10x higher inflow"))))
+                                ifelse(config == "3","July 2024 calibration w/ V-notch + rectangle discharge calc.",
+                                       ifelse(config == "4","July 2024 calibration w/ 10x higher inflow",
+                                              ifelse(config == "5","July 2024 calibration w/ 100x higher inflow","July 2024 calibration w/ 100x higher inflow and DOCr"))))))
 unique(dat$config)
 
 h7 <- dat %>%
