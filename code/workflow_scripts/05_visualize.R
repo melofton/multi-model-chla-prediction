@@ -210,17 +210,20 @@ dat <- map_df(inf_fils, read_csv, .id = "config") %>%
   pivot_longer(cols = -c(time, config, scenario))
 unique(dat$scenario)
 
-check <- dat %>%
-  filter(name == "FLOW")
-
-ggplot(data = check, aes(x = time, y = value, group = scenario, color = scenario))+
-  geom_line()+
-  facet_wrap(facets = vars(name))+
-  theme_bw()
-
 ggplot(data = dat, aes(x = time, y = value, group = scenario, color = scenario))+
   geom_line()+
   facet_wrap(facets = vars(name), scales = "free_y")+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         legend.position = "bottom")
+
+focus <- dat %>%
+  filter(name %in% c("FLOW","OGM_docr"))
+
+ggplot(data = focus, aes(x = time, y = value, group = scenario, color = scenario))+
+  geom_line()+
+  facet_wrap(facets = vars(name), scales = "free_y")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        legend.position = "bottom")+
+  guides(color = guide_legend(nrow = 2))
