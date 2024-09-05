@@ -152,7 +152,7 @@ p9 <- ExampleInitialConditionsUpdating()
 ggsave(p1, filename = "./figures/ExampleInitialConditionsUpdating.png",
        device = "png", height = 3.5, width = 6, units = "in")
 
-## the inevitable special case for GLM-AED
+## the inevitable special case for GLM-AED ----
 
 ## Notes on various GLM-AED prediction runs
 #' 1. GLMAED_20240516.csv calibration completed in April 2024 and driver files from CCC in late
@@ -227,3 +227,24 @@ ggplot(data = focus, aes(x = time, y = value, group = scenario, color = scenario
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         legend.position = "bottom")+
   guides(color = guide_legend(nrow = 2))
+
+## the inevitable additional special case for the LSTM ----
+
+pred.df <- read_csv("./model_output/LSTM_tuning.csv")
+df <- read_csv("./code/model_files/LSTM/LSTM_dataset.csv")
+
+
+LSTM_ts <- ggplot()+
+  xlab("")+
+  ylab("Chla (ug/L)")+
+  geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
+  geom_line(data = pred.df, aes(x = datetime, y = prediction, group = param_set, color = param_set))+
+  labs(color = "parameter scenario", fill = NULL)+
+  theme_classic()+
+  theme(legend.position = "bottom")
+LSTM_ts
+
+lstm_rmse <- 
+
+LSTM_bp <- ggplot()+
+  geom_boxplot()
