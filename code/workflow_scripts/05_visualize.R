@@ -195,6 +195,26 @@ ggplot()+
   theme(legend.position = "bottom")+
   guides(color = guide_legend(nrow = 2))
 
+#reformat model output
+h8 <- dat %>% 
+  mutate(reference_datetime = date(reference_datetime)) %>%
+  group_by(scenario, config, reference_datetime) %>%
+  mutate(horizon = datetime - reference_datetime) %>%
+  ungroup() %>%
+  separate(horizon, c("horizon"), sep = " ") %>%
+  left_join(., obs, by = "datetime") %>%
+  group_by(scenario, config, horizon) %>%
+  summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE))) %>%
+  filter(!horizon == 0) %>%
+  mutate(horizon = as.numeric(horizon)) %>%
+  arrange(config, scenario, horizon)
+
+ggplot(data = h8, aes(x = horizon, y = rmse, group = scenario, color = scenario))+
+  geom_line()+
+  theme_bw()+
+  theme(legend.position = "bottom")+
+  guides(color = guide_legend(nrow = 2))
+
 scen_inf_fils <- list.files("code/model_files/GLM-AED/", pattern = "fake_inf", full.names = TRUE,
                        recursive = TRUE)
 inf_fil <- list.files("code/model_files/GLM-AED/prediction/inputs/", 
