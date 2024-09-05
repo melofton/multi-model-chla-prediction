@@ -7,6 +7,7 @@
 #load packages
 library(tidyverse)
 library(lubridate)
+library(cowplot)
 #library(plotly)
 
 #Load plotting functions
@@ -251,7 +252,8 @@ ggplot(data = focus, aes(x = time, y = value, group = scenario, color = scenario
 ## the inevitable additional special case for the LSTM ----
 
 pred.df <- read_csv("./model_output/LSTM_tuning.csv")
-df <- read_csv("./code/model_files/LSTM/LSTM_dataset.csv")
+df <- read_csv("./code/model_files/LSTM/LSTM_dataset.csv") %>%
+  select(datetime, Chla_ugL_mean)
 
 
 LSTM_ts <- ggplot()+
@@ -264,7 +266,29 @@ LSTM_ts <- ggplot()+
   theme(legend.position = "bottom")
 LSTM_ts
 
-lstm_rmse <- 
+#reformat model output
+lstm_rmse <- pred.df %>% 
+  left_join(., df, by = "datetime") %>%
+  group_by(param_set) %>%
+  summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE))) %>%
+  arrange(param_set) %>%
+  add_column(name = "Parameter scenarios")
 
 LSTM_bp <- ggplot()+
-  geom_boxplot()
+  geom_boxplot(data = lstm_rmse, aes(x = name, y = rmse))+
+  geom_jitter(data = lstm_rmse, aes(x = name, y = rmse, color = param_set))+
+  theme_classic()+
+  xlab("")+
+  ylab("RMSE (ug/L)")+
+  theme(legend.position = "none")
+LSTM_bp
+
+lstm_plot <- plot_grid(LSTM_ts, LSTM_bp, nrow = 1, rel_widths = c(4,1))
+lstm_plot
+
+best_model <- lstm_rmse %>%
+  slice(which.min(rmse))
+best_params <- pred.df %>%
+  slice(which(param_set == 64)) %>%
+  select(epochs, dropout, num_layers, hidden_feature_size, weight_decay) %>%
+  distinct()
