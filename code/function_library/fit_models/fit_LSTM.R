@@ -21,12 +21,7 @@ source_python("./code/model_files/LSTM/utils.py")
 
 fit_LSTM <- function(data, cal_dates, forecast_horizon, input_window, params_list){
   
-  #set up empty dataframe
-  df.cols = c("model_id","datetime","variable","prediction","param_set","epochs","dropout",
-              "num_layers","hidden_feature_size","weight_decay") 
-  pred.df <- data.frame(matrix(nrow = 0, ncol = length(df.cols))) 
-  colnames(pred.df) = df.cols
-  
+  #set end date for calibration
   end_cal_date = as.Date(cal_dates[2])
   
   #expand parameters grid
@@ -44,6 +39,8 @@ fit_LSTM <- function(data, cal_dates, forecast_horizon, input_window, params_lis
   write.csv(df, "./code/model_files/LSTM/LSTM_dataset.csv", row.names = FALSE)
   
   for(p in 1:nrow(params)){
+    
+    message(paste0("now running parameter set ",p))
   
     # define parameters
     epochs = params$epochs[p]
@@ -72,7 +69,8 @@ fit_LSTM <- function(data, cal_dates, forecast_horizon, input_window, params_lis
                           hidden_feature_size = hidden_feature_size,
                           weight_decay = weight_decay)
     
+    write.csv(temp.df, paste0("./model_output/LSTM/param_set_",p,".csv"), row.names = FALSE)
+    
   } #end of all hyperparameter tuning loop
   
-  write.csv(temp.df, paste0("./model_output/LSTM/param_set_",p,".csv"), row.names = FALSE)
 }
