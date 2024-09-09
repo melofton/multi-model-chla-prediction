@@ -18,9 +18,12 @@ params_list <- list(epochs = c(100,200),
                     num_layers = c(1,2,3),
                     hidden_feature_size = c(8,16),
                     weight_decay = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01))
-fit_LSTM <- fit_LSTM(data = dat_LSTM, cal_dates = c("2018-08-06","2021-12-31"), forecast_horizon = 20,
+
+fit_LSTM(data = dat_LSTM, cal_dates = c("2018-08-06","2021-12-31"), forecast_horizon = 20,
                      input_window = 42, params_list = params_list)
 
-write.csv(fit_LSTM$out, "./model_output/LSTM_tuning.csv", row.names = FALSE)
-save(fit_LSTM$plot, file = "./figures/LSTM_tuning.rdata")
+# collate model output
+fils <- list.files("./model_output/LSTM", full.names = TRUE)
 
+dat <- map_df(fils, read_csv)
+write.csv(dat, "./model_output/LSTM_tuning_09SEP24.csv", row.names = FALSE)

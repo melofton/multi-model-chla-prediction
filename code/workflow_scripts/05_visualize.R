@@ -251,23 +251,47 @@ ggplot(data = focus, aes(x = time, y = value, group = scenario, color = scenario
 
 ## the inevitable additional special case for the LSTM ----
 
-pred.df <- read_csv("./model_output/LSTM_tuning.csv")
+pred.df <- read_csv("./model_output/LSTM_tuning_09SEP24.csv")
 df <- read_csv("./code/model_files/LSTM/LSTM_dataset.csv") %>%
   select(datetime, Chla_ugL_mean)
 
+single_horizon <- pred.df %>%
+  filter(horizon == 20)
 
 LSTM_ts <- ggplot()+
   xlab("")+
   ylab("Chla (ug/L)")+
   geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
-  geom_line(data = pred.df, aes(x = datetime, y = prediction, group = param_set, color = param_set))+
+  geom_line(data = single_horizon, aes(x = datetime, y = prediction, group = param_set, color = param_set))+
   labs(color = "parameter scenario", fill = NULL)+
   theme_classic()+
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom")+
+  ggtitle("Predictions for 20 days ahead")
 LSTM_ts
+ggsave(plot = LSTM_ts, filename = "./figures/LSTM_tuning_horizon20.png", device = "png",
+       height = 4, width = 8, units = "in")
 
 #reformat model output
 lstm_rmse <- pred.df %>% 
+  left_join(., df, by = "datetime") %>%
+  group_by(param_set, horizon) %>%
+  summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE))) %>%
+  arrange(param_set, horizon) %>%
+  add_column(name = "Parameter scenarios")
+
+horizon_rmse <- ggplot()+
+  geom_line(data = lstm_rmse, aes(x = horizon, y = rmse,
+                               group = param_set, color = param_set),
+            linewidth = 1)+
+  xlab("Forecast horizon (days)")+
+  ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
+  ggtitle("RMSE vs. horizon for calibration period")+
+  theme_bw()
+horizon_rmse
+ggsave(plot = horizon_rmse, filename = "./figures/LSTM_tuning_horizon_vs_rmse.png", device = "png",
+       height = 4, width = 6, units = "in")
+
+lstm_grand_rmse <- pred.df %>% 
   left_join(., df, by = "datetime") %>%
   group_by(param_set) %>%
   summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE))) %>%
@@ -275,18 +299,21 @@ lstm_rmse <- pred.df %>%
   add_column(name = "Parameter scenarios")
 
 LSTM_bp <- ggplot()+
-  geom_boxplot(data = lstm_rmse, aes(x = name, y = rmse))+
-  geom_jitter(data = lstm_rmse, aes(x = name, y = rmse, color = param_set))+
+  geom_boxplot(data = lstm_grand_rmse, aes(x = name, y = rmse))+
+  geom_jitter(data = lstm_grand_rmse, aes(x = name, y = rmse, color = param_set))+
   theme_classic()+
   xlab("")+
   ylab("RMSE (ug/L)")+
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
+  ggtitle("RMSE aggregated \n for all horizons")
 LSTM_bp
+ggsave(plot = LSTM_bp, filename = "./figures/LSTM_tuning_grand_rmse.png", device = "png",
+       height = 6, width = 3, units = "in")
 
 lstm_plot <- plot_grid(LSTM_ts, LSTM_bp, nrow = 1, rel_widths = c(4,1))
 lstm_plot
 
-best_model <- lstm_rmse %>%
+best_model <- lstm_grand_rmse %>%
   slice(which.min(rmse))
 best_params <- pred.df %>%
   slice(which(param_set == 64)) %>%
