@@ -25,7 +25,7 @@ cal <- read_csv("./model_output/calibration_output.csv") %>%
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers"),"data-driven","process-based")),
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS"),"data-driven","process-based")),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",model_id))))
@@ -71,8 +71,8 @@ ggsave(p4, filename = "./figures/examplePredictionGLMAED.png",
 p5 <- RMSEVsHorizon(observations = obs, 
                     model_output = out, 
                     forecast_horizon = forecast_horizon,
-                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
-                    best_models_only = TRUE)
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                    best_models_only = FALSE)
 p5 
 ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizonNoDrivers.png",
        device = "png", height = 4, width = 8, units = "in")
