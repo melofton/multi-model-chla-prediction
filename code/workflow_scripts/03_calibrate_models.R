@@ -10,7 +10,7 @@ library(lubridate)
 
 #Load model fitting functions
 fit.model.functions <- list.files("./code/function_library/fit_models")
-sapply(paste0("./code/function_library/fit_models/",fit.model.functions[c(1,3:12)]),source,.GlobalEnv)
+sapply(paste0("./code/function_library/fit_models/",fit.model.functions[8]),source,.GlobalEnv)
 
 #Read in data
 dat_persistence <- read_csv("./data/data_processed/persistence.csv")
@@ -28,6 +28,7 @@ dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 dat_NNETAR_noDrivers <- read_csv("./data/data_processed/NNETARnoDrivers.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
+dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 
 
 #Set sim folder (for GLM-AED)
@@ -69,6 +70,9 @@ fit_NNETAR$plot
 
 fit_NNETAR_noDrivers <- fit_NNETAR(data = dat_NNETAR_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
 fit_NNETAR_noDrivers$plot
+
+fit_MARS <- fit_MARS(data = dat_MARS, cal_dates = c("2018-08-06","2021-12-31"))
+fit_MARS$plot
 
 params_list <- list(epochs = c(100,200),
                     dropout = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01),
@@ -131,7 +135,7 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 #OR if you only want to run (or re-run) one or a few models
 mod_output <- read_csv("./model_output/calibration_output.csv") %>%
   # filter(!model_id %in% c("prophet")) %>% #names of re-run models if applicable
-  bind_rows(.,fit_Prophet_Drivers$out) # %>% #bind rows with models to add/replace if applicable
+  bind_rows(.,fit_MARS$out) # %>% #bind rows with models to add/replace if applicable
 
 unique(mod_output$model_id)
 write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
