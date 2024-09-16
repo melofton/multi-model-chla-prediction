@@ -1,4 +1,4 @@
-time,FLOW,TEMP,SALT,OXY_oxy,CAR_dic,CAR_pH,CAR_ch4,SIL_rsi,NIT_amm,NIT_nit,PHS_frp,OGM_doc,OGM_poc,OGM_don,OGM_pon,OGM_dop,OGM_pop,OGM_docr,OGM_donr,OGM_dopr,OGM_cpom,PHY_cyano,PHY_cyano_IN,PHY_cyano_IP,PHY_green,PHY_green_IN,PHY_green_IP,PHY_diatom,PHY_diatom_IN,PHY_diatom_IP
+time,FLOW,TEMP,SALT,OXY_oxy,CAR_dic,CAR_pH,CAR_ch4,SIL_rsi,NIT_amm,NIT_nit,PHS_frp,OGM_doc,OGM_poc,OGM_don,OGM_pon,OGM_dop,OGM_pop,OGM_docr,OGM_donr,OGM_dopr,OGM_cpom,PHY_Nfixer,PHY_Nfixer_IN,PHY_Nfixer_IP,PHY_hot,PHY_hot_IN,PHY_hot_IP,PHY_cold,PHY_cold_IN,PHY_cold_IP
 2013-05-15,1e-08,7.84734375,0,904231800,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 2013-05-16,1e-08,7.972434146,0,904231800,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 2013-05-17,1e-08,8.104100917,0,904231800,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
