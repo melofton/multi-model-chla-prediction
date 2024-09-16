@@ -4,9 +4,10 @@
 
 #Purpose: Predict chl-a in Falling Creek Reservoir in 2022-2023 using a suite of models
 #1-7 days into the future
-
 library(tidyverse)
 library(lubridate)
+library(remotes)
+remotes::install_github("rqthomas/glmtools", force = TRUE)
 
 #Load prediction functions
 source("./code/function_library/predict/GLMAED.R")
@@ -15,7 +16,7 @@ source("./code/function_library/predict/GLMAED.R")
 dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
 
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
-                      prediction_folder = "./code/model_files/GLM-AED/prediction_test_100xOGM_docr",
+                      prediction_folder = "./code/model_files/GLM-AED/prediction",
                       rerun_spinup = TRUE,
                       spinup_dates = c('2018-04-20 12:00:00','2022-01-01 12:00:00'),
                       start_from_spinup = TRUE,
@@ -25,5 +26,5 @@ pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       data = dat_GLMAED,
                       phyto_nml_file = "/aed/aed2_phyto_pars_24MAY24_MEL.nml")
 
-write.csv(pred_GLMAED, "./model_output/GLMAED_20240903.csv", row.names = FALSE)
+write.csv(pred_GLMAED, "./model_output/GLMAED_20240916.csv", row.names = FALSE)
 

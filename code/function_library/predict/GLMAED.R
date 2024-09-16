@@ -12,7 +12,7 @@
 # 1.	Start Docker
 # 2.	Open Terminal and type in the following command:
 #   
-#   docker run --rm -ti -v /Users/MaryLofton:/home/rstudio -e PASSWORD=yourpassword -p 8787:8787 rqthomas/flare-rocker:4.3.1
+#   docker run --rm -ti -v /Users/MaryLofton:/home/rstudio -e PASSWORD=yourpassword -p 8787:8787 rqthomas/flare-rocker:4.4
 # 
 # 3.	Open an internet browser and navigate to the following: http://localhost:8787
 # 4.	Sign into RStudio
@@ -23,7 +23,6 @@
 library(tidyverse)
 library(lubridate)
 library(GLM3r)
-library(glmtools)
 library(ncdf4)
 
 # Read in data for troubleshooting (commented out when running workflow with other models)
@@ -32,10 +31,10 @@ library(ncdf4)
 
 GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    prediction_folder = "./code/model_files/GLM-AED/prediction",
-                   rerun_spinup = FALSE,
-                   spinup_dates = c('2018-04-20 12:00:00','2021-01-01 12:00:00'),
-                   start_from_spinup = FALSE,
-                   pred_dates = seq.Date(from = as.Date("2021-01-01"), to = as.Date("2021-01-05"), by = "day"),
+                   rerun_spinup = TRUE,
+                   spinup_dates = c('2018-04-20 12:00:00','2022-01-01 12:00:00'),
+                   start_from_spinup = TRUE,
+                   pred_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2022-01-05"), by = "day"),
                    forecast_horizon = 35,
                    wq_vars = c('OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'),
                    data = dat_GLMAED,
@@ -98,58 +97,51 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     current_nc <- ncdf4::nc_open(current_nc_file)
     
     # the_depths (and then calculate num_depths from this)
-    message("the_depths")
-    all_elevs <- ncdf4::ncvar_get(current_nc, var = "H")
-    the_elevs <- all_elevs[which(!is.na(all_elevs[,ncol(all_elevs)])),ncol(all_elevs)]
+    message("the_heights")
+    all_heights <- ncdf4::ncvar_get(current_nc, var = "H")
+    the_heights <- all_heights[which(!is.na(all_heights[,ncol(all_heights)])),ncol(all_heights)]
     
     # num_depths
-    message("num_depths")
-    num_depths <- length(the_elevs) - 1
+    message("num_heights")
+    num_heights <- length(the_heights)
     
     # lake_depth
     message("lake_depth")
-    lake_depth <- max(the_elevs)
-    the_depths <- rev(lake_depth - the_elevs)[-1]
-    
+    lake_depth <- max(the_heights)
+
     # temperature
     message("temp")
-    current_temp <- glmtools::get_var(current_nc_file, var_name = "temp", 
-                                      reference ="surface", z_out = the_depths,
-                                      t_out = pred_dates[t]) %>%
-      filter(hour(DateTime) == 12) 
-    the_temps <- c(unlist(unname(current_temp[1,-1])))
+    all_temps <- ncdf4::ncvar_get(current_nc, var = "temp")
+    the_temps <- all_temps[which(!is.na(all_temps[,ncol(all_temps)])),ncol(all_temps)]
     
     # snow_thickness
     message("snow_thickness")
-    snow_thickness <- glmtools::get_var(current_nc_file, var_name = "snow_thickness",
-                                        t_out=pred_dates[t]) %>%
-      filter(hour(DateTime) == 12) %>%
-      pull(snow_thickness)
+    all_snow_thickness <- ncdf4::ncvar_get(current_nc, var = "snow_thickness")
+    snow_thickness <- last(all_snow_thickness)
     
     # white_ice_thickness
     message("white_ice_thickness")
-    white_ice_thickness <- glmtools::get_var(current_nc_file, var_name = "white_ice_thickness",
-                                             t_out=pred_dates[t]) %>%
-      filter(hour(DateTime) == 12) %>%
-      pull(white_ice_thickness)
+    all_white_ice_thickness <- ncdf4::ncvar_get(current_nc, var = "white_ice_thickness")
+    white_ice_thickness <- last(all_white_ice_thickness)
     
     # blue_ice_thickness
     message("blue_ice_thickness")
-    blue_ice_thickness <- glmtools::get_var(current_nc_file, var_name = "blue_ice_thickness",
-                                            t_out=pred_dates[t]) %>%
-      filter(hour(DateTime) == 12) %>%
-      pull(blue_ice_thickness)
+    all_blue_ice_thickness <- ncdf4::ncvar_get(current_nc, var = "blue_ice_thickness")
+    blue_ice_thickness <- last(all_blue_ice_thickness)
     
     # avg_surf_temp
     message("avg_surf_temp")
-    avg_surf_temp <- glmtools::get_var(current_nc_file, var_name = "avg_surf_temp",
-                                       t_out=pred_dates[t]) %>%
-      filter(hour(DateTime) == 12) %>%
-      pull(avg_surf_temp)
+    all_avg_surf_temp <- ncdf4::ncvar_get(current_nc, var = "avg_surf_temp")
+    avg_surf_temp <- last(all_avg_surf_temp)
     
     # restart_variables
     message("restart_variables")
     restart_variables <- ncdf4::ncvar_get(current_nc, var = "restart_variables")
+    
+    # restart_mixer_count
+    message("restart_mixer_count")
+    all_restart_mixer_count <- ncdf4::ncvar_get(current_nc, var = "Mixer_Count")
+    restart_mixer_count <- last(all_restart_mixer_count)
     
     # all the water quality
     message("water quality variables")
@@ -157,25 +149,24 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     
     for(i in 1:length(wq_vars)){
       message(wq_vars[i])
-      current_var <- glmtools::get_var(current_nc_file, var_name = wq_vars[i], 
-                                       reference="surface", z_out = the_depths,
-                                       t_out=pred_dates[t]) %>%
-        filter(hour(DateTime) == 12)
+      all_current_var <- ncdf4::ncvar_get(current_nc, var = wq_vars[i])
+      current_var <- all_current_var[which(!is.na(all_current_var[,ncol(all_current_var)])),ncol(all_current_var)]
+      
       
       if(is_empty(grep("PHY",wq_vars[i]))){
         
         # concatenate other vars
-        all_ic <- c(all_ic,unlist(unname(current_var[1,-1])))
+        all_ic <- c(all_ic,current_var)
         
       } else {
         
         # save phyto biomass to concatenate later after updating
         if(wq_vars[i] == "PHY_hot"){
-          PHY_hot <- unlist(unname(current_var[1,-1]))
+          PHY_hot <- current_var
         } else if(wq_vars[i] == "PHY_cold"){
-          PHY_cold <- unlist(unname(current_var[1,-1]))
+          PHY_cold <- current_var
         } else if(wq_vars[i] == "PHY_Nfixer"){
-          PHY_Nfixer <- unlist(unname(current_var[1,-1]))
+          PHY_Nfixer <- current_var
         }
         
       }
@@ -184,11 +175,9 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     
     # pull chl-a to calculate proportions for updating groups
     message("chlorophyll-a")
-    chl <- glmtools::get_var(current_nc_file, var_name = "PHY_tchla", 
-                                  reference="surface", z_out= the_depths,
-                                  t_out=pred_dates[t]) %>%
-      filter(hour(DateTime) == 12)
-    chla_prev <- unlist(unname(chl[1,-1]))
+    all_chl <- ncdf4::ncvar_get(current_nc, var = "PHY_tchla")
+    chl <- all_chl[which(!is.na(all_chl[,ncol(all_chl)])),ncol(all_chl)]
+    chla_prev <- chl
     
     ncdf4::nc_close(current_nc)
     
@@ -205,7 +194,7 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     
     # calculate proportions of groups to update with chl-a
     PHY_list <- list(PHY_hot, PHY_cold, PHY_Nfixer)
-    EXO_depth <- which.min(abs(the_depths - 1.6))
+    EXO_depth <- which.min(abs(the_heights - (last(the_heights) - 1.6)))
     model_chla_EXO_depth <- chla_prev[EXO_depth]
     chla_factor = curr_chla / model_chla_EXO_depth
     
@@ -222,19 +211,21 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     message("setting initial conditions in nml file")
     ic_nml_file <- file.path(paste0(prediction_folder,"/glm3.nml"))
     ic_nml <- glmtools::read_nml(nml_file = ic_nml_file)
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "wq_init_vals", arg_val = round(all_ic,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_temps", arg_val = round(the_temps,4))
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "wq_init_vals", arg_val = all_ic)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_temps", arg_val = the_temps)
     ic_nml <- glmtools::set_nml(ic_nml, arg_name = "start", arg_val = as.character(pred_dates[t]))
     ic_nml <- glmtools::set_nml(ic_nml, arg_name = "stop", arg_val = as.character(stop_date))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "snow_thickness", arg_val = round(snow_thickness,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "white_ice_thickness", arg_val = round(white_ice_thickness,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "blue_ice_thickness", arg_val = round(blue_ice_thickness,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "avg_surf_temp", arg_val = round(avg_surf_temp,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "restart_variables", arg_val = round(restart_variables,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "num_depths", arg_val = num_depths)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "snow_thickness", arg_val = snow_thickness)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "white_ice_thickness", arg_val = white_ice_thickness)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "blue_ice_thickness", arg_val = blue_ice_thickness)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "avg_surf_temp", arg_val = avg_surf_temp)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "restart_variables", arg_val = restart_variables)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "num_heights", arg_val = num_heights)
     ic_nml <- glmtools::set_nml(ic_nml, arg_name = "lake_depth", arg_val = lake_depth)
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_depths", arg_val = round(the_depths,4))
-    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_sals", arg_val = rep(0,num_depths))
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_heights", arg_val = the_heights)
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_sals", arg_val = rep(0,num_heights))
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "restart_mixer_count", arg_val = restart_mixer_count)
+    
     
     message("writing nml file")
     glmtools::write_nml(ic_nml, file = ic_nml_file)
@@ -245,11 +236,32 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    nml_file = "glm3.nml",
                    verbose = TRUE)
     
-    # pull chl-a prediction
+    # pull chl-a prediction - what a groan
     message("pulling and formatting today's prediction")
-    chl <- glmtools::get_var(pred_nc_file, var_name = "PHY_tchla", reference="surface", z_out=1.6) %>%
-      filter(hour(DateTime) == 12) %>%
-      pull(PHY_tchla_1.6)
+    
+    pred_nc <- ncdf4::nc_open(pred_nc_file) #open nc file
+    all_heights <- ncdf4::ncvar_get(pred_nc, var = "H") #get heights of sim
+    the_heights <- all_heights[which(!is.na(all_heights[,ncol(all_heights)])),] #remove garbage
+    
+    # select height closest to EXO depth at each timestep
+    EXO_index_vector <- c()
+    for(c in 1:ncol(the_heights)){
+      curr_heights <- the_heights[,c]
+      curr_heights <- curr_heights[!is.na(curr_heights)]
+      curr_EXO_depth_index <- which.min(abs(curr_heights - (last(curr_heights) - 1.6)))
+      EXO_index_vector <- c(EXO_index_vector, curr_EXO_depth_index)
+    }
+    
+    #extract chla closest to EXO depth at each timestep
+    all_chl <- ncdf4::ncvar_get(pred_nc, var = "PHY_tchla")
+    pred_chla_EXO_depth <- c()
+    for(n in 1:ncol(all_chl)){
+    curr_pred_chla_EXO_depth <- all_chl[EXO_index_vector[n],n]
+    pred_chla_EXO_depth <- c(pred_chla_EXO_depth,curr_pred_chla_EXO_depth)
+    }
+    
+    #limit to chla at noon
+    chl <- pred_chla_EXO_depth[c(FALSE, TRUE)] #according to Stack Overflow - perfectly cromulent R
     
     # format today's prediction
     temp.df <- data.frame(model_id = "GLM-AED",

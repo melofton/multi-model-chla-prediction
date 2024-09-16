@@ -44,7 +44,7 @@
 /
 &aed_noncohesive
    num_ss = 1
-   ss_initial = 1, 1
+   ss_initial = 0, 0
    Ke_ss = 0.006, 0.063
    settling = 1
    w_ss = -0.001, -0.001

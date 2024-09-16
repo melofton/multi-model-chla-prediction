@@ -70,6 +70,7 @@
    blue_ice_thickness = 0
    avg_surf_temp = 14.7479
    restart_variables = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   restart_mixer_count = 0
 /
 &meteorology
    met_sw = .true.
