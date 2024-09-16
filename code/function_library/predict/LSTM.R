@@ -32,8 +32,15 @@ LSTM <- function(data, pred_dates, forecast_horizon){
     df <- data %>%
       filter(datetime <= df_date)
     write.csv(df, "./code/model_files/LSTM/LSTM_dataset.csv", row.names = FALSE)
+    
+    # set best-fit params identified during hyperparameter tuning
+    epochs = 200
+    dropout = 0.0001
+    num_layers = 3
+    hidden_feature_size = 16
+    weight_decay = 0
   
-    run_all(split_date, input_window, output_window)
+    run_all(split_date, input_window, output_window, epochs, dropout, num_layers, hidden_feature_size, weight_decay)
     
     pred <- read_csv("./code/model_files/LSTM/LSTM_testing_output.csv") %>%
       pull(as.character(pred_dates[t]))
