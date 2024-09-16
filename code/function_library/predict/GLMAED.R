@@ -31,33 +31,12 @@ library(ncdf4)
 
 GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                    prediction_folder = "./code/model_files/GLM-AED/prediction",
-                   rerun_spinup = TRUE,
-                   spinup_dates = c('2018-04-20 12:00:00','2022-01-01 12:00:00'),
-                   start_from_spinup = TRUE,
+                   spinup_start = c('2018-04-20 12:00:00'),
                    pred_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2022-01-05"), by = "day"),
                    forecast_horizon = 35,
                    wq_vars = c('OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'),
                    data = dat_GLMAED,
                    phyto_nml_file = "/aed/aed2_phyto_pars_24MAY24_MEL.nml"){
-  
-  # run spinup if user specifies it
-  if(rerun_spinup == TRUE){
-    
-    message("setting spinup dates")
-    spinup_nml_file <- file.path(paste0(spinup_folder,"/glm3.nml"))
-    spinup_nml <- glmtools::read_nml(nml_file = spinup_nml_file)
-    spinup_nml <- glmtools::set_nml(spinup_nml, arg_name = "start", arg_val = spinup_dates[1])
-    spinup_nml <- glmtools::set_nml(spinup_nml, arg_name = "stop", arg_val = spinup_dates[2])
-    glmtools::write_nml(spinup_nml, file = spinup_nml_file)
-    
-    message("re-running spinup")
-    GLM3r::run_glm(sim_folder = spinup_folder,
-                   nml_file = "glm3.nml",
-                   verbose = TRUE)
-    
-    message("end spinup model run")
-    
-  }
   
   # set up prediction data frame and dates
   pred_dates <- as.POSIXct(paste(pred_dates, "12:00:00"), format = "%Y-%m-%d %H:%M:%S")
@@ -73,6 +52,21 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
   # loop through predictions
   for(t in 1:length(pred_dates)){
     
+    # run spinup 
+    message("setting spinup dates")
+    spinup_nml_file <- file.path(paste0(spinup_folder,"/glm3.nml"))
+    spinup_nml <- glmtools::read_nml(nml_file = spinup_nml_file)
+    spinup_nml <- glmtools::set_nml(spinup_nml, arg_name = "start", arg_val = spinup_start)
+    spinup_nml <- glmtools::set_nml(spinup_nml, arg_name = "stop", arg_val = as.character(pred_dates[t]))
+    glmtools::write_nml(spinup_nml, file = spinup_nml_file)
+    
+    message("re-running spinup")
+    GLM3r::run_glm(sim_folder = spinup_folder,
+                   nml_file = "glm3.nml",
+                   verbose = TRUE)
+    
+    message("end spinup model run")
+    
     message(paste0("reference datetime: ",pred_dates[t]))
     stop_date <- last(seq.Date(from = as.Date(pred_dates[t])+1, to = as.Date(pred_dates[t])+forecast_horizon, by = "day"))
     stop_date <- as.POSIXct(paste(stop_date, "12:00:00"), format = "%Y-%m-%d %H:%M:%S")
@@ -81,16 +75,7 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     # out_vars <- sim_vars(file = spinup_nc_file)
     
     #pull IC from previous sim and set IC for next sim; start with spinup if t == 1
-    if(t == 1 & start_from_spinup == TRUE){
-      
-      current_nc_file <- spinup_nc_file
-      
-    } else {
-      
-      # pull from previous sim's forecast file in this case
-      current_nc_file <- pred_nc_file
-      
-    }
+    current_nc_file <- spinup_nc_file
     
     # pull IC from previous sim
     message("retrieving initial conditions")
@@ -112,7 +97,8 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     # temperature
     message("temp")
     all_temps <- ncdf4::ncvar_get(current_nc, var = "temp")
-    the_temps <- all_temps[which(!is.na(all_temps[,ncol(all_temps)])),ncol(all_temps)]
+    the_temps <- all_temps[which(!is.na(all_temps[,ncol(all_heights)])),ncol(all_heights)]
+    temp <- glmtools::get_var(file = current_nc_file, var_name = "temp", t_out = pred_dates[t])
     
     # snow_thickness
     message("snow_thickness")
