@@ -162,6 +162,11 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     message("restart_variables")
     restart_variables <- ncdf4::ncvar_get(current_nc, var = "restart_variables")
     
+    # restart_mixer_count
+    message("restart_mixer_count")
+    all_restart_mixer_count <- ncdf4::ncvar_get(current_nc, var = "Mixer_Count")
+    restart_mixer_count <- last(all_restart_mixer_count)
+    
     # all the water quality
     message("water quality variables")
     all_ic <- NULL
@@ -246,6 +251,7 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
     ic_nml <- glmtools::set_nml(ic_nml, arg_name = "lake_depth", arg_val = lake_depth)
     ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_depths", arg_val = round(the_depths,4))
     ic_nml <- glmtools::set_nml(ic_nml, arg_name = "the_sals", arg_val = rep(0,num_depths))
+    ic_nml <- glmtools::set_nml(ic_nml, arg_name = "restart_mixer_count", arg_val = restart_mixer_count)
     
     message("writing nml file")
     glmtools::write_nml(ic_nml, file = ic_nml_file)
