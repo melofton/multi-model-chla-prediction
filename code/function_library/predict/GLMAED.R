@@ -268,7 +268,7 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
       filter(hour(DateTime) == 12) %>%
       pull(PHY_tchla_1.6)
     if(container == "rocker-flare_4.4"){
-    chl <- chl[-length(chl)]
+    chl <- chl[-(length(chl)-1)]
     }
     
     # format today's prediction
