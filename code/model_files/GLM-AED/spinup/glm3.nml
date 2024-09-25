@@ -45,7 +45,7 @@
 &time
    timefmt = 2
    start = '2018-04-20 12:00:00'
-   stop = '2022-01-01 12:00:00'
+   stop = '2021-12-31 12:00:00'
    dt = 3600
    num_days = 1
    timezone = -5
@@ -70,7 +70,6 @@
    blue_ice_thickness = 0
    avg_surf_temp = 14.7479
    restart_variables = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-   restart_mixer_count = 0
 /
 &meteorology
    met_sw = .true.
@@ -81,7 +80,7 @@
    rad_mode = 1
    albedo_mode = 4
    cloud_mode = 4
-   meteo_fl = 'inputs/met.csv'
+   meteo_fl = 'inputs/met_avg_filtered.csv'
    subdaily = .true.
    wind_factor = 0.9261846
    sw_factor = 0.9563947
@@ -111,12 +110,12 @@
 /
 &outflow
    num_outlet = 1
-   flt_off_sw = .false.
-   outl_elvs = 506.9
-   bsn_len_outl = 711.699
-   bsn_wid_outl = 226.03
-   outflow_fl = 'inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240712.csv'
-   outflow_factor = 1
+   flt_off_sw = .false.!, .false.
+   outl_elvs = 506.9!, 498
+   bsn_len_outl = 711.699!, 711.699
+   bsn_wid_outl = 226.03!, 226.03
+   outflow_fl = 'inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240712.csv'!,'inputs/outflow_K.csv'
+   outflow_factor = 1!, 0.493447354566162
 /
 &snowice
    snow_albedo_factor = 0.8

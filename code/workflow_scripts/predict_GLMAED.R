@@ -6,8 +6,6 @@
 #1-7 days into the future
 library(tidyverse)
 library(lubridate)
-library(remotes)
-remotes::install_github("rqthomas/glmtools", force = TRUE)
 
 #Load prediction functions
 source("./code/function_library/predict/GLMAED.R")
