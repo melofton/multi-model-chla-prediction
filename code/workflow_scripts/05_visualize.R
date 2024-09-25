@@ -178,13 +178,14 @@ dat <- map_df(csv_fils, read_csv, .id = "config") %>%
                          ifelse(config == "2","April 2024 calibration w/ 2023 inflow N",
                                 ifelse(config == "3","July 2024 calibration w/ V-notch + rectangle discharge calc.",
                                        ifelse(config == "4","July 2024 calibration w/ 10x higher inflow",
-                                              ifelse(config == "5","July 2024 calibration w/ 100x higher inflow","July 2024 calibration w/ 100x higher inflow and DOCr")))))) %>%
+                                              ifelse(config == "5","July 2024 calibration w/ 100x higher inflow",
+                                                     ifelse(config == "6","July 2024 calibration w/ 100x higher inflow and DOCr","July 2024 calibration w/ V-notch + rectangle discharge calc. + restart updates"))))))) %>%
   filter(!config %in% c(1,2))
 unique(dat$config)
 
 h7 <- dat %>%
   mutate(reference_datetime = date(reference_datetime)) %>%
-  filter(datetime - reference_datetime == 7)
+  filter(datetime - reference_datetime == 1)
 obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
   filter(datetime %in% h7$datetime)
 
@@ -192,7 +193,7 @@ ggplot()+
   geom_point(data = obs, aes(x = datetime, y = Chla_ugL_mean))+
   geom_line(data = h7, aes(x = datetime, y = prediction, group = scenario, color = scenario))+
   theme_bw()+
-  ggtitle("7-day-ahead GLM-AED predictions")+
+  ggtitle("1-day-ahead GLM-AED predictions")+
   theme(legend.position = "bottom")+
   guides(color = guide_legend(nrow = 2))
 
