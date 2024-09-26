@@ -86,30 +86,41 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
       
       current_nc_file <- spinup_nc_file
       
+      # pull IC from previous sim
+      message("retrieving initial conditions")
+      current_nc <- ncdf4::nc_open(current_nc_file)
+      
+      # the_depths (and then calculate num_depths from this)
+      message("the_depths")
+      all_elevs <- ncdf4::ncvar_get(current_nc, var = "H")
+      current_elevs <- all_elevs[which(!is.na(all_elevs[,ncol(all_elevs)])),ncol(all_elevs)]
+      the_elevs <- current_elevs[!is.na(current_elevs)]
+      
     } else {
       
       # pull from previous sim's forecast file in this case
       current_nc_file <- pred_nc_file
       
+      # pull IC from previous sim
+      message("retrieving initial conditions")
+      current_nc <- ncdf4::nc_open(current_nc_file)
+      
+      # the_depths (and then calculate num_depths from this)
+      message("the_depths")
+      all_elevs <- ncdf4::ncvar_get(current_nc, var = "H")
+      current_elevs <- all_elevs[which(!is.na(all_elevs[,ncol(all_elevs)])),4] # this is column for noon on day 2 of sim
+      the_elevs <- current_elevs[!is.na(current_elevs)]
+      
     }
-    
-    # pull IC from previous sim
-    message("retrieving initial conditions")
-    current_nc <- ncdf4::nc_open(current_nc_file)
-    
-    # the_depths (and then calculate num_depths from this)
-    message("the_depths")
-    all_elevs <- ncdf4::ncvar_get(current_nc, var = "H")
-    the_elevs <- all_elevs[which(!is.na(all_elevs[,ncol(all_elevs)])),ncol(all_elevs)]
     
     # num_depths
     message("num_depths")
-    num_depths <- length(the_elevs) - 1
+    num_depths <- length(the_elevs)
     
     # lake_depth
     message("lake_depth")
     lake_depth <- max(the_elevs)
-    the_depths <- rev(lake_depth - the_elevs)[-1]
+    the_depths <- rev(lake_depth - the_elevs)
     
     # temperature
     message("temp")
@@ -259,13 +270,14 @@ GLMAED <- function(spinup_folder = "./code/model_files/GLM-AED/spinup",
                           prediction = c(curr_chla,chl))
     
     # bind today's prediction to larger dataframe
-    pred.df <- rbind(pred.df, temp.df)
-    
+    pred.df <- rbind(pred.df, temp.df) 
     
   } # end prediction loop
   
   #return predictions
-  pred.df$prediction <- as.double(pred.df$prediction)
+  pred.df <- pred.df %>%
+    mutate(reference_datetime = date(reference_datetime),
+           prediction = as.double(prediction))
   return(pred.df)
   
 }

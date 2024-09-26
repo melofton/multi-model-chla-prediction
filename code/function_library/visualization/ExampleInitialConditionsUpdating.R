@@ -38,24 +38,24 @@ p1 <- ggplot(data = plot_pred_GLMAED)+
                  group = as.factor(reference_datetime),
                  color = as.factor(reference_datetime)))+
   labs(color = "Reference datetime")+
-  annotate(geom="text", x=as.Date("2021-01-01 12:00:00"), y=14, label="initial\ncondition\nvalues",
-           color="black", hjust = 0)+
-  annotate(geom="text", x=as.Date("2021-01-20 12:00:00"), y=18.5, label="model predictions",
-           color="black")+
-  annotate(geom="text", x=as.Date("2021-02-06 12:00:00"), y=12, label="observations\n(not seen\nby model)",
-           color="black", hjust = 1)+
-  geom_segment(aes(x = as.Date("2021-01-26 12:00:00"), y = 18, 
-                   xend = as.Date("2021-01-28 12:00:00"), yend = 17), 
-               color = "black",
-               arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
-  geom_segment(aes(x = as.Date("2021-02-03 12:00:00"), y = 13.3, 
-                   xend = as.Date("2021-02-01 12:00:00"), yend = 14.8), 
-               color = "black", 
-               arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
-  geom_segment(aes(x = as.Date("2021-01-03 12:00:00"), y = 12.65, 
-                   xend = as.Date("2021-01-02 12:00:00"), yend = 11.95), 
-               color = "black",
-               arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
+  # annotate(geom="text", x=as.Date("2021-01-01 12:00:00"), y=14, label="initial\ncondition\nvalues",
+  #          color="black", hjust = 0)+
+  # annotate(geom="text", x=as.Date("2021-01-20 12:00:00"), y=18.5, label="model predictions",
+  #          color="black")+
+  # annotate(geom="text", x=as.Date("2021-02-06 12:00:00"), y=12, label="observations\n(not seen\nby model)",
+  #          color="black", hjust = 1)+
+  # geom_segment(aes(x = as.Date("2021-01-26 12:00:00"), y = 18, 
+  #                  xend = as.Date("2021-01-28 12:00:00"), yend = 17), 
+  #              color = "black",
+  #              arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
+  # geom_segment(aes(x = as.Date("2021-02-03 12:00:00"), y = 13.3, 
+  #                  xend = as.Date("2021-02-01 12:00:00"), yend = 14.8), 
+  #              color = "black", 
+  #              arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
+  # geom_segment(aes(x = as.Date("2021-01-03 12:00:00"), y = 12.65, 
+  #                  xend = as.Date("2021-01-02 12:00:00"), yend = 11.95), 
+  #              color = "black",
+  #              arrow = arrow(length = unit(0.2, "cm"), type = "closed"))+
   ylab("Chlorophyll-a (ug/L)")+
   xlab("")+
   ggtitle("GLM-AED predictions at FCR")+
@@ -64,3 +64,78 @@ p1 <- ggplot(data = plot_pred_GLMAED)+
 return(p1)
 
 }
+
+# free code to look at reproducibility of initial conditons results
+
+csv_fils <- list.files("model_output", pattern = "GLMAED_20240925", full.names = TRUE) 
+
+dat <- map_df(csv_fils, read_csv, .id = "trial") 
+
+years = c(2022,2023)
+months = c(1:12)
+
+for(i in 1:length(years)){
+  
+  for(j in 1:length(months)){
+    
+    plotdata <- dat %>%
+      filter(year(reference_datetime) == years[i] & month(reference_datetime) == months[j])
+    
+    plot_pred_GLMAED <- plotdata %>%
+      mutate(reference_datetime = as.Date(reference_datetime),
+             ic = ifelse(datetime == reference_datetime, prediction, NA),
+             prediction = ifelse(datetime == reference_datetime, NA, prediction)) %>%
+      left_join(dat_GLMAED, by = "datetime") %>%
+      rename(obs = Chla_ugL_mean) %>%
+      select(-Flag_Chla_ugL_mean)
+    
+    p1 <- ggplot(data = plot_pred_GLMAED)+
+      geom_line(aes(x = datetime, y = prediction, 
+                    group = as.factor(reference_datetime),
+                    color = as.factor(reference_datetime)))+
+      geom_point(aes(x = datetime, y = obs), color = "black")+
+      geom_point(aes(x = datetime, y = ic,
+                     group = as.factor(reference_datetime),
+                     color = as.factor(reference_datetime)))+
+      facet_wrap(facets = vars(trial))+
+      labs(color = "Reference datetime")+
+      ylab("Chlorophyll-a (ug/L)")+
+      xlab("")+
+      ggtitle("GLM-AED predictions at FCR")+
+      theme_bw()
+    plotfile = paste0("./figures/GLMAED_trials/trials_",years[i],"-",months[j],".png")
+    ggsave(filename = plotfile, plot = p1, device = "png",
+           height = 6, width = 10, units = "in")
+    
+    
+    
+  }
+}
+
+
+plotdata <- dat %>%
+  filter(year(reference_datetime) == 2022 & month(reference_datetime) == 1)
+
+plot_pred_GLMAED <- plotdata %>%
+  mutate(reference_datetime = as.Date(reference_datetime),
+         ic = ifelse(datetime == reference_datetime, prediction, NA),
+         prediction = ifelse(datetime == reference_datetime, NA, prediction)) %>%
+  left_join(dat_GLMAED, by = "datetime") %>%
+  rename(obs = Chla_ugL_mean) %>%
+  select(-Flag_Chla_ugL_mean)
+
+p1 <- ggplot(data = plot_pred_GLMAED)+
+  geom_line(aes(x = datetime, y = prediction, 
+                group = as.factor(reference_datetime),
+                color = as.factor(reference_datetime)))+
+  geom_point(aes(x = datetime, y = obs), color = "black")+
+  geom_point(aes(x = datetime, y = ic,
+                 group = as.factor(reference_datetime),
+                 color = as.factor(reference_datetime)))+
+  facet_wrap(facets = vars(trial))+
+  labs(color = "Reference datetime")+
+  ylab("Chlorophyll-a (ug/L)")+
+  xlab("")+
+  ggtitle("GLM-AED predictions at FCR")+
+  theme_bw()
+p1
