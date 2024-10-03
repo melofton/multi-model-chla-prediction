@@ -22,13 +22,13 @@ pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       rerun_spinup = TRUE,
                       spinup_dates = c('2018-04-20 12:00:00','2022-01-01 12:00:00'),
                       start_from_spinup = TRUE,
-                      pred_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2022-01-31"), by = "day"),
+                      pred_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                       forecast_horizon = 35,
                       wq_vars = c('OXY_oxy','CAR_dic','CAR_pH','CAR_ch4','SIL_rsi','NIT_amm','NIT_nit','PHS_frp','OGM_doc','OGM_poc','OGM_don','OGM_pon','OGM_dop','OGM_pop','OGM_docr','OGM_donr','OGM_dopr','OGM_cpom','PHY_hot','PHY_cold','PHY_Nfixer'),
                       data = dat_GLMAED,
                       phyto_nml_file = "/aed/aed2_phyto_pars_24MAY24_MEL.nml")
 
-filename = paste0("./model_output/GLMAED_20240925_trial",i,".csv")
+filename = paste0("./model_output/GLMAED_20240926_trial",i,".csv")
 write.csv(pred_GLMAED, filename, row.names = FALSE)
 }
 

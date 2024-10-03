@@ -67,7 +67,7 @@ return(p1)
 
 # free code to look at reproducibility of initial conditons results
 
-csv_fils <- list.files("model_output", pattern = "GLMAED_20240925", full.names = TRUE) 
+csv_fils <- list.files("model_output", pattern = "GLMAED_20240926", full.names = TRUE) 
 
 dat <- map_df(csv_fils, read_csv, .id = "trial") 
 
