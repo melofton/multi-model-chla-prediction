@@ -17,9 +17,13 @@ dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
 forecast_horizon = 20
 
-pred_LSTM <- LSTM(data = dat_LSTM,
-                  pred_dates = pred_dates,
-                  forecast_horizon = forecast_horizon)
+# pred_LSTM <- LSTM(data = dat_LSTM,
+#                   pred_dates = pred_dates,
+#                   forecast_horizon = forecast_horizon)
 
-write.csv(pred_LSTM, "./model_output/LSTM.csv", row.names = FALSE)
+LSTM(data = dat_LSTM,
+     pred_dates = pred_dates,
+     forecast_horizon = forecast_horizon)
+
+#write.csv(pred_LSTM, "./model_output/LSTM.csv", row.names = FALSE)
 

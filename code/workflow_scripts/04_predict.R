@@ -148,17 +148,16 @@ pred_LSTM <- LSTM(data = dat_LSTM,
 mod_output <- bind_rows(pred_persistence, pred_historicalMean, pred_DOY, pred_ETS, pred_ARIMA, pred_TSLM, pred_prophet, pred_XGBoost, pred_NNETAR)
 
 #append GLM-AED to model output
-pred_GLMAED <- read_csv("./model_output/GLMAED.csv")
-pred_GLMAED <- pred_GLMAED %>%
-  mutate(reference_datetime = date(reference_datetime))
+pred_GLMAED <- read_csv("./model_output/GLMAED_20240926_trial1.csv")
+head(pred_GLMAED)
 
 #append LSTM to model output
 pred_LSTM <- read_csv("./model_output/LSTM.csv")
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  #filter(!model_id == "GLM-AED") %>%
-  bind_rows(.,pred_MARS)
+  filter(!model_id == "GLM-AED") %>%
+  bind_rows(.,pred_GLMAED)
 
 unique(mod_output$model_id)
 
