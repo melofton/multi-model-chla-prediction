@@ -4,5 +4,6 @@
 .Ruserdata
 .DS_Store
 output.nc
-model_output/LSTM
+model_output/LSTM_tuning
 model_output/LSTM_tuning_09SEP24.csv
+

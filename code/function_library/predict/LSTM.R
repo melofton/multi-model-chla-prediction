@@ -57,11 +57,12 @@ LSTM <- function(data, pred_dates, forecast_horizon){
                           prediction = c(curr_chla,pred[-1]))
     
     #bind today's prediction to larger dataframe
-    pred.df <- rbind(pred.df, temp.df)
+    pred.df <- temp.df
     
   } #end of all prediction loop
   
   #return predictions
   pred.df$prediction <- as.double(pred.df$prediction)
-  return(pred.df)
+  filename = paste0("./model_output/LSTM_predictions/pred_",pred_dates[t],".csv")
+  write.csv(pred.df, file = filename, row.names = FALSE)
 }
