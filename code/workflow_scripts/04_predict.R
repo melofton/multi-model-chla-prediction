@@ -11,7 +11,7 @@ library(lubridate)
 #Load prediction functions
 predict.model.functions <- list.files("./code/function_library/predict")
 predict.model.functions 
-sapply(paste0("./code/function_library/predict/",predict.model.functions[10]),source,.GlobalEnv)
+sapply(paste0("./code/function_library/predict/",predict.model.functions[c(11,15)]),source,.GlobalEnv)
 
 #Read in data
 dat_persistence <- read_csv("./data/data_processed/persistence.csv")
@@ -31,6 +31,7 @@ dat_GLMAED <- read_csv("./data/data_processed/GLMAED.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
+dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 
 #Set prediction window and forecast horizon
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
@@ -101,6 +102,10 @@ pred_MARS <- MARS(data = dat_MARS,
                   pred_dates = pred_dates,
                   forecast_horizon = forecast_horizon)
 
+pred_randomForest <- randomForestrandomForest(data = dat_randomForest,
+                                              pred_dates = pred_dates,
+                                              forecast_horizon = forecast_horizon)
+
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       prediction_folder = "./code/model_files/GLM-AED/prediction",
                       rerun_spinup = TRUE,
@@ -156,8 +161,8 @@ pred_LSTM <- read_csv("./model_output/LSTM.csv")
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "GLM-AED") %>%
-  bind_rows(.,pred_GLMAED)
+  #filter(!model_id == "MARS") %>%
+  bind_rows(.,pred_randomForest)
 
 unique(mod_output$model_id)
 

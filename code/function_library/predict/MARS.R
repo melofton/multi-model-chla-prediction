@@ -12,10 +12,6 @@ library(earth)
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
 
-data <- read_csv("./data/data_processed/MARS.csv")
-pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
-forecast_horizon = 35
-
 MARS <- function(data, pred_dates, forecast_horizon){
   
   #Fit model
@@ -50,7 +46,7 @@ MARS <- function(data, pred_dates, forecast_horizon){
     new.data <- data %>%
       filter(datetime <= pred_dates[t]) #%>%
       #mutate_at(vars, scale2)
-    ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = df)
+    ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = new.data)
     
     #generate predictions
     pred <- predict(object = ref, newdata = drivers)
