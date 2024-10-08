@@ -74,7 +74,7 @@ p5 <- RMSEVsHorizon(observations = obs,
                     model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
                     best_models_only = TRUE)
 p5 
-ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
+ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizon.png",
        device = "png", height = 6, width = 8, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate
