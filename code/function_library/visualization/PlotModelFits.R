@@ -18,7 +18,7 @@ PlotModelFits <- function(observations, predictions, model_ids){
   p <- ggplot()+
     geom_point(data = observations, aes(x = datetime, y = Chla_ugL_mean,
                                         group = variable, fill = variable), size = 1) + 
-    geom_line(data = predictions, aes(x = datetime, y = prediction, group = model_id, color = model_type, linetype = model_id))+
+    geom_line(data = predictions, aes(x = datetime, y = prediction, group = model_id, color = model_id, linetype = model_type))+
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
     theme_bw()+
@@ -27,9 +27,9 @@ PlotModelFits <- function(observations, predictions, model_ids){
           plot.title = element_text(hjust = 0.05, vjust = -8, face = "bold",
                                     size = 16),
           legend.title = element_text(face = "bold"))+
-    scale_linetype_discrete(name = "Model ID")+
+    scale_color_discrete(name = "Model ID")+
     # if want to group models by type, can do that with colors in line below
-    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model type", values = c("null" = "solid", "process-based" = "dotted","data-driven" = "dashed"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
     scale_fill_discrete(name = "")+
     guides(fill = guide_legend(order = 3), colour = guide_legend(order = 1), linetype = guide_legend(order = 2))
   

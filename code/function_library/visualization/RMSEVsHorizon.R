@@ -47,7 +47,7 @@ RMSEVsHorizon <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM")))
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM")))
   
   my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 8))
   my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
@@ -60,7 +60,7 @@ RMSEVsHorizon <- function(observations,
     ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
     ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
     scale_color_discrete(name = "Model ID")+
-    scale_linetype_discrete(name = "Model type")+
+    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed"))+
     #scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
     #scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","longdash","twodash","solid","dashed"))+
     theme_classic()+
@@ -84,17 +84,17 @@ RMSEVsHorizon <- function(observations,
     filter(model_id == "persistence")
   
   my.shapes <- c(9,16,8, 6, 15, 3)
-  num.shapes <- length(unique(bestModByHorizon$model_id))
+  num.shapes <- length(unique(bestModByHorizon$model_type))
   my.plot.shapes <- my.shapes[1:num.shapes]
   
   p <- ggplot()+
     geom_line(data = pers, aes(x = horizon, y = rmse, linetype = "persistence"))+
-    geom_point(data = bestModByHorizon, aes(x = horizon, y = rmse, shape = model_id, color = model_type), size = 2)+
+    geom_point(data = bestModByHorizon, aes(x = horizon, y = rmse, shape = model_type, color = model_id), size = 2)+
     xlab("Forecast horizon (days)")+
     ylab(expression(paste("Best model RMSE (",mu,g,~L^-1,")")))+
     ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
-    scale_shape_manual(name = "Model ID", values = my.plot.shapes)+
-    scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_shape_manual(name = "Model type", values = my.plot.shapes)+
+    scale_color_discrete(name = "Model ID")+ #"#71BFB9","#B85233","#E69F00","#0072B2"
     scale_linetype_discrete(name = "Null model")+
     theme_classic()+
     theme(axis.text = element_text(size = 12),

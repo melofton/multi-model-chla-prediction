@@ -22,10 +22,10 @@ sapply(paste0("./code/function_library/visualization/",plot.functions),source,.G
 #Read in data
 cal <- read_csv("./model_output/calibration_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers"),"data-driven","process-based")))
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS"),"data-driven","process-based")),
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven","process-based")),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",model_id))))
@@ -53,29 +53,29 @@ ggsave(p2, filename = "./figures/drivers.png",
 
 p3 <- PlotModelFits(observations = obs, 
                         predictions = cal, 
-                        model_ids = c("GLM-AED"))
+                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest"))
 p3
-ggsave(p3, filename = "./figures/GLMAEDModelFits.png",
-       device = "png", height = 3, width = 6, units = "in")
+ggsave(p3, filename = "./figures/ModelFits.png",
+       device = "png", height = 6, width = 10, units = "in")
 
 reference_datetime = "2022-07-15"#"2022-05-28" #"2022-10-20" the NNNETAR for this date is incredible
 p4 <- ExamplePrediction(observations = obs, 
                         model_output = out, 
                         reference_datetime = reference_datetime, 
                         forecast_horizon = forecast_horizon,
-                        model_ids = c("GLM-AED"))
+                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest"))
 p4
-ggsave(p4, filename = "./figures/examplePredictionGLMAED.png",
-       device = "png", height = 5, width = 7, units = "in")
+ggsave(p4, filename = "./figures/examplePrediction_20220715.png",
+       device = "png", height = 6, width = 8, units = "in")
 
 p5 <- RMSEVsHorizon(observations = obs, 
                     model_output = out, 
                     forecast_horizon = forecast_horizon,
-                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
-                    best_models_only = FALSE)
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                    best_models_only = TRUE)
 p5 
-ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizonNoDrivers.png",
-       device = "png", height = 4, width = 8, units = "in")
+ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
+       device = "png", height = 6, width = 8, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate
 #plot, then add

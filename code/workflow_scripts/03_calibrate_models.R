@@ -10,7 +10,7 @@ library(lubridate)
 
 #Load model fitting functions
 fit.model.functions <- list.files("./code/function_library/fit_models")
-sapply(paste0("./code/function_library/fit_models/",fit.model.functions[8]),source,.GlobalEnv)
+sapply(paste0("./code/function_library/fit_models/",fit.model.functions[12]),source,.GlobalEnv)
 
 #Read in data
 dat_persistence <- read_csv("./data/data_processed/persistence.csv")
@@ -140,7 +140,7 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 #OR if you only want to run (or re-run) one or a few models
 mod_output <- read_csv("./model_output/calibration_output.csv") %>%
   # filter(!model_id %in% c("prophet")) %>% #names of re-run models if applicable
-  bind_rows(.,fit_MARS$out) # %>% #bind rows with models to add/replace if applicable
+  bind_rows(.,fit_randomForest$out) # %>% #bind rows with models to add/replace if applicable
 
 unique(mod_output$model_id)
 write.csv(mod_output, "./model_output/calibration_output.csv", row.names = FALSE)
