@@ -11,6 +11,9 @@
 library(tidyverse)
 library(lubridate)
 
+#source internal functions
+source("./code/function_library/format_data/interpolation.R")
+
 format_data_ETS <- function(res_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz",
                             start_date = "2018-08-06",
                             end_date = "2023-12-31"){

@@ -46,8 +46,8 @@ RMSEVsHorizon <- function(observations,
     mutate(horizon = as.numeric(horizon)) %>%
     filter(horizon <= forecast_horizon) %>%
     arrange(model_type, model_id, horizon) %>%
-    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM")))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","ensemble")))
   
   my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 8))
   my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
@@ -60,7 +60,7 @@ RMSEVsHorizon <- function(observations,
     ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
     ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
     scale_color_discrete(name = "Model ID")+
-    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed"))+
+    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash"))+
     #scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
     #scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","longdash","twodash","solid","dashed"))+
     theme_classic()+

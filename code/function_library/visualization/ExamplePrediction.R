@@ -40,8 +40,8 @@ ExamplePrediction <- function(observations,
   #limit model output to relevant dates
   plot_mod <- model_output %>%
     filter(reference_datetime == ref_datetime & datetime %in% plot_dates & model_id %in% model_ids) %>%
-    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM","MARS","randomForest")))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM","MARS","randomForest","ensemble")))
   
   my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 7))
   my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
@@ -60,7 +60,7 @@ ExamplePrediction <- function(observations,
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
     scale_color_discrete(name = "Model ID")+ #c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
-    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed"))+
+    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash"))+
     # if want to group models by type, can do that with colors in line below
     #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
     scale_fill_manual(name = "", values = c("observed, seen by model" = "black",

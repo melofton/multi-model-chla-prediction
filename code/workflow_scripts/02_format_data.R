@@ -51,6 +51,8 @@ dat_MARS <- format_data_MARS()
 
 dat_randomForest <- format_data_randomForest()
 
+dat_ETS_KGML <- format_data_ETS_KGML()
+
 # do not run this unless you are in a containerized environment that includes
 # GLM Version 3.3.1a10 and glmtools
 # initialConditions_GLMAED <- format_initialConditions_GLMAED()
@@ -78,4 +80,5 @@ write.csv(dat_NNETAR_noDrivers, "./data/data_processed/NNETARnoDrivers.csv",row.
 write.csv(dat_1DProcessModel, "./data/data_processed/1DProcessModel.csv",row.names = FALSE)
 write.csv(dat_MARS, "./data/data_processed/MARS.csv",row.names = FALSE)
 write.csv(dat_randomForest, "./data/data_processed/randomForest.csv",row.names = FALSE)
+write.csv(dat_ETS_KGML, "./data/data_processed/ETS_KGML.csv",row.names = FALSE)
 

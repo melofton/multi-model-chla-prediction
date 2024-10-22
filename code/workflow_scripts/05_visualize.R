@@ -28,7 +28,14 @@ out <- read_csv("./model_output/validation_output.csv") %>%
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven","process-based")),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
-                                  ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",model_id))))
+                                  ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",model_id)))) 
+ens <- out %>%
+  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)")) %>%
+  group_by(reference_datetime, datetime) %>%
+  summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
+  add_column(model_id = "ensemble", model_type = "ensemble", variable = "chlorophyll-a") 
+
+out <- bind_rows(out, ens)
 obs <- read_csv("./data/data_processed/chla_obs.csv")
 input <- read_csv("./data/data_processed/ARIMA.csv")
 
@@ -63,7 +70,7 @@ p4 <- ExamplePrediction(observations = obs,
                         model_output = out, 
                         reference_datetime = reference_datetime, 
                         forecast_horizon = forecast_horizon,
-                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest"))
+                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ensemble"))
 p4
 ggsave(p4, filename = "./figures/examplePrediction_20220715.png",
        device = "png", height = 6, width = 8, units = "in")
@@ -71,10 +78,10 @@ ggsave(p4, filename = "./figures/examplePrediction_20220715.png",
 p5 <- RMSEVsHorizon(observations = obs, 
                     model_output = out, 
                     forecast_horizon = forecast_horizon,
-                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
-                    best_models_only = TRUE)
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                    best_models_only = FALSE)
 p5 
-ggsave(p5, filename = "./figures/BestModelsRMSEvsHorizon.png",
+ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
        device = "png", height = 6, width = 8, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate

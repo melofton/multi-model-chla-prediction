@@ -30,6 +30,8 @@ dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
+dat_ETS_KGML <- read_csv("./data/data_processed/ETS_KGML.csv")
+
 
 
 
@@ -130,6 +132,10 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
   mutate(depth = 1.6,
          variable = "chlorophyll-a") %>%
   select(model_id, datetime, variable, prediction)
+
+# KGML experiment
+fit_ETS_KGML <- fit_ETS_KGML(data = dat_ETS_KGML, cal_dates = c("2018-08-06","2021-12-31"))
+fit_ETS_KGML$plot
 
 
 #Stack model predictions and write to file (not applicable for persistence model

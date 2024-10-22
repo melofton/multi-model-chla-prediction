@@ -7,4 +7,7 @@ output.nc
 model_output/LSTM
 model_output/LSTM_tuning_09SEP24.csv
 model_output/LSTM_predictions
+figures/ARIMA_trials
+figures/MARS_trials
+figures/LSTM_trials
 

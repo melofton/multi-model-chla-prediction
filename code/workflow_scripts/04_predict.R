@@ -161,8 +161,8 @@ pred_LSTM <- read_csv("./model_output/LSTM.csv")
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  #filter(!model_id == "MARS") %>%
-  bind_rows(.,pred_randomForest)
+  #filter(!model_id == "LSTM") %>%
+  bind_rows(.,pred_LSTM)
 
 unique(mod_output$model_id)
 
