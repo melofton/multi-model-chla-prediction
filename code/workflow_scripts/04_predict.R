@@ -33,6 +33,7 @@ dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 dat_ETS_KGML <- read_csv("./data/data_processed/ETS_KGML.csv")
+KGML_obs <- read_csv("./data/data_processed/ETS.csv")
 
 #Set prediction window and forecast horizon
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
@@ -161,10 +162,12 @@ head(pred_GLMAED)
 pred_LSTM <- read_csv("./model_output/LSTM.csv")
 
 #run and append KGML models
-pred_ETS_KGML <- fableETS_KGML(process_model_predictions = pred_GLMAED,
-                               residuals = dat_ETS_KGML,
+pred_ETS_KGML <- fableETS_KGML(previous_residuals = dat_ETS_KGML,
+                               process_model_predictions = pred_GLMAED,
+                               observations = KGML_obs,
                                pred_dates = pred_dates,
-                               forecast_horizon = forecast_horizon)
+                               forecast_horizon = forecast_horizon,
+                               spinup_nc_filepath = "./code/model_files/GLM-AED/spinup/output/output.nc")
 
 
 #OR if you only want to run one model
