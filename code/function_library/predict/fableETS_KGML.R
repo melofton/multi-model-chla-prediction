@@ -83,9 +83,14 @@ fableETS_KGML <- function(previous_residuals, process_model_predictions,
                                   Chla_ugL_mean = current_obs,
                                   Chla_residuals_ugL = current_residual)
     
+    if(t == 1){
+      new.data <- bind_rows(df, new_residual_df) %>%
+        as_tsibble() 
+    } else {
+      new.data <- bind_rows(new.data, new_residual_df)
+    }
+    
     #refit model
-    new.data <- bind_rows(df, new_residual_df) %>%
-      as_tsibble() 
     ref <- refit(my.ets, new_data = new.data)
     
     #make dataframe for predictions
@@ -105,7 +110,7 @@ fableETS_KGML <- function(previous_residuals, process_model_predictions,
       pull(prediction)
     
     #correct GLM-AED predictions using new residual predictions
-    final_pred <- current_model_pred + residual_pred$.mean
+    final_pred <- current_model_pred - residual_pred$.mean
 
     #format corrected predictions for output
     temp.df <- data.frame(model_id = "ETS_KGML",

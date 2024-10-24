@@ -12,16 +12,46 @@
 #' 3. calculate daily rate of change in chl-a and plot as histogram
 #' 4. determine thresholds for 10th and 90th quantiles for rate-of-change
 #' values for chl-a
-#' 
+#' 5. plot model performance during periods of mixing, increasing, decreasing, 
+#' and stratified conditions
+#' 6. plot model performance during periods of highly variable vs. less variable 
+#' chl-a
 
 # Load packages
 install.packages("rLakeAnalyzer")
+install.packages("vegan")
 library(rLakeAnalyzer)
 library(tidyverse)
 library(lubridate)
 
-# assign important vars
+# assign important vars and load data
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
+
+out <- read_csv("./model_output/validation_output.csv") %>%
+  mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven",
+                                    ifelse(model_id %in% c("ETS_KGML"),"KGML","process-based"))),
+         model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
+                           ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
+                                  ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
+                                         ifelse(model_id == "ETS_KGML","ETS-corrected GLM-AED",model_id)))))
+ens <- out %>%
+  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","ETS-corrected GLM-AED")) %>%
+  group_by(reference_datetime, datetime) %>%
+  summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
+  add_column(model_id = "ensemble", model_type = "ensemble", variable = "chlorophyll-a") 
+
+out <- bind_rows(out, ens)
+
+forecast_horizon = 35
+
+model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble")
+
+obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
+  mutate(delta = c(NA,diff(Chla_ugL_mean, na.rm = TRUE)))
+
+pred_dates_df <- data.frame(datetime = pred_dates) %>%
+  left_join(., obs, by = "datetime") 
 
 # 1. calculate Schmidt stability
 
@@ -59,8 +89,8 @@ ggplot(data = schmidt, aes(x = schmidt.stability, group = strat_bin, fill = stra
   theme_bw()
 
 #' 3. calculate daily rate of change in chl-a and plot as histogram
-obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
-  mutate(delta = c(NA,diff(Chla_ugL_mean, na.rm = TRUE)))
+#' #' 4. determine thresholds for 10th and 90th quantiles for rate-of-change
+#' values for chl-a
 dens <- density(obs$delta, na.rm = TRUE)
 q5 <- quantile(obs$delta, 0.05, na.rm = TRUE)
 q95 <- quantile(obs$delta, 0.95, na.rm = TRUE)
@@ -82,3 +112,130 @@ obs2 <- obs %>%
 ggplot(data = obs2, aes(x = datetime, y = Chla_ugL_mean, color = chla_bin))+
   geom_point()+
   theme_classic()
+
+#' 5. plot model performance during periods of mixing, increasing, decreasing, 
+#' and stratified conditions
+source("./code/function_library/visualization/RMSEvsHorizon.R")
+
+mixed_dates <- schmidt %>%
+  filter(strat_bin == "mixed") %>%
+  pull(datetime)
+
+performance_plot_mixed <- RMSEVsHorizon(observations = obs, 
+                    model_output = out, 
+                    forecast_horizon = forecast_horizon,
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                    best_models_only = TRUE,
+                    viz_dates = mixed_dates,
+                    plot_title = "Predictions during mixed period")
+performance_plot_mixed
+
+onset_dates <- schmidt %>%
+  filter(strat_bin == "onset") %>%
+  pull(datetime)
+
+performance_plot_onset <- RMSEVsHorizon(observations = obs, 
+                                        model_output = out, 
+                                        forecast_horizon = forecast_horizon,
+                                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                                        best_models_only = TRUE,
+                                        viz_dates = onset_dates,
+                                        plot_title = "Predictions during stratification onset")
+performance_plot_onset
+
+stratified_dates <- schmidt %>%
+  filter(strat_bin == "stratified") %>%
+  pull(datetime)
+
+performance_plot_stratified <- RMSEVsHorizon(observations = obs, 
+                                        model_output = out, 
+                                        forecast_horizon = forecast_horizon,
+                                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                                        best_models_only = TRUE,
+                                        viz_dates = stratified_dates,
+                                        plot_title = "Predictions during stratified period")
+performance_plot_stratified
+
+decline_dates <- schmidt %>%
+  filter(strat_bin == "decline") %>%
+  pull(datetime)
+
+performance_plot_decline <- RMSEVsHorizon(observations = obs, 
+                                             model_output = out, 
+                                             forecast_horizon = forecast_horizon,
+                                             model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                                             best_models_only = TRUE,
+                                             viz_dates = decline_dates,
+                                             plot_title = "Predictions during stratification decline")
+performance_plot_decline
+
+
+#' 6. plot model performance during periods of highly variable vs. less variable 
+#' chl-a
+
+low_var_dates <- obs2 %>%
+  filter(chla_bin == "stable") %>%
+  pull(datetime)
+
+performance_plot_low_var <- RMSEVsHorizon(observations = obs, 
+                                        model_output = out, 
+                                        forecast_horizon = forecast_horizon,
+                                        model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                                        best_models_only = TRUE,
+                                        viz_dates = low_var_dates,
+                                        plot_title = "Predictions during periods of low chl-a variability")
+performance_plot_low_var
+
+high_var_dates <- obs2 %>%
+  filter(chla_bin %in% c("increasing","decreasing")) %>%
+  pull(datetime)
+
+performance_plot_high_var <- RMSEVsHorizon(observations = obs, 
+                                          model_output = out, 
+                                          forecast_horizon = forecast_horizon,
+                                          model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                                          best_models_only = TRUE,
+                                          viz_dates = high_var_dates,
+                                          plot_title = "Predictions during periods of high chl-a variability")
+performance_plot_high_var
+
+
+# attempt at 3D plot
+chla_sds <- out %>%
+  filter(model_id == "persistence") %>%
+  select(reference_datetime, datetime) %>%
+  left_join(., obs, by = "datetime") %>%
+  group_by(reference_datetime) %>%
+  summarize(chla_sd = sd(Chla_ugL_mean, na.rm = TRUE))
+
+chla_var_3d_data <- out %>% 
+  filter(model_id %in% model_ids) %>%
+  left_join(., pred_dates_df, by = "datetime") %>%
+  select(-delta, -variable) %>%
+  left_join(., chla_sds, by = "reference_datetime") %>%
+  group_by(model_type, model_id, reference_datetime) %>%
+  mutate(horizon = datetime - reference_datetime) %>%
+  ungroup() %>%
+  separate(horizon, c("horizon"), sep = " ") %>%
+  filter(!is.na(Chla_ugL_mean)) %>%
+  mutate(bias = prediction - Chla_ugL_mean) %>%
+  filter(!horizon == 0) %>%
+  group_by(horizon, chla_sd) %>%
+  filter(bias == min(bias, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(horizon = as.numeric(horizon)) %>%
+  filter(horizon <= forecast_horizon) %>%
+  select(chla_sd, horizon, bias, model_type, model_id) %>%
+  arrange(chla_sd, horizon, bias, model_type, model_id) %>%
+  mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
+  mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","ETS-corrected GLM-AED","ensemble"))) %>%
+  left_join(.,chla_sds, by = "chla_sd")
+
+bias_vs_sd_by_horizon <- ggplot(data = chla_var_3d_data, aes(x = chla_sd, y = bias, color = model_type))+
+  geom_point()+
+  facet_wrap(facets = vars(horizon))+
+  theme_bw()
+bias_vs_sd_by_horizon
+
+
+

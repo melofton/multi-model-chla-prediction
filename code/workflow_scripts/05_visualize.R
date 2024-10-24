@@ -25,12 +25,14 @@ cal <- read_csv("./model_output/calibration_output.csv") %>%
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven","process-based")),
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven",
+                                    ifelse(model_id %in% c("ETS_KGML"),"KGML","process-based"))),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
-                                  ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",model_id)))) 
+                                  ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
+                                         ifelse(model_id == "ETS_KGML","ETS-corrected GLM-AED",model_id)))))
 ens <- out %>%
-  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)")) %>%
+  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","ETS-corrected GLM-AED")) %>%
   group_by(reference_datetime, datetime) %>%
   summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
   add_column(model_id = "ensemble", model_type = "ensemble", variable = "chlorophyll-a") 
@@ -42,6 +44,7 @@ input <- read_csv("./data/data_processed/ARIMA.csv")
 
 #Set arguments for plotting functions
 forecast_horizon = 35
+pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
 
 #Plot 
 
@@ -78,8 +81,10 @@ ggsave(p4, filename = "./figures/examplePrediction_20220715.png",
 p5 <- RMSEVsHorizon(observations = obs, 
                     model_output = out, 
                     forecast_horizon = forecast_horizon,
-                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
-                    best_models_only = FALSE)
+                    model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble"), # "DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","ARIMA (no drivers)","Prophet (no drivers)","NNETAR (no drivers)"
+                    best_models_only = FALSE,
+                    viz_dates = pred_dates,
+                    plot_title = "All predictions (Jan. 1, 2022 - Nov. 26, 2023)")
 p5 
 ggsave(p5, filename = "./figures/RMSEvsHorizon.png",
        device = "png", height = 6, width = 8, units = "in")

@@ -25,10 +25,12 @@ RMSEVsHorizon <- function(observations,
                           model_output, 
                           forecast_horizon,
                           model_ids = model_ids,
-                          best_models_only = TRUE){
+                          best_models_only = TRUE,
+                          viz_dates = pred_dates,
+                          plot_title = "All predictions"){
   
   #reformat observations
-  pred_dates <- data.frame(datetime = unique(model_output$reference_datetime)) %>%
+  pred_dates <- data.frame(datetime = viz_dates) %>%
     left_join(., observations, by = "datetime") 
   
   
@@ -46,8 +48,8 @@ RMSEVsHorizon <- function(observations,
     mutate(horizon = as.numeric(horizon)) %>%
     filter(horizon <= forecast_horizon) %>%
     arrange(model_type, model_id, horizon) %>%
-    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","OneDProcessModel","GLM-AED","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","ensemble")))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","ETS-corrected GLM-AED","ensemble")))
   
   my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 8))
   my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
@@ -58,9 +60,9 @@ RMSEVsHorizon <- function(observations,
               linewidth = 1)+
     xlab("Forecast horizon (days)")+
     ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
-    ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
+    ggtitle(plot_title)+
     scale_color_discrete(name = "Model ID")+
-    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash"))+
+    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash","KGML" = "F1"))+
     #scale_color_manual(name = "Model type", values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9"))+ #values = c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
     #scale_linetype_manual(name = "Model ID", values = c("solid", "dashed", "dotted", "solid", "dashed", "solid", "dashed", "dotted", "dotdash","longdash","twodash","solid","dashed"))+
     theme_classic()+
@@ -83,7 +85,8 @@ RMSEVsHorizon <- function(observations,
   pers <- output %>%
     filter(model_id == "persistence")
   
-  my.shapes <- c(9,16,8, 6, 15, 3)
+  my.shapes <- c("null" = 9,"data-driven" = 16,"process-based" = 8, 
+                 "KGML" = 6, "ensemble" = 15)
   num.shapes <- length(unique(bestModByHorizon$model_type))
   my.plot.shapes <- my.shapes[1:num.shapes]
   
@@ -92,8 +95,8 @@ RMSEVsHorizon <- function(observations,
     geom_point(data = bestModByHorizon, aes(x = horizon, y = rmse, shape = model_type, color = model_id), size = 2)+
     xlab("Forecast horizon (days)")+
     ylab(expression(paste("Best model RMSE (",mu,g,~L^-1,")")))+
-    ggtitle("All predictions (Jan. 1, 2022 - Nov. 26, 2023)")+
-    scale_shape_manual(name = "Model type", values = my.plot.shapes)+
+    ggtitle(plot_title)+
+    scale_shape_manual(name = "Model type", values = my.shapes)+
     scale_color_discrete(name = "Model ID")+ #"#71BFB9","#B85233","#E69F00","#0072B2"
     scale_linetype_discrete(name = "Null model")+
     theme_classic()+

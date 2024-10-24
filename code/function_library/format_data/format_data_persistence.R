@@ -16,6 +16,7 @@ format_data_persistence <- function(res_url = "https://renc.osn.xsede.org/bio230
   chla <- read_csv(res_url) %>%
     filter(site_id == "fcre" & variable == "Chla_ugL_mean" & year(datetime) %in% c(2018:2023)) %>%
     select(datetime, observation) %>%
+    fill(observation, .direction = c("down")) %>%
     rename(Chla_ugL_mean = observation)
   
   return(chla)
