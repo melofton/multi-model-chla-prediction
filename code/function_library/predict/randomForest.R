@@ -42,7 +42,9 @@ randomForestrandomForest <- function(data, pred_dates, forecast_horizon){
     
     #build driver dataset
     drivers = data %>%
+      mutate(lag_Chla_ugL_mean = stats::lag(Chla_ugL_mean, k = 1)) %>%
       filter(datetime %in% forecast_dates) 
+    
     drivers[,"Chla_ugL_mean"] <- NA
     
     #refit model
@@ -52,7 +54,18 @@ randomForestrandomForest <- function(data, pred_dates, forecast_horizon){
     ref <- randomForest(Chla_ugL_mean ~ ., data = new.data, mtry = 3) 
     
     #generate predictions
-    pred <- predict(object = ref, newdata = drivers, type = "response")
+    for(h in 1:forecast_horizon){
+      #generate predictions
+      temp_pred <- predict(object = ref, newdata = drivers[h,], type = "response")
+      if(h == 1){
+        pred = temp_pred
+      } else {
+        pred = c(pred, temp_pred)
+      }
+      if(h < 35){
+        drivers$lag_Chla_ugL_mean[h+1] <- temp_pred
+      }
+    }
 
     #set up dataframe for today's prediction
     curr_chla_df <- data %>%
