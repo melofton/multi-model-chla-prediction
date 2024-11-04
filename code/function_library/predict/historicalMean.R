@@ -21,6 +21,13 @@ historicalMean <- function(data, pred_dates, forecast_horizon){
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
     chla <- data[which(data$datetime == pred_dates[t]),"Chla_ugL_mean"]
     
+    #assign target and predictors
+    df <- data %>%
+      filter(datetime <= pred_dates[t]) 
+    
+    #calculate historical mean
+    historicalMean <- mean(df$Chla_ugL_mean, na.rm = TRUE)
+    
     #set up dataframe for today's prediction
     temp.df <- data.frame(model_id = "historical mean",
                      reference_datetime = rep(pred_dates[t],forecast_horizon+1),
@@ -31,7 +38,7 @@ historicalMean <- function(data, pred_dates, forecast_horizon){
     for(h in 1:(forecast_horizon+1)){
       
       #make prediction
-      temp.df$prediction[h] = 8.990137 #value of historical mean
+      temp.df$prediction[h] = historicalMean #value of historical mean
       
     } #end of today's prediction loop
   

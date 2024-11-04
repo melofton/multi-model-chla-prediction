@@ -24,7 +24,13 @@ fit_ETS <- function(data, cal_dates){
   
   #fit ARIMA from fable package
   my.ets <- df %>%
-    model(ets = fable::ETS(Chla_ugL_mean)) 
+    model(SES = fable::ETS(Chla_ugL_mean ~ error("A")),
+          trend = fable::ETS(Chla_ugL_mean ~ error("A") + trend("A")),
+          damped = fable::ETS(Chla_ugL_mean ~ error("A") + trend("Ad"))) 
+  
+  tidy(my.ets)
+  accuracy(my.ets)
+  
   fitted_values <- fitted(my.ets)
   
   ETS_plot <- ggplot()+

@@ -7,6 +7,7 @@
 
 library(tidyverse)
 library(lubridate)
+library(ggpubr)
 
 #Load model fitting functions
 fit.model.functions <- list.files("./code/function_library/fit_models")
@@ -47,6 +48,8 @@ fit_historicalMean$plot
 
 fit_DOY <- fit_DOY_chla(data = dat_DOY, cal_dates = c("2018-08-06","2021-12-31"))
 fit_DOY$plot
+ggsave(fit_DOY$plot, filename = "./figures/GAM_fit.png",
+       height = 3, width = 5, units = "in")
 
 fit_ETS <- fit_ETS(data = dat_ETS, cal_dates = c("2018-08-06","2021-12-31"))
 fit_ETS$plot
@@ -59,6 +62,18 @@ fit_ARIMA_noDrivers$plot
 
 fit_TSLM <- fit_TSLM(data = dat_TSLM, cal_dates = c("2018-08-06","2021-12-31"))
 fit_TSLM$plot
+ggsave(fit_TSLM$plot, filename = "./figures/TSLM_fit.png",
+       height = 3, width = 5, units = "in")
+TSLM_diagnostics <- ggarrange(plotlist = c(fit_TSLM$diagnostics_no_lag, fit_TSLM$diagnostics),
+                              labels = "auto")
+ggsave(TSLM_diagnostics, filename = "./figures/TSLM_diagnostics.png",
+       height = 6, width = 10, units = "in")
+stats_table <- fit_TSLM$stats %>%
+  add_column(model_name = c("no lag or trend","lag","lag and trend")) %>%
+  select(model_name, r_squared, adj_r_squared, log_lik, AIC, AICc, BIC, CV, deviance) %>%
+  mutate(across(.cols = -c(model_name),
+                .fns  = ~ round(., 2)))
+write.csv(stats_table, "./model_output/TSLM_diagnostics.csv",row.names = FALSE)
 
 fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
 fit_XGBoost$plot

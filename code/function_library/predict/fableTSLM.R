@@ -24,12 +24,13 @@ fableTSLM <- function(data, pred_dates, forecast_horizon){
   # 
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(datetime < pred_dates[1]) #%>%
-    #mutate_at(vars, scale2) 
+    mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+    filter(datetime < pred_dates[1]) %>%
+    slice(-1)
   
   #fit TSLM from fable package
   my.tslm <- df %>%
-    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL))
+    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean))
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -43,24 +44,43 @@ fableTSLM <- function(data, pred_dates, forecast_horizon){
     
     #build driver dataset
     drivers = as_tsibble(data) %>%
-      filter(datetime %in% forecast_dates) #%>%
-      #mutate_at(vars, scale2) 
+      mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+      filter(datetime %in% forecast_dates) %>%
+      slice(-1)
+    
     drivers[,"Chla_ugL_mean"] <- NA
+    drivers[-1,"lag_Chla_ugL_mean"] <- NA
     
     #refit model
     new.data <- as_tsibble(data) %>%
-      filter(datetime < pred_dates[t])
+      mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+      slice(-1) %>%
+      filter(datetime <= pred_dates[t])
     ref <- refit(my.tslm, new_data = new.data)
     
-    #generate predictions
-    pred <- forecast(ref, new_data = drivers)
+    for(h in 1:forecast_horizon){
+      #generate predictions
+      temp_pred <- forecast(ref, new_data = drivers[h,])
+      if(h == 1){
+        pred = temp_pred
+      } else {
+        pred = bind_rows(pred, temp_pred)
+      }
+      if(h < forecast_horizon){
+        drivers$lag_Chla_ugL_mean[h+1] <- temp_pred$.mean
+      }
+    }
 
     #set up dataframe for today's prediction
+    curr_chla_df <- data %>%
+      filter(datetime == pred_dates[t]) %>%
+      select(Chla_ugL_mean)
+    curr_chla <- curr_chla_df$Chla_ugL_mean[1]
     temp.df <- data.frame(model_id = "TSLM",
                           reference_datetime = rep(pred_dates[t],forecast_horizon+1),
                           datetime = forecast_dates,
                           variable = "chlorophyll-a",
-                          prediction = pred$.mean)
+                          prediction = c(curr_chla,pred$.mean))
     
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)

@@ -5,6 +5,7 @@
 #Purpose: fit TSLM model for chla from 2018-2021
 
 library(fable)
+library(feasts)
 
 #'Function to fit TSLM model for chla
 #'@param data data frame with columns Date (yyyy-mm-dd) and
@@ -26,14 +27,30 @@ fit_TSLM <- function(data, cal_dates){
   # 
   #assign target and predictors
   df <- as_tsibble(data) %>%
-    filter(datetime >= start_cal & datetime <= stop_cal) #%>%
-    #mutate_at(vars, scale2) 
-  
+    filter(datetime >= start_cal & datetime <= stop_cal) %>%
+    mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+    slice(-1)
+    
   #fit TSLM from fable package
   my.tslm <- df %>%
-    model(arima = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
-  fitted_values <- fitted(my.tslm)
+    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
   
+  my.tslm.w.lag <- df %>%
+    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean)) 
+  
+  my.tslm.w.trend <- df %>%
+    model(tslm.w.trend = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean + trend())) 
+  
+  diagnostics_no_lag <- gg_tsresiduals(my.tslm)
+  diagnostics_lag <- gg_tsresiduals(my.tslm.w.lag)
+  
+  t1 <- glance(my.tslm)
+  t2 <- glance(my.tslm.w.lag)
+  t3 <- glance(my.tslm.w.lag)
+  stat <- bind_rows(t1,t2,t3)
+  
+  fitted_values <- fitted(my.tslm.w.lag)
+
   TSLM_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
@@ -48,11 +65,11 @@ fit_TSLM <- function(data, cal_dates){
   
   #build output df
   df.out <- data.frame(model_id = "TSLM",
-                       datetime = dates$datetime,
+                       datetime = dates$datetime[-1],
                        variable = "chlorophyll-a",
                        prediction = fitted_values$.fitted)
 
   
   #return output + model with best fit + plot
-  return(list(out = df.out, TSLM = my.tslm, plot = TSLM_plot))
+  return(list(out = df.out, TSLM = my.tslm.w.lag, plot = TSLM_plot, stats = stat, diagnostics = diagnostics_lag, diagnostics_no_lag = diagnostics_no_lag))
 }

@@ -33,6 +33,17 @@ DOY <- function(data, pred_dates, forecast_horizon){
   
   for(t in 1:length(pred_dates)){
     
+    #assign target and predictors
+    refit_df <- data %>%
+      filter(datetime <= pred_dates[t]) %>%
+      mutate(doy = yday(datetime)) %>%
+      select(doy, Chla_ugL_mean)
+    colnames(refit_df) <- c("x","y")
+    
+    #fit GAM following methods in ggplot()
+    my.gam <- mgcv::gam(formula = y ~ s(x, bs = "cs"), family = gaussian(),
+                        data = refit_df, method = "REML")
+    
     #subset to reference_datetime and identify doy
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
     doy = yday(forecast_dates)
@@ -44,13 +55,10 @@ DOY <- function(data, pred_dates, forecast_horizon){
                           variable = "chlorophyll-a",
                           prediction = rep(NA,forecast_horizon+1))
     
-    for(h in 1:(forecast_horizon+1)){
+    #make prediction
+    temp.df$prediction = predict.gam(my.gam, data.frame(x=doy))
       
-      #make prediction
-      temp.df$prediction = predict.gam(my.gam, data.frame(x=doy))
-      
-    } #end of today's prediction loop
-    
+
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)
     

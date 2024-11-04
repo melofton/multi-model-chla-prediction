@@ -32,9 +32,16 @@ fit_DOY_chla <- function(data, cal_dates){
     xlab("DOY")+
     ylab("Chla (ug/L)")+
     geom_point(data = df, aes(x = x, y = y, fill = "obs"))+
-    geom_smooth(data = df, aes(x = x, y = y, color = "DOY"))+
+    geom_smooth(data = df, aes(x = x, y = y, color = "DOY GAM model"))+
     theme_classic()+
     labs(color = NULL, fill = NULL)
+  
+  png("./figures/GAM_diagnostics.png", res = 300,
+      width = 8, height = 6, units = "in")
+  par(mfrow=c(2,2))
+  gam.check(my.gam)
+  dev.off()
+  
   GAM_predicted <- mgcv::predict.gam(my.gam, data.frame(x=df$x))
   
   #get list of calibration dates
