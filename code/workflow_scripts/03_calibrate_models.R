@@ -26,7 +26,6 @@ dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_Prophet <- read_csv("./data/data_processed/Prophet.csv")
 dat_Prophet_noDrivers <- read_csv("./data/data_processed/ProphetnoDrivers.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
-dat_NNETAR_noDrivers <- read_csv("./data/data_processed/NNETARnoDrivers.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
@@ -53,12 +52,18 @@ ggsave(fit_DOY$plot, filename = "./figures/GAM_fit.png",
 
 fit_ETS <- fit_ETS(data = dat_ETS, cal_dates = c("2018-08-06","2021-12-31"))
 fit_ETS$plot
+ggsave(fit_ETS$plot, filename = "./figures/ETS_fit.png",
+       height = 3, width = 5, units = "in")
+write.csv(fit_ETS$model_diagnostics, "./model_output/ETS_diagnostics.csv",row.names = FALSE)
 
-fit_ARIMA <- fit_ARIMA(data = dat_ARIMA, cal_dates = c("2018-08-06","2021-12-31"))
-fit_ARIMA$plot
-
-fit_ARIMA_noDrivers <- fit_ARIMA(data = dat_ARIMA_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
-fit_ARIMA_noDrivers$plot
+fit_ARIMAs <- fit_ARIMAs(data = dat_ARIMA, cal_dates = c("2018-08-06","2021-12-31"))
+ggsave(fit_ARIMAs$plot, filename = "./figures/ARIMAs_fit.png",
+       height = 3, width = 10, units = "in")
+ARIMA_diagnostics <- ggarrange(plotlist = c(fit_ARIMAs$diagnostics_chla_only, fit_ARIMAs$diagnostics_drivers),
+                              labels = "auto")
+ggsave(ARIMA_diagnostics, filename = "./figures/ARIMA_diagnostics.png",
+       height = 6, width = 10, units = "in")
+write.csv(fit_ARIMAs$model_params, "./model_output/ARIMA_parameters.csv",row.names = FALSE)
 
 fit_TSLM <- fit_TSLM(data = dat_TSLM, cal_dates = c("2018-08-06","2021-12-31"))
 fit_TSLM$plot

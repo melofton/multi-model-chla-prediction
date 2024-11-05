@@ -1,0 +1,18 @@
+".model","term","estimate","std.error","statistic","p.value"
+"Chla ARIMA","ar1",-0.73,0.09,-8.48,0
+"Chla ARIMA","ma1",0.8,0.09,9.02,0
+"Chla ARIMA","ma2",0.06,0.04,1.47,0.14
+"Chla ARIMA","ma3",-0.1,0.03,-3.04,0
+"Chla ARIMA","sma1",-0.05,0.03,-1.44,0.15
+"Reg. w/ ARIMA errors","ar1",-0.75,0.06,-11.73,0
+"Reg. w/ ARIMA errors","ma1",0.85,0.07,12.24,0
+"Reg. w/ ARIMA errors","ma2",0.09,0.04,2.21,0.03
+"Reg. w/ ARIMA errors","ma3",-0.09,0.03,-2.88,0
+"Reg. w/ ARIMA errors","AirTemp_C_mean",0.04,0.02,2.46,0.01
+"Reg. w/ ARIMA errors","PAR_umolm2s_mean",0,0,-3.9,0
+"Reg. w/ ARIMA errors","WindSpeed_ms_mean",-0.11,0.07,-1.57,0.12
+"Reg. w/ ARIMA errors","Flow_cms_mean",32.13,5.88,5.46,0
+"Reg. w/ ARIMA errors","Temp_C_mean",-0.55,0.12,-4.48,0
+"Reg. w/ ARIMA errors","LightAttenuation_Kd",0.03,0.58,0.05,0.96
+"Reg. w/ ARIMA errors","DIN_ugL",-0.02,0.01,-3.06,0
+"Reg. w/ ARIMA errors","SRP_ugL",0.12,0.13,0.94,0.35

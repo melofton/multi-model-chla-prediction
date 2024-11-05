@@ -23,13 +23,24 @@ fit_ETS <- function(data, cal_dates){
     filter(datetime >= start_cal & datetime <= stop_cal) 
   
   #fit ARIMA from fable package
-  my.ets <- df %>%
+  ets.trials <- df %>%
     model(SES = fable::ETS(Chla_ugL_mean ~ error("A")),
           trend = fable::ETS(Chla_ugL_mean ~ error("A") + trend("A")),
           damped = fable::ETS(Chla_ugL_mean ~ error("A") + trend("Ad"))) 
   
-  tidy(my.ets)
-  accuracy(my.ets)
+  model_terms <- tidy(ets.trials) %>%
+    pivot_wider(names_from = term, values_from = estimate) %>%
+    filter(!.model == "damped") %>%
+    select(-phi)
+  model_performance <- accuracy(ets.trials) %>%
+    filter(!.model == "damped") %>%
+    mutate(across(.cols = -c(.model,.type),
+                  .fns  = ~ round(., 2))) %>%
+    select(.model, RMSE, MAE) 
+  model_diagnostics <- left_join(model_terms, model_performance, by = ".model")
+  
+  my.ets <- df %>%
+    model(SES = fable::ETS(Chla_ugL_mean ~ error("A")))
   
   fitted_values <- fitted(my.ets)
   
@@ -53,5 +64,6 @@ fit_ETS <- function(data, cal_dates){
 
   
   #return output + model with best fit + plot
-  return(list(out = df.out, ETS = my.ets, plot = ETS_plot))
+  return(list(out = df.out, ETS = my.ets, plot = ETS_plot, 
+              model_diagnostics = model_diagnostics))
 }

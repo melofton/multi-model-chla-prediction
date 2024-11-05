@@ -30,22 +30,32 @@ fit_NNETAR <- function(data, cal_dates, include_drivers = TRUE){
     filter(datetime >= start_cal & datetime <= stop_cal)# %>%
     #mutate_at(vars, scale2)
   
-  #fit ARIMA from fable package
-  if(include_drivers == TRUE){
-  my.nnar <- df %>%
-    model(nnar = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
-  fitted_values <- fitted(my.nnar)
-  } else {
-    my.nnar <- df %>%
-      model(nnar = fable::NNETAR(Chla_ugL_mean)) 
-    fitted_values <- fitted(my.nnar)
-  }
+  #fit NNETARs from fable package
+  my.nnetars <- df %>%
+    model(`Chla only NNETAR` = fable::NNETAR(Chla_ugL_mean, n_networks = 20),
+          `NNETAR w/ drivers` = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL,
+                                              n_networks = 20)) 
   
-  NNETAR_plot <- ggplot()+
+  # get model parameters
+  glance(my.nnetars)
+  residuals(my.nnetars %>% select(`Chla only NNETAR`))
+  params_drivers <- coefficients(my.arimas %>% select(`NNETAR w/ drivers`))
+  model_params <- bind_rows(params_chla_only, params_drivers) %>%
+    mutate(across(.cols = -c(.model, term),
+                  .fns  = ~ round(., 2)))
+  
+  # plot model diagnostics
+  diagnostics_chla_only <- gg_tsresiduals(my.arimas %>% select(`Chla only NNETAR`))
+  diagnostics_drivers <- gg_tsresiduals(my.arimas %>% select(`NNETAR w/ drivers`))
+  
+  fitted_values <- fitted(my.arimas)
+  
+  ARIMA_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
     geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
-    geom_line(data = fitted_values, aes(x = datetime, y = .fitted, color = "NNETAR"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = .fitted, group = .model, color = .model))+
+    facet_wrap(facets = vars(.model))+
     labs(color = NULL, fill = NULL)+
     theme_classic()
 

@@ -21,7 +21,7 @@ fableETS <- function(data, pred_dates, forecast_horizon){
   
   #fit ETS from fable package
   my.ets <- df %>%
-    model(ets = fable::ETS(formula = Chla_ugL_mean))
+    model(SES = fable::ETS(Chla_ugL_mean ~ error("A")))
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
