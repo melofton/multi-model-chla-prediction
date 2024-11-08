@@ -24,16 +24,12 @@ dat_TSLM <- read_csv("./data/data_processed/TSLM.csv")
 dat_processModels <- read_csv("./data/data_processed/processModels.csv")
 dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_Prophet <- read_csv("./data/data_processed/Prophet.csv")
-dat_Prophet_noDrivers <- read_csv("./data/data_processed/ProphetnoDrivers.csv")
 dat_NNETAR <- read_csv("./data/data_processed/NNETAR.csv")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 dat_ETS_KGML <- read_csv("./data/data_processed/ETS_KGML.csv")
-
-
-
 
 #Set sim folder (for GLM-AED)
 sim_folder <- "./code/model_files/GLM-AED/calibration"
@@ -83,20 +79,34 @@ write.csv(stats_table, "./model_output/TSLM_diagnostics.csv",row.names = FALSE)
 fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
 fit_XGBoost$plot
 
-fit_Prophet_Drivers <- fit_Prophet(data = dat_Prophet, cal_dates = c("2018-08-06","2021-12-31"))
-fit_Prophet_Drivers$plot
+fit_Prophets <- fit_Prophets(data = dat_Prophet, cal_dates = c("2018-08-06","2021-12-31"))
+ggsave(fit_Prophets$plot, filename = "./figures/Prophet_fit.png",
+       height = 3, width = 10, units = "in")
+ggsave(fit_Prophets$rmse_plot, filename = "./figures/Prophet_fit_rmse.png",
+       height = 3, width = 5, units = "in")
+Prophet_components_chlaOnly <- ggarrange(plotlist = c(fit_Prophets$prophet_components),
+          nrow = 2, ncol = 2, labels = "auto")
+ggsave(Prophet_components_chlaOnly, filename = "./figures/Prophet_components_chlaOnly.png",
+       height = 5.5, width = 10, units = "in")
+Prophet_components_drivers <- ggarrange(plotlist = c(fit_Prophets$prophet_components_w_drivers),
+                                         nrow = 2, ncol = 2, labels = "auto")
+ggsave(Prophet_components_drivers, filename = "./figures/Prophet_components_drivers.png",
+       height = 5.5, width = 10, units = "in")
+write.csv(fit_Prophets$reg_coeffs, "./model_output/Prophet_regressor_coefficients.csv",row.names = FALSE)
 
-fit_Prophet_noDrivers <- fit_Prophet(data = dat_Prophet_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
-fit_Prophet_noDrivers$plot
-
-fit_NNETAR <- fit_NNETAR(data = dat_NNETAR, cal_dates = c("2018-08-06","2021-12-31"))
+fit_NNETAR <- fit_NNETARs(data = dat_NNETAR, cal_dates = c("2018-08-06","2021-12-31"))
 fit_NNETAR$plot
-
-fit_NNETAR_noDrivers <- fit_NNETAR(data = dat_NNETAR_noDrivers, cal_dates = c("2018-08-06","2021-12-31"), include_drivers = FALSE)
-fit_NNETAR_noDrivers$plot
+ggsave(fit_NNETAR$plot, filename = "./figures/NNETAR_fit.png",
+       height = 3, width = 10, units = "in")
 
 fit_MARS <- fit_MARS(data = dat_MARS, cal_dates = c("2018-08-06","2021-12-31"))
-fit_MARS$plot
+ggsave(fit_MARS$plot, filename = "./figures/MARS_fit.png",
+       height = 3, width = 5, units = "in")
+png("./figures/MARS_model_surfaces.png", width = 9, height = 6,
+    units = "in", res = 300)
+plotmo(fit_MARS$MARS, xlab = "predictor value", ylab = "Chla (ug/L)")
+dev.off()
+write.csv(fit_MARS$basis.functions, "./model_output/MARS_basis_functions.csv",row.names = FALSE)
 
 fit_randomForest <- fit_randomForest(data = dat_randomForest, cal_dates = c("2018-08-06","2021-12-31"))
 fit_randomForest$plot

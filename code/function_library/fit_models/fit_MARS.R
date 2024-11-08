@@ -25,7 +25,10 @@ fit_MARS <- function(data, cal_dates){
   
   #fit MARS model from earth package
   earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = df)
-  plotmo(earth.mod)
+  mod.surface.plot <- plotmo(earth.mod, pmethod = "partdep")
+  basis.matrix <- model.matrix(earth.mod)
+  basis.functions <- data.frame(basis.functions = colnames(basis.matrix)) %>%
+    slice(-1)
   pred <- data.frame(earth.mod$fitted.values) %>%
     add_column(datetime = df$datetime)
   
@@ -49,5 +52,6 @@ fit_MARS <- function(data, cal_dates){
 
   
   #return output + model with best fit + plot
-  return(list(out = df.out, MARS = earth.mod, plot = MARS_plot))
+  return(list(out = df.out, MARS = earth.mod, plot = MARS_plot, 
+              basis.functions = basis.functions, mod.surface.plot = mod.surface.plot))
 }

@@ -1,0 +1,9 @@
+"regressor","regressor_mode","center","coef_lower","coef","coef_upper"
+"AirTemp_C_mean","additive",14.44,-0.01,-0.01,-0.01
+"PAR_umolm2s_mean","additive",274.57,0,0,0
+"WindSpeed_ms_mean","additive",1.97,0,0,0
+"Flow_cms_mean","additive",0.06,-0.05,-0.05,-0.05
+"Temp_C_mean","additive",15.03,-0.03,-0.03,-0.03
+"SRP_ugL","additive",8.07,0.03,0.03,0.03
+"DIN_ugL","additive",24.18,-0.01,-0.01,-0.01
+"LightAttenuation_Kd","additive",1.33,-0.02,-0.02,-0.02
