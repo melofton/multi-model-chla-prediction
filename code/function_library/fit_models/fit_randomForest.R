@@ -32,7 +32,27 @@ fit_randomForest <- function(data, cal_dates){
     select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean, lag_Chla_ugL_mean) 
 
   #run random forest
-  rf <- randomForest(Chla_ugL_mean ~ ., data = rf_data, mtry = 3)
+  rf <- randomForest(Chla_ugL_mean ~ ., data = rf_data, mtry = 3,
+                     ntree = 1000, importance = TRUE)
+  importance_obj <- importance(rf, scale = TRUE)
+  importance <- data.frame(importance(rf, scale = TRUE)) %>%
+    mutate(var = rownames(importance_obj))
+  rownames(importance) = NULL
+  importance <- importance %>%
+    rename(PercIncMSE = X.IncMSE) %>%
+    pivot_longer(PercIncMSE:IncNodePurity, names_to = "imp_measure", values_to = "value")
+  importance_plot <- ggplot(data = importance, aes(x = value, y = var, group = imp_measure, color = imp_measure))+
+    geom_point()+
+    facet_wrap(facets = vars(imp_measure), scales = "free_x")+
+    theme(panel.margin=unit(0,"cm"),
+          panel.border=element_rect(colour="black",fill=NA,size=1.2),
+          strip.background=element_rect(colour="black",size=1.2),
+          panel.grid.major.x=element_blank(),
+          panel.grid.minor.x=element_blank(),
+          panel.grid.major.y=element_line(size=1.5,colour="grey88"),
+          panel.background=element_rect(fill="white"),
+          axis.text.x = element_text(angle = 45, hjust = 1))+
+    labs(color = "Importance measure", y = "")
   fitted_values <- data.frame(datetime = df$datetime,
                               pred = rf$predicted)
 
@@ -52,5 +72,6 @@ fit_randomForest <- function(data, cal_dates){
 
   
   #return output + model with best fit + plot
-  return(list(out = df.out, plot = randomForest_plot))
+  return(list(out = df.out, plot = randomForest_plot,
+              importance = importance, importance_plot = importance_plot))
 }

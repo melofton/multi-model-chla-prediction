@@ -109,7 +109,11 @@ dev.off()
 write.csv(fit_MARS$basis.functions, "./model_output/MARS_basis_functions.csv",row.names = FALSE)
 
 fit_randomForest <- fit_randomForest(data = dat_randomForest, cal_dates = c("2018-08-06","2021-12-31"))
-fit_randomForest$plot
+ggsave(fit_randomForest$importance_plot, filename = "./figures/randomForest_importance.png",
+       height = 3, width = 6, units = "in")
+ggsave(fit_randomForest$plot, filename = "./figures/randomForest_fit.png",
+       height = 3, width = 5, units = "in")
+
 
 params_list <- list(epochs = c(100,200),
                     dropout = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01),
