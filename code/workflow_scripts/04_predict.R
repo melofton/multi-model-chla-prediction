@@ -89,7 +89,8 @@ pred_Prophet_noDrivers <- pred_prophet(data = dat_Prophet_noDrivers,
 
 pred_XGBoost <- parsnipXGBoost(data = dat_XGBoost,
                                pred_dates = pred_dates,
-                               forecast_horizon = forecast_horizon)
+                               forecast_horizon = forecast_horizon, 
+                               final_workflow = fit_XGBoost$final_workflow)
 
 pred_NNETAR_Drivers <- fableNNETAR(data = dat_NNETAR,
                          pred_dates = pred_dates,
@@ -172,8 +173,8 @@ pred_ETS_KGML <- fableETS_KGML(previous_residuals = dat_ETS_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "DOY") %>%
-  bind_rows(.,pred_DOY)
+  filter(!model_id == "XGBoost") %>%
+  bind_rows(.,pred_XGBoost)
 
 unique(mod_output$model_id)
 

@@ -4,7 +4,7 @@
 
 #Purpose: fit ARIMA model for chla from 2018-2021
 
-pacman::p_load(fable, moments, parsnip, tidymodels, xgboost, DiagrammeR)
+pacman::p_load(fable, moments, parsnip, tidymodels, xgboost, DiagrammeR, vip)
 tidymodels_prefer()
 set.seed(100)
 
@@ -38,9 +38,10 @@ fit_XGBoost <- function(data, cal_dates){
   
   #specify XGBoost from parsnip package
   xgboost_mod <- 
-    boost_tree(mtry = tune(), min_n = tune(), tree_depth = tune(), learn_rate = tune(),
+    boost_tree(mtry = 0.33, min_n = tune(), tree_depth = tune(), learn_rate = tune(),
                loss_reduction = tune(), sample_size = tune(), trees = 1000) %>%
-    set_engine("xgboost", num.threads = parallel::detectCores()) |> 
+    set_engine("xgboost", objective = "reg:squarederror", eval_metric = "rmse",
+               counts = FALSE) |> 
     set_mode("regression")
   
   #specify XGBoost workflow 
@@ -53,9 +54,9 @@ fit_XGBoost <- function(data, cal_dates){
   xgboost_resample_fit <- 
     xgboost_wflow |>  
     tune_grid(resamples = folds,
-              grid = 25,
+              grid = 100,
               control = control_grid(save_pred = TRUE),
-              metrics = metric_set(mae))
+              metrics = metric_set(rmse))
   
   #select best hyperparameters
   xgboost_resample_fit %>% 
@@ -63,7 +64,7 @@ fit_XGBoost <- function(data, cal_dates){
     arrange(mean)
   
   best_hyperparameters <- xgboost_resample_fit %>%
-    select_best(metric = "mae")
+    select_best(metric = "rmse")
   
   #update workflow
   final_workflow <- 
@@ -73,6 +74,11 @@ fit_XGBoost <- function(data, cal_dates){
   #train model
   xgboost_fit <- final_workflow |> 
     fit(data = df)
+  
+  #plot model feature importance
+  vip_plot <- xgboost_fit %>%
+    extract_fit_parsnip() %>%
+    vip(geom = "point")
   
   #plot model fit
   fitted_values <- predict(xgboost_fit, df) %>%
@@ -96,5 +102,7 @@ fit_XGBoost <- function(data, cal_dates){
 
   
   #return output + model with best fit + plot
-  return(list(out = df.out, XGBoost = xgboost_fit, plot = XGBoost_plot))
+  return(list(out = df.out, final_workflow = final_workflow, plot = XGBoost_plot,
+              best_hyperparameters = best_hyperparameters,
+              vip_plot = vip_plot))
 }

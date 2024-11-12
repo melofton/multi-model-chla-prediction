@@ -77,7 +77,11 @@ stats_table <- fit_TSLM$stats %>%
 write.csv(stats_table, "./model_output/TSLM_diagnostics.csv",row.names = FALSE)
 
 fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
-fit_XGBoost$plot
+ggsave(fit_XGBoost$plot, filename = "./figures/XGBoost_fit.png",
+       height = 3, width = 5, units = "in")
+ggsave(fit_XGBoost$vip_plot, filename = "./figures/XGBoost_feature_importance.png",
+       height = 3, width = 5, units = "in")
+write.csv(fit_XGBoost$best_hyperparameters, "./model_output/XGBoost_best_hyperparameters.csv",row.names = FALSE)
 
 fit_Prophets <- fit_Prophets(data = dat_Prophet, cal_dates = c("2018-08-06","2021-12-31"))
 ggsave(fit_Prophets$plot, filename = "./figures/Prophet_fit.png",
