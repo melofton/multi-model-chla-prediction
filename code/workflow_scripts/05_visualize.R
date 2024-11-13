@@ -8,6 +8,7 @@
 library(tidyverse)
 library(lubridate)
 library(cowplot)
+library(ggpubr)
 #library(plotly)
 
 #Load plotting functions
@@ -263,25 +264,47 @@ ggplot(data = focus, aes(x = time, y = value, group = scenario, color = scenario
 
 ## the inevitable additional special case for the LSTM ----
 
+cal_dates = c("2018-08-06","2021-12-31")
+start_cal <- date(cal_dates[1])
+stop_cal <- date(cal_dates[2])
+
 pred.df <- read_csv("./model_output/LSTM_tuning_09SEP24.csv")
+
 df <- read_csv("./code/model_files/LSTM/LSTM_dataset.csv") %>%
-  select(datetime, Chla_ugL_mean)
+  select(datetime, Chla_ugL_mean) %>%
+  filter(datetime >= start_cal & datetime <= stop_cal)
 
-single_horizon <- pred.df %>%
-  filter(horizon == 20)
+single_horizon_0 <- pred.df %>%
+  filter(horizon == 0)
 
-LSTM_ts <- ggplot()+
+LSTM_ts_0 <- ggplot()+
   xlab("")+
   ylab("Chla (ug/L)")+
   geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
-  geom_line(data = single_horizon, aes(x = datetime, y = prediction, group = param_set, color = param_set))+
-  labs(color = "parameter scenario", fill = NULL)+
+  geom_line(data = single_horizon_0, aes(x = datetime, y = prediction, group = param_set, color = param_set))+
+  labs(color = "Parameter set", fill = NULL)+
   theme_classic()+
-  theme(legend.position = "bottom")+
+  ggtitle("Predictions for 0 days ahead")
+LSTM_ts_0
+
+single_horizon_20 <- pred.df %>%
+  filter(horizon == 20)
+
+LSTM_ts_20 <- ggplot()+
+  xlab("")+
+  ylab("Chla (ug/L)")+
+  geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
+  geom_line(data = single_horizon_20, aes(x = datetime, y = prediction, group = param_set, color = param_set))+
+  labs(color = "Parameter set", fill = NULL)+
+  theme_classic()+
   ggtitle("Predictions for 20 days ahead")
-LSTM_ts
-ggsave(plot = LSTM_ts, filename = "./figures/LSTM_tuning_horizon20.png", device = "png",
-       height = 4, width = 8, units = "in")
+LSTM_ts_20
+LSTM_diagnostics <- ggarrange(plotlist = list(LSTM_ts_0, LSTM_ts_20),
+                              labels = "auto",
+                              nrow = 2)
+LSTM_diagnostics
+ggsave(LSTM_diagnostics, filename = "./figures/LSTM_diagnostics.png",
+       height = 6, width = 8, units = "in")
 
 #reformat model output
 lstm_rmse <- pred.df %>% 
@@ -295,8 +318,9 @@ horizon_rmse <- ggplot()+
   geom_line(data = lstm_rmse, aes(x = horizon, y = rmse,
                                group = param_set, color = param_set),
             linewidth = 1)+
-  xlab("Forecast horizon (days)")+
+  xlab("Prediction horizon (days)")+
   ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
+  labs(color = "Parameter set")+
   ggtitle("RMSE vs. horizon for calibration period")+
   theme_bw()
 horizon_rmse
