@@ -163,7 +163,7 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   #fResources <- apply(data.frame(fN = fN, fP = fP), 1, FUN = min) * fI
   
   #primary productivity
-  prim_prod <- R_growth * fT * fResources
+  prim_prod <- PHYTO * R_growth * fT * fResources
   
   #Photoexudation
   exudation <- prim_prod * f_pr
@@ -196,14 +196,14 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   
   # Advection calculation (assume only PHYTOs advect)
   # Advection calculation 
-  PHYTO_advection_flux <- c(phyto_flux_top, -w_p * PHYTO * c((1/abs(temp_diff)),phyto_flux_bottom)) * areas_interface
+  PHYTO_advection_flux <- c(phyto_flux_top, w_p * PHYTO * c((1/abs(temp_diff)),phyto_flux_bottom)) * areas_interface
   PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
 
-  w_p_nut <- 0.001
-  NIT_advection_flux <- c(0, -w_p_nut * NIT) * areas_interface
+  w_p_nut <- -0.001
+  NIT_advection_flux <- c(0, w_p_nut * NIT) * areas_interface
   NIT_advection <- -(1/areas_mid) * (diff(NIT_advection_flux) / delx)
   
-  PHS_advection_flux <- c(0, -w_p_nut * PHS) * areas_interface
+  PHS_advection_flux <- c(0, w_p_nut * PHS) * areas_interface
   PHS_advection <- -(1/areas_mid) * (diff(PHS_advection_flux) / delx)
   
   

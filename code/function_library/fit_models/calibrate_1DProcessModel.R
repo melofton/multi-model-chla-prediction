@@ -20,8 +20,8 @@ source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(-0.001, #w_p (negative is down, positive is up)
-                                                4.5, #R_growth
+                                     parms = c(0.001, #w_p (negative is down, positive is up)
+                                                0.9, #R_growth
                                                 1.02,#1.1, #theta_growth
                                                 1, #light_extinction
                                                 60, #I_K
