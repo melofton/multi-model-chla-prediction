@@ -159,11 +159,11 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   fI = (layer_PAR/I_K) / (1 + (layer_PAR/I_K))
   
   #Combined resource limitation
-  fResources <- apply(data.frame(fN = fN, fP = fP, fI = fI), 1, FUN = min)
+  fResources <- apply(data.frame(fN = fN, fP = fP, fI = fI, fT = fT), 1, FUN = min)
   #fResources <- apply(data.frame(fN = fN, fP = fP), 1, FUN = min) * fI
   
   #primary productivity
-  prim_prod <- PHYTO * R_growth * fT * fResources
+  prim_prod <- PHYTO * R_growth * fResources
   
   #Photoexudation
   exudation <- prim_prod * f_pr
@@ -198,14 +198,6 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   # Advection calculation 
   PHYTO_advection_flux <- c(phyto_flux_top, w_p * PHYTO * c((1/abs(temp_diff)),phyto_flux_bottom)) * areas_interface
   PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
-
-  w_p_nut <- -0.001
-  NIT_advection_flux <- c(0, w_p_nut * NIT) * areas_interface
-  NIT_advection <- -(1/areas_mid) * (diff(NIT_advection_flux) / delx)
-  
-  PHS_advection_flux <- c(0, w_p_nut * PHS) * areas_interface
-  PHS_advection <- -(1/areas_mid) * (diff(PHS_advection_flux) / delx)
-  
   
   #Diffusion (assume proportional to temperature gradient)
   
@@ -223,8 +215,8 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   
   #Net change for each box
   dPHYTO_dt <- PHYTO_advection + PHYTO_reaction
-  dNIT_dt <- NIT_advection + NIT_diffusion + NIT_reaction
-  dPHS_dt <- PHS_advection + PHS_diffusion + PHS_reaction
+  dNIT_dt <- NIT_diffusion + NIT_reaction
+  dPHS_dt <- PHS_diffusion + PHS_reaction
   
   list(c(dPHYTO_dt, dNIT_dt, dPHS_dt),  #This returns the vector of derivatives for each layer box
        c(fN = fN, fP = fP, fI = fI, fResources = fResources, fT = fT, layer_light_extinction = layer_light_extinction, layer_PAR = layer_PAR))  #This returns the vector of diagnostics

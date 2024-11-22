@@ -20,18 +20,18 @@ source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(0.001, #w_p (negative is down, positive is up)
-                                                0.9, #R_growth
+                                     parms = c(0.001, #w_p (positive is down, negative is up)
+                                                2.5, #R_growth
                                                 1.02,#1.1, #theta_growth
                                                 1, #light_extinction
-                                                60, #I_K
-                                                0, #N_o
-                                                2.5, #K_N
-                                                0, #P_o
-                                                0.0001, #K_P
+                                                5, #I_K
+                                                0.25, #N_o
+                                                0.25, #K_N
+                                                0.07, #P_o
+                                                0.10, #K_P
                                                 0.1, #f_pr
-                                                0.13, #R_resp
-                                                1.02, #theta_resp
+                                                0.12, #R_resp
+                                                1.08, #theta_resp
                                                 10, #T_std
                                                 12,#20, #T_opt
                                                 30,#35, #T_max
@@ -212,8 +212,7 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                    z = as.matrix(mat_phyto),
                    color = col,
                    ylim = c(lake_depth, 0),
-                   #zlim = range(c(mat_phyto)),
-                   zlim = c(0:50),
+                   zlim = c(0,200),
                    xlab = "time, days",
                    ylab = "Depth, m",
                    main = "Concentration, mmolC/m3")
