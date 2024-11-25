@@ -105,7 +105,7 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   num_boxes <- parms[20]
   KePHY <- parms[21]
   D_temp <- parms[22]
-  phyto_flux_bottom <- parms[23]
+  p0 <- parms[23]
 
   Tparms <- get_T_parms(group_parms = list(T_std = T_std, T_opt = T_opt, T_max = T_max, theta_growth = theta_growth))
   
@@ -125,11 +125,6 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   layer_light_extinction <- light_extinction + cumsum(as.vector(PHYTO))*KePHY
   #calculate the PAR at each layer
   layer_PAR <- PAR_surface * exp(-layer_light_extinction * layer_mid_depths)
-  
-  #Diffusion (assume proportional to temperature gradient)
-  temp_diff <- diff(layer_temp)
-  temp_diff[which(abs(temp_diff) < 0.01)] <- 0.01
-  D <- D_temp * c(0, 1/abs(temp_diff), 0)
 
   # Temperature regulation of photosynthesis
   fT = NULL
@@ -151,28 +146,34 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   
   #Nitrogen limitation
   fN <- (NIT - N_o) / (NIT - N_o + K_N)
+  fN[fN < 0] <- 0.0
   
   #Phosphorus limitation
   fP <- (PHS - P_o) / (PHS - P_o + K_P)
+  fP[fP < 0] <- 0.0
   
   #Light limitation
   fI = (layer_PAR/I_K) / (1 + (layer_PAR/I_K))
+  fI[fI < 0] <- 0.0
   
   #Combined resource limitation
-  fResources <- apply(data.frame(fN = fN, fP = fP, fI = fI, fT = fT), 1, FUN = min)
+  fResources <- apply(data.frame(fN = fN, fP = fP, fI = fI), 1, FUN = min)
   #fResources <- apply(data.frame(fN = fN, fP = fP), 1, FUN = min) * fI
   
   #primary productivity
-  prim_prod <- PHYTO * R_growth * fResources
+  prim_prod <- PHYTO * R_growth * fT * fResources
   
   #Photoexudation
   exudation <- prim_prod * f_pr
+  exudation[which(PHYTO < p0)] <- 0.0
   
   #Temperature regulation of respiration
   fT_respiration <- theta_resp^(layer_temp - 20.0)
   
   #Respiration
   respiration <- PHYTO * R_resp * fT_respiration
+  respiration[which(PHYTO < p0)] <- 0.0
+  
   
   #Nitrogen uptake associated with primary productivity
   NIT_uptake <- (prim_prod - exudation) * N_C_ratio
@@ -196,10 +197,21 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   
   # Advection calculation (assume only PHYTOs advect)
   # Advection calculation 
-  PHYTO_advection_flux <- c(phyto_flux_top, w_p * PHYTO * c((1/abs(temp_diff)),phyto_flux_bottom)) * areas_interface
-  PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
+  PHYTO_advection_flux <- c(phyto_flux_top, (w_p * PHYTO)) * areas_interface # * c((1/abs(temp_diff))
+  PHYTO_advection <- (1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
   
   #Diffusion (assume proportional to temperature gradient)
+  
+  #Diffusion (assume proportional to temperature gradient)
+  temp_diff <- diff(layer_temp)
+  temp_diff[which(abs(temp_diff) < 0.01)] <- 0.01
+  D <- D_temp * c(0, 1/abs(temp_diff), 0)
+  
+  #Phytos
+  gradient_middle_boxes <- diff(PHYTO)
+  gradient <- c(0, gradient_middle_boxes, 0) / delx
+  diffusion_flux <- areas_interface * D * gradient
+  PHYTO_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx)
   
   #Nitrogen
   gradient_middle_boxes <- diff(NIT)
@@ -207,14 +219,14 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   diffusion_flux <- areas_interface * D * gradient
   NIT_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx)
   
-  #Phorphorus
+  #Phosphorus
   gradient_middle_boxes <- diff(PHS)
   gradient <- c(0, gradient_middle_boxes, 0) / delx
   diffusion_flux <- areas_interface * D * gradient
   PHS_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx)
   
   #Net change for each box
-  dPHYTO_dt <- PHYTO_advection + PHYTO_reaction
+  dPHYTO_dt <- PHYTO_advection + PHYTO_reaction + PHYTO_diffusion
   dNIT_dt <- NIT_diffusion + NIT_reaction
   dPHS_dt <- PHS_diffusion + PHS_reaction
   

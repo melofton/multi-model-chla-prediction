@@ -20,30 +20,30 @@ source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(0.001, #w_p (positive is down, negative is up)
-                                                2.5, #R_growth
-                                                1.02,#1.1, #theta_growth
+                                     parms = c(0.01, #w_p (positive is down, negative is up)
+                                                1.5, #R_growth
+                                                1.08,#1.1, #theta_growth
                                                 1, #light_extinction
                                                 5, #I_K
                                                 0.25, #N_o
-                                                0.25, #K_N
-                                                0.07, #P_o
-                                                0.10, #K_P
+                                                2, #K_N
+                                                0.03, #P_o
+                                                0.1, #K_P
                                                 0.1, #f_pr
-                                                0.12, #R_resp
+                                                0.08, #R_resp
                                                 1.08, #theta_resp
-                                                10, #T_std
-                                                12,#20, #T_opt
-                                                30,#35, #T_max
+                                                20, #T_std
+                                                28,#20, #T_opt
+                                                35,#35, #T_max
                                                 0.02, #N_C_ratio
                                                 0.002, #P_C_ratio
                                                 0, #phyto_flux_top
                                                 9.5,# lake_depth
                                                 38,# num_boxes
                                                 0.005,#KePHYTO
-                                                0.01, #D_temp
-                                                0,#phyto_flux_bottom
-                                                10), #Xcc
+                                                0.0001, #D_temp
+                                                0.1,#p0
+                                                50), #Xcc
                                      cal_dates = c("2018-08-06","2021-12-31"),
                                      save_plots = TRUE,
                                      inputs = NULL){
@@ -111,8 +111,8 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
     depths_interface <- seq(from = 0, to = parms[19], by = delx)
     
     # use this if you don't know morphometry (assumes 1 meter area per depth)
-    areas_mid <- rep(1, length(depths_mid))
-    areas_interface <- rep(1, length(depths_interface))
+    # areas_mid <- rep(1, length(depths_mid))
+    # areas_interface <- rep(1, length(depths_interface))
     
     #use this if you have your morphometry defined
     areas_mid <- approx(x = morphometry_depth, y = morphometry_A, xout = depths_mid, rule = 2)$y
