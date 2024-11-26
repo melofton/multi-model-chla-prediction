@@ -197,21 +197,19 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   
   # Advection calculation (assume only PHYTOs advect)
   # Advection calculation 
-  PHYTO_advection_flux <- c(phyto_flux_top, (w_p * PHYTO)) * areas_interface # * c((1/abs(temp_diff))
-  PHYTO_advection <- (1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
-  
-  #Diffusion (assume proportional to temperature gradient)
+  PHYTO_advection_flux <- c(phyto_flux_top, -w_p * PHYTO) * areas_interface
+  PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
   
   #Diffusion (assume proportional to temperature gradient)
   temp_diff <- diff(layer_temp)
   temp_diff[which(abs(temp_diff) < 0.01)] <- 0.01
-  D <- D_temp * c(0, 1/abs(temp_diff), 0)
+  D <- 0.01 * D_temp * c(0, 1/abs(temp_diff), 0)
   
   #Phytos
-  gradient_middle_boxes <- diff(PHYTO)
-  gradient <- c(0, gradient_middle_boxes, 0) / delx
-  diffusion_flux <- areas_interface * D * gradient
-  PHYTO_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx)
+  gradient_middle_boxes <- diff(PHYTO) # mmol C / m3
+  gradient <- c(0, gradient_middle_boxes, 0) / delx # mmol C / m3 / m
+  diffusion_flux <- areas_interface * D * gradient # mmol C / day
+  PHYTO_diffusion <- (1/areas_mid) * (diff(diffusion_flux) / delx) # mmol C / m3
   
   #Nitrogen
   gradient_middle_boxes <- diff(NIT)

@@ -20,15 +20,15 @@ source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(0.01, #w_p (positive is down, negative is up)
-                                                1.5, #R_growth
+                                     parms = c(-0.01, #w_p (negative is down, positive is up)
+                                                1, #R_growth
                                                 1.08,#1.1, #theta_growth
                                                 1, #light_extinction
                                                 5, #I_K
-                                                0.25, #N_o
-                                                2, #K_N
-                                                0.03, #P_o
-                                                0.1, #K_P
+                                                0.07, #N_o
+                                                0.25, #K_N
+                                                0.01, #P_o
+                                                0.03, #K_P
                                                 0.1, #f_pr
                                                 0.08, #R_resp
                                                 1.08, #theta_resp
@@ -41,7 +41,7 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                                                 9.5,# lake_depth
                                                 38,# num_boxes
                                                 0.005,#KePHYTO
-                                                0.0001, #D_temp
+                                                0.00001, #D_temp
                                                 0.1,#p0
                                                 50), #Xcc
                                      cal_dates = c("2018-08-06","2021-12-31"),
