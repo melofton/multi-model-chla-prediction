@@ -104,7 +104,7 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   lake_depth <- parms[19]
   num_boxes <- parms[20]
   KePHY <- parms[21]
-  D_temp <- parms[22]
+  K <- parms[22]
   p0 <- parms[23]
 
   Tparms <- get_T_parms(group_parms = list(T_std = T_std, T_opt = T_opt, T_max = T_max, theta_growth = theta_growth))
@@ -195,15 +195,16 @@ phyto_depth_model <- function(t, state, parms, inputs) {
   NIT_reaction <- -NIT_uptake + NIT_turnover + NIT_horizontal
   PHS_reaction <- -PHS_uptake + PHS_turnover + PHS_horizontal
   
-  # Advection calculation (assume only PHYTOs advect)
-  # Advection calculation 
-  PHYTO_advection_flux <- c(phyto_flux_top, -w_p * PHYTO) * areas_interface
-  PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx)
-  
-  #Diffusion (assume proportional to temperature gradient)
+  #Diffusion coefficient and temperature gradient scaling
   temp_diff <- diff(layer_temp)
   temp_diff[which(abs(temp_diff) < 0.01)] <- 0.01
-  D <- 0.01 * D_temp * c(0, 1/abs(temp_diff), 0)
+  temp_scalar <- 0.01 * c(0, 1/abs(temp_diff), 0)
+  D <- K * temp_scalar
+  
+  # Advection calculation (assume only PHYTOs advect)
+  # Advection calculation 
+  PHYTO_advection_flux <- c(phyto_flux_top, -w_p * PHYTO) * areas_interface * temp_scalar
+  PHYTO_advection <- -(1/areas_mid) * (diff(PHYTO_advection_flux) / delx) 
   
   #Phytos
   gradient_middle_boxes <- diff(PHYTO) # mmol C / m3

@@ -121,25 +121,25 @@ ggsave(p7, filename = "./figures/predictionHorizon7DaysGLMAED.png",
 PlotMonodLightLimitation(I_K = 250, xlim = c(0,600), save_plot = FALSE)
 PlotRespiration(R_resp = 0.11, theta_resp = 1.08, xlim = c(1,30), save_plot = FALSE)
 PlotNLimitation(K_N = 2, N_0 = 0.00, xlim = c(0,10), save_plot = FALSE)
-PlotPLimitation(K_P = 0.10, P_0 = 0.00, xlim = c(0,0.2), save_plot = FALSE)
+PlotPLimitation(K_P = 0.08, P_0 = 0.08, xlim = c(0,0.2), save_plot = FALSE)
 
 # set parameters for temperature limitation
-g1 <- list(T_std = 10,
-           T_opt = 28,
-           T_max = 40,
-           Ts = 10,
-           To = 28,
-           Tm = 40,
-           v = 1.1,
-           theta = 1.1)
+g1 <- list(T_std = 20,
+           T_opt = 21,
+           T_max = 35,
+           Ts = 20,
+           To = 21,
+           Tm = 35,
+           v = 1.08,
+           theta = 1.08)
 g2 <- list(T_std = 10,
-           T_opt = 28,
+           T_opt = 12,
            T_max = 35,
            Ts = 10,
-           To = 28,
+           To = 12,
            Tm = 35,
-           v = 1.06,
-           theta = 1.06)
+           v = 1.02,
+           theta = 1.02)
 PlotTemperatureLimitation2Groups(g1_parms = g1, g2_parms = g2, save_plot = FALSE)
 
 # comparing phyto sensors

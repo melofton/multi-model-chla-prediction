@@ -20,20 +20,20 @@ source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(-0.01, #w_p (negative is down, positive is up)
-                                                1, #R_growth
-                                                1.08,#1.1, #theta_growth
-                                                1, #light_extinction
+                                     parms = c(-0.03, #w_p (negative is down, positive is up)
+                                                0.5, #R_growth
+                                                1.04,#1.1, #theta_growth
+                                                0.5, #light_extinction
                                                 5, #I_K
-                                                0.07, #N_o
-                                                0.25, #K_N
-                                                0.01, #P_o
-                                                0.03, #K_P
-                                                0.1, #f_pr
-                                                0.08, #R_resp
+                                                1, #N_o
+                                                1, #K_N
+                                                0.05, #P_o
+                                                0.05, #K_P
+                                                0.005, #f_pr
+                                                0.3, #R_resp
                                                 1.08, #theta_resp
                                                 20, #T_std
-                                                28,#20, #T_opt
+                                                21,#20, #T_opt
                                                 35,#35, #T_max
                                                 0.02, #N_C_ratio
                                                 0.002, #P_C_ratio
@@ -41,9 +41,9 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                                                 9.5,# lake_depth
                                                 38,# num_boxes
                                                 0.005,#KePHYTO
-                                                0.00001, #D_temp
+                                                0.1, #K (diffusivity)
                                                 0.1,#p0
-                                                50), #Xcc
+                                                30), #Xcc
                                      cal_dates = c("2018-08-06","2021-12-31"),
                                      save_plots = TRUE,
                                      inputs = NULL){
@@ -193,7 +193,16 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
            height = 6.4, width = 12, units = "in")
   }
   
-
+  # check fTotal
+  ftotal <- output_df %>%
+    filter(variable %in% c("fResources","fT")) %>%
+    pivot_wider(names_from = variable, values_from = prediction) %>%
+    mutate(fTotal = fResources * fT) %>%
+    filter(depth == 1.5 | is.na(depth)) %>%
+    ggplot(aes(x = datetime, y = fTotal)) +
+    geom_line(color = "lightblue3") +
+    theme_bw()
+  
   # temporal-spatial plot of the concentrations
   par(oma = c(0, 0, 3, 0))   # set margin size (oma) so that the title is included
   col <- topo.colors
