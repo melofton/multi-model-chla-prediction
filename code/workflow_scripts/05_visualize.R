@@ -125,21 +125,21 @@ PlotPLimitation(K_P = 0.08, P_0 = 0.08, xlim = c(0,0.2), save_plot = FALSE)
 
 # set parameters for temperature limitation
 g1 <- list(T_std = 20,
-           T_opt = 21,
+           T_opt = 25,
            T_max = 35,
            Ts = 20,
-           To = 21,
+           To = 25,
            Tm = 35,
-           v = 1.08,
-           theta = 1.08)
-g2 <- list(T_std = 10,
-           T_opt = 12,
+           v = 1.07,
+           theta = 1.07)
+g2 <- list(T_std = 20,
+           T_opt = 22,
            T_max = 35,
-           Ts = 10,
-           To = 12,
+           Ts = 20,
+           To = 22,
            Tm = 35,
-           v = 1.02,
-           theta = 1.02)
+           v = 1.04,
+           theta = 1.04)
 PlotTemperatureLimitation2Groups(g1_parms = g1, g2_parms = g2, save_plot = FALSE)
 
 # comparing phyto sensors

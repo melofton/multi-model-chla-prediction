@@ -21,29 +21,29 @@ dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                                      parms = c(-0.03, #w_p (negative is down, positive is up)
-                                                0.5, #R_growth
-                                                1.04,#1.1, #theta_growth
+                                                0.6, #R_growth
+                                                1.02,#1.1, #theta_growth
                                                 0.5, #light_extinction
-                                                5, #I_K
+                                                1, #I_K
                                                 1, #N_o
                                                 1, #K_N
                                                 0.05, #P_o
                                                 0.05, #K_P
                                                 0.005, #f_pr
-                                                0.3, #R_resp
+                                                0.25, #R_resp
                                                 1.08, #theta_resp
-                                                20, #T_std
-                                                21,#20, #T_opt
+                                                10, #T_std
+                                                12,#20, #T_opt
                                                 35,#35, #T_max
                                                 0.02, #N_C_ratio
                                                 0.002, #P_C_ratio
                                                 0, #phyto_flux_top
                                                 9.5,# lake_depth
                                                 38,# num_boxes
-                                                0.005,#KePHYTO
+                                                0.02,#KePHYTO
                                                 0.1, #K (diffusivity)
                                                 0.1,#p0
-                                                30), #Xcc
+                                                10), #Xcc
                                      cal_dates = c("2018-08-06","2021-12-31"),
                                      save_plots = TRUE,
                                      inputs = NULL){
@@ -180,13 +180,22 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
   
   # Visualize output
   message("building figures")
+  
+  # build facet labels
+  fac_labs <- c("Chl-a (ug/L)","DIN (ug/L)","fI","fN","fP","fResources","SRP (ug/L)",
+                "fT","Kw (/m)","I (umol/m2/s)","PHYTO (mmol C/m3)","Secchi depth (m)")
+  names(fac_labs) <- sort(unique(output_df$variable))[1:12]
+  
   # assess model run
   assess_model_run <- output_df |>
     filter(depth == 1.5 | is.na(depth)) |>
     ggplot(aes(x = datetime, y = prediction)) +
-    geom_point(aes(y = observation)) +
-    geom_line(color = "lightblue3") +
-    facet_wrap(~variable, scale = "free") +
+    geom_point(aes(y = observation, color = "observation")) +
+    geom_line(aes(color = "prediction")) +
+    facet_wrap(~variable, scale = "free",labeller = labeller(variable = fac_labs)) +
+    scale_color_manual(values = c("prediction" = "lightblue3", "observation" = "black")) +
+    labs(color = "")+
+    ylab("value")+
     theme_bw()
   if(save_plots == TRUE){
     ggsave(assess_model_run, filename = "./figures/1DProcessModel/assess_1Dmodel_run.png",
