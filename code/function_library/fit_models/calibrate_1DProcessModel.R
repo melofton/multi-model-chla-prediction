@@ -21,17 +21,17 @@ dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                                      parms = c(-0.03, #w_p (negative is down, positive is up)
-                                                0.6, #R_growth
+                                                0.8, #R_growth
                                                 1.02,#1.1, #theta_growth
                                                 0.5, #light_extinction
-                                                1, #I_K
+                                                5, #I_K
                                                 1, #N_o
                                                 1, #K_N
                                                 0.05, #P_o
                                                 0.05, #K_P
                                                 0.005, #f_pr
-                                                0.25, #R_resp
-                                                1.08, #theta_resp
+                                                0.17, #R_resp
+                                                1.04, #theta_resp
                                                 10, #T_std
                                                 12,#20, #T_opt
                                                 35,#35, #T_max
@@ -230,7 +230,7 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
                    z = as.matrix(mat_phyto),
                    color = col,
                    ylim = c(lake_depth, 0),
-                   zlim = c(0,200),
+                   zlim = range(mat_phyto),
                    xlab = "time, days",
                    ylab = "Depth, m",
                    main = "Concentration, mmolC/m3")
@@ -312,6 +312,16 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
            height = 6.4, width = 12, units = "in")
   }
   
+  chla_only <- output_df %>%
+    filter(variable == "chla" & depth == 1.5)
+  
+  rmse <- sqrt(mean((chla_only$observation - chla_only$prediction)^2, na.rm = TRUE))
+  
+  chla_only_no_2019 <- output_df %>%
+    filter(variable == "chla" & depth == 1.5 & !year(datetime) == 2019)
+  
+  rmse_no_2019 <- sqrt(mean((chla_only_no_2019$observation - chla_only_no_2019$prediction)^2, na.rm = TRUE))
+  
   # Additional plotting code that could be deployed
   
   # output_df |>
@@ -334,5 +344,6 @@ calibrate_1DProcessModel <- function(data = dat_1DProcessModel,
   #   geom_line()
   
   message("all done!")
-  return(list(output_df = output_df, inputs = inputs))
+  return(list(output_df = output_df, inputs = inputs,
+              rmse = rmse, rmse_no_2019 = rmse_no_2019))
 }

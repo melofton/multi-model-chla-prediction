@@ -20,30 +20,30 @@ source("./code/model_files/1DProcessModel/depth_phyto_model.R")
 # dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 
 OneDProcessModel <- function(data = dat_1DProcessModel,
-                                     parms = c(-0.001, #w_p (negative is down, positive is up)
-                                                4.5, #R_growth
-                                                1.02,#1.1, #theta_growth
-                                                1, #light_extinction
-                                                60, #I_K
-                                                0, #N_o
-                                                2.5, #K_N
-                                                0, #P_o
-                                                0.0001, #K_P
-                                                0.1, #f_pr
-                                                0.13, #R_resp
-                                                1.02, #theta_resp
-                                                10, #T_std
-                                                12,#20, #T_opt
-                                                30,#35, #T_max
-                                                0.02, #N_C_ratio
-                                                0.002, #P_C_ratio
-                                                0, #phyto_flux_top
-                                                9.5,# lake_depth
-                                                38,# num_boxes
-                                                0.005,#KePHYTO
-                                                0.01, #D_temp
-                                                0,#phyto_flux_bottom
-                                                10), #Xcc
+                             parms = c(-0.03, #w_p (negative is down, positive is up)
+                                       0.8, #R_growth
+                                       1.02,#1.1, #theta_growth
+                                       0.5, #light_extinction
+                                       5, #I_K
+                                       1, #N_o
+                                       1, #K_N
+                                       0.05, #P_o
+                                       0.05, #K_P
+                                       0.005, #f_pr
+                                       0.17, #R_resp
+                                       1.04, #theta_resp
+                                       10, #T_std
+                                       12,#20, #T_opt
+                                       35,#35, #T_max
+                                       0.02, #N_C_ratio
+                                       0.002, #P_C_ratio
+                                       0, #phyto_flux_top
+                                       9.5,# lake_depth
+                                       38,# num_boxes
+                                       0.02,#KePHYTO
+                                       0.1, #K (diffusivity)
+                                       0.1,#p0
+                                       10), #Xcc
                                      pred_dates = c("2022-01-01","2023-12-31"),
                              forecast_horizon = 35){
 
