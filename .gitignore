@@ -10,4 +10,5 @@ model_output/LSTM_predictions
 figures/ARIMA_trials
 figures/MARS_trials
 figures/LSTM_trials
+model_output/OneDProcessModel
 

@@ -72,7 +72,7 @@ OneDProcessModel <- function(data = dat_1DProcessModel,
   
   for(t in 1:length(run_datetimes)){
     
-    print(run_datetimes[t])
+    message(run_datetimes[t])
     
     # set forecast dates
     forecast_dates <- seq.Date(from = as.Date(run_datetimes[t]+1), to = as.Date(run_datetimes[t]+forecast_horizon), by = "day")
@@ -220,14 +220,15 @@ OneDProcessModel <- function(data = dat_1DProcessModel,
                         variable = "chlorophyll-a",
                         prediction = c(curr_chla,chl))
   
-  # bind today's prediction to larger dataframe
-  pred.df <- rbind(pred.df, temp.df)
+  temp.df$prediction <- as.double(temp.df$prediction)
   
+  # bind today's prediction to larger dataframe
+  write.csv(temp.df, file = paste0("./model_output/OneDProcessModel/fc_",run_datetimes[t],".csv"),
+            row.names = FALSE)
+
   } # end prediction for-loop
 
   #return predictions
   message("all done!")
-  pred.df$prediction <- as.double(pred.df$prediction)
-  return(pred.df)
   
 }

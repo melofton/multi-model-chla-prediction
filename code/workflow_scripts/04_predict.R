@@ -146,6 +146,8 @@ pred_OneDProcessModel <- OneDProcessModel(data = dat_1DProcessModel,
                                           10), #Xcc
                                 pred_dates = c("2022-01-01","2023-11-26"),
                                 forecast_horizon = 35)
+pred_OneDProcessModel <- read_csv("./model_output/OneDProcessModel.csv") %>%
+  filter(!reference_datetime == "2021-12-31")
 
 forecast_horizon = 20
 pred_LSTM <- LSTM(data = dat_LSTM,
@@ -173,8 +175,8 @@ pred_ETS_KGML <- fableETS_KGML(previous_residuals = dat_ETS_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "XGBoost") %>%
-  bind_rows(.,pred_XGBoost)
+  filter(!model_id == "OneDProcessModel") %>%
+  bind_rows(.,pred_OneDProcessModel)
 
 unique(mod_output$model_id)
 
