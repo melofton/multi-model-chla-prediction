@@ -21,12 +21,20 @@ library(plotly)
 met <- read_csv("./code/model_files/GLM-AED/prediction/inputs/met.csv") %>%
   arrange(time) %>%
   pivot_longer(AirTemp:Snow, names_to = "variable", values_to = "observation") %>%
-  ggplot(aes(x = time, y = observation))+
+  filter(!variable == "Snow")
+
+# build facet labels
+fac_labs <- c("a. Air temperature (°C)","e. Shortwave radiation (W/m2)","b. Longwave radiation (W/m2)",
+              "d. Relative humidity (%)","f. Windspeed (m/s)","c. Rain (m/day)")
+names(fac_labs) <- unique(met$variable)
+
+# build plot
+metplot <- ggplot(data = met, aes(x = time, y = observation))+
   geom_line()+
-  facet_wrap(facets = vars(variable), scales = "free")+
+  facet_wrap(facets = vars(variable), scales = "free",labeller = labeller(variable = fac_labs))+
   theme_bw()
-met
-ggsave(met, filename = "./figures/GLM-AED_met_2015-2024.png", height = 9, width = 12, units = "in", 
+metplot
+ggsave(metplot, filename = "./figures/GLM-AED_met_2015-2024.png", height = 5, width = 8, units = "in", 
        device = "png")
 
 tail(met)
@@ -230,3 +238,26 @@ write.csv(inf, "./code/model_files/GLM-AED/prediction_test_100xOGM_docr/inputs/f
 
 check <- read_csv("./code/model_files/GLM-AED/prediction_test_100xOGM_docr/inputs/fake_out.csv")
 plot(check$time, check$FLOW)
+
+# inflow/outflow driver data figure for supplement
+
+new_inf <- read_csv("./code/model_files/GLM-AED/calibration/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
+  arrange(time) %>%
+  select(-c(TRC_tr1:NCS_ss2,CAR_ch4_bub,PHY_Nfixer:BIV_filtfrac)) %>%
+  rename(INFLOW = FLOW) %>%
+  pivot_longer(INFLOW:OGM_cpom, names_to = "variable", values_to = "value") 
+
+new_out <- read_csv("./code/model_files/GLM-AED/prediction/inputs/FCR_spillway_outflow_WeirOnly_2013_2023_20240530.csv") %>%
+  arrange(time) %>%
+  rename(OUTFLOW = FLOW) %>%
+  pivot_longer(OUTFLOW, names_to = "variable", values_to = "value")
+
+inf_out <- bind_rows(new_inf, new_out)
+
+inf_out_plot <- ggplot(inf_out, aes(x = time, y = value))+
+  geom_line()+
+  facet_wrap(facets = vars(variable), scales = "free_y")+
+  theme_bw()
+inf_out_plot
+ggsave(inf_out_plot, filename = "./figures/GLMInflowOutflowFiles.png",
+       device = "png", height = 6, width = 12, units = "in")

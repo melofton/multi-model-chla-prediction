@@ -60,7 +60,7 @@ ggsave(p1, filename = "./figures/predictionBlooms.png",
 p2 <- PlotInputData(input_data = input)
 p2
 ggsave(p2, filename = "./figures/drivers.png",
-       device = "png", height = 3, width = 5, units = "in")
+       device = "png", height = 5, width = 7, units = "in")
 
 p3 <- PlotModelFits(observations = obs, 
                         predictions = cal, 
@@ -115,6 +115,15 @@ p7
 ggsave(p7, filename = "./figures/predictionHorizon7DaysGLMAED.png",
        device = "png", height = 4, width = 8, units = "in")
 
+# OneDProcessModel
+
+source("./code/function_library/visualization/OneDProcessModelInputData.R")
+input_data <- read_csv("./data/data_processed/1DProcessModel.csv")
+p_OneDProcessModelInputData <- OneDProcessModelInputData(input_data)
+p_OneDProcessModelInputData
+ggsave(p_OneDProcessModelInputData, filename = "./figures/OneDProcessModelInputData.png",
+       device = "png", height = 4, width = 6.5, units = "in")
+
 # GLM-AED
 
 # functional relationships
@@ -124,22 +133,22 @@ PlotNLimitation(K_N = 2, N_0 = 0.00, xlim = c(0,10), save_plot = FALSE)
 PlotPLimitation(K_P = 0.08, P_0 = 0.08, xlim = c(0,0.2), save_plot = FALSE)
 
 # set parameters for temperature limitation
-g1 <- list(T_std = 20,
+g1 <- list(T_std = 10,
            T_opt = 25,
            T_max = 35,
-           Ts = 20,
+           Ts = 10,
            To = 25,
            Tm = 35,
-           v = 1.07,
-           theta = 1.07)
-g2 <- list(T_std = 20,
-           T_opt = 22,
-           T_max = 35,
-           Ts = 20,
-           To = 22,
-           Tm = 35,
-           v = 1.04,
-           theta = 1.04)
+           v = 1.02,
+           theta = 1.02)
+g2 <- list(T_std = 10,
+           T_opt = 12,
+           T_max = 30,
+           Ts = 10,
+           To = 12,
+           Tm = 30,
+           v = 1.02,
+           theta = 1.02)
 PlotTemperatureLimitation2Groups(g1_parms = g1, g2_parms = g2, save_plot = FALSE)
 
 # comparing phyto sensors

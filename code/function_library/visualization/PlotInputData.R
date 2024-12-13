@@ -27,8 +27,15 @@ PlotInputData <- function(input_data){
     rename(Interpolated = `1`,
            Observed = `0`)
   
+  # build facet labels
+  fac_labs <- c("a. mean daily air temperature (°C)","f. mean daily PAR (umol/m2/s)","i. mean daily windspeed (m/s)",
+                "d. mean daily inflow (cms)","h. mean daily water temperature (°C)",
+                "g. SRP (ug/L)","c. DIN (ug/L)","e. light attenuation (per m)","b. mean daily chlorophyll-a (ug/L)"
+                )
+  names(fac_labs) <- unique(plot_data$variable)
+  
   p <- ggplot(data = plot_data)+
-    facet_wrap(vars(variable), scales = "free_y", ncol = 2)+
+    facet_wrap(vars(variable), scales = "free_y", ncol = 2, labeller = labeller(variable = fac_labs))+
     geom_point(aes(x = datetime, y = Interpolated, color = "Interpolated"))+
     geom_point(aes(x = datetime, y = Observed, color = "Observed"))+
     xlab("")+
