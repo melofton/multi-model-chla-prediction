@@ -172,8 +172,8 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
   select(model_id, datetime, variable, prediction)
 
 # KGML experiment
-fit_ETS_KGML <- fit_ETS_KGML(data = dat_ETS_KGML, cal_dates = c("2018-08-06","2021-12-31"))
-fit_ETS_KGML$plot
+fit_NNETAR_KGML <- fit_NNETAR_KGML(data = dat_NNETAR_KGML, cal_dates = c("2018-08-06","2021-12-31"))
+fit_NNETAR_KGML$plot
 
 
 #Stack model predictions and write to file (not applicable for persistence model
