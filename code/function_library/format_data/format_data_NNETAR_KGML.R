@@ -10,8 +10,8 @@ library(lubridate)
 
 format_data_NNETAR_KGML <- function(filepath_GLMAED = "./code/model_files/GLM-AED/calibration/output/output.nc",
                                  filepath_obs = "./data/data_processed/NNETAR.csv",
-                                 cal_dates = c("2020-01-01","2021-12-31"),
-                                 GLM_run_dates = c("2018-04-20","2021-12-31")){
+                                 cal_dates = c("2018-08-06","2021-12-31"),
+                                 GLM_run_dates = c("2018-08-06","2023-12-31")){
   
   # pull GLM_AED chlorophyll-a predictions for 1.6 m and calculate residuals
   nc_filepath <- file.path(filepath_GLMAED)
@@ -46,7 +46,7 @@ format_data_NNETAR_KGML <- function(filepath_GLMAED = "./code/model_files/GLM-AE
     group_by(date) %>%
     summarise(across(AirTemp:Snow, ~ mean(.x, na.rm = TRUE))) %>%
     rename(datetime = date) %>%
-    filter(datetime >= cal_dates[1] & datetime <= cal_dates[2])
+    filter(datetime >= GLM_run_dates[1] & datetime <= GLM_run_dates[2])
   
   # pull GLM-AED inflow/outflow driver data
   inf <- read_csv("./code/model_files/GLM-AED/calibration/inputs/FCR_weir_inflow_2013_2023_20240712_allfractions_2poolsDOC_1dot5xDOCr.csv") %>%
@@ -54,14 +54,14 @@ format_data_NNETAR_KGML <- function(filepath_GLMAED = "./code/model_files/GLM-AE
     select(-c(TRC_tr1:NCS_ss2,CAR_ch4_bub,PHY_Nfixer:BIV_filtfrac)) %>%
     rename(INFLOW = FLOW,
            datetime = time) %>%
-    filter(datetime >= cal_dates[1] & datetime <= cal_dates[2])
+    filter(datetime >= GLM_run_dates[1] & datetime <= GLM_run_dates[2])
   
   NNETAR_KGML_data <- data.frame(datetime = obs$datetime,
                               GLMAED_Chla_ugL = GLM_chl_for_residuals,
                               Chla_ugL_mean = obs$Chla_ugL_mean,
                               Chla_residuals_ugL = residuals) %>%
-    left_join(., met) %>%
-    left_join(., inf)
+    right_join(., met) %>%
+    right_join(., inf)
   return(NNETAR_KGML_data)
 }
 
@@ -109,3 +109,4 @@ hist(residuals, xlim = c(-40, 40))
 hist(h35_residuals, xlim = c(-40, 40))
 mean(residuals)
 mean(h35_residuals)
+

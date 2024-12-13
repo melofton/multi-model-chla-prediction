@@ -34,7 +34,7 @@ fit_NNETAR_KGML <- function(data, cal_dates){
   my.nnetar <- df %>%
     model(`KGML NNETAR` = fable::NNETAR(formula = Chla_residuals_ugL ~ AirTemp + ShortWave + LongWave + RelHum + 
                                           WindSpeed + Rain +
-                                          NIT_amm + NIT_nit + PHS_frp + OGM_doc + Chla_ugL_mean,
+                                          NIT_amm + NIT_nit + PHS_frp + OGM_doc + GLMAED_Chla_ugL,
                                               n_networks = 20)) 
   
   # get fitted values

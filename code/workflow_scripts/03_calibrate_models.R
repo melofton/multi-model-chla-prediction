@@ -29,7 +29,7 @@ dat_1DProcessModel <- read_csv("./data/data_processed/1DProcessModel.csv")
 dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
-dat_ETS_KGML <- read_csv("./data/data_processed/ETS_KGML.csv")
+dat_NNETAR_KGML <- read_csv("./data/data_processed/NNETAR_KGML.csv")
 
 #Set sim folder (for GLM-AED)
 sim_folder <- "./code/model_files/GLM-AED/calibration"
