@@ -128,6 +128,7 @@ fableNNETAR_KGML <- function(previous_residuals, process_model_predictions,
     
     #correct GLM-AED predictions using new residual predictions
     final_pred <- current_model_pred - residual_pred$.mean
+    final_pred[final_pred < 0] <- 0
 
     #format corrected predictions for output
     temp.df <- data.frame(model_id = "NNETAR_KGML",

@@ -7,21 +7,19 @@ library(RColorBrewer)
 
 PlotObservations <- function(observations, pred_only, focal_dates, forecast_horizon,
                              plotly, train_test_box, training_dates, testing_dates,
-                             focal_dates_geom){
+                             focal_dates_geom, ss_data){
   
   if(pred_only == TRUE){
     observations <- observations %>%
       filter(lubridate::year(datetime) %in% c(2022,2023))
   }
   
+  observations <- left_join(observations, ss_data, by = "datetime")
+  
   p <- ggplot()+
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
     theme_bw()+
-    theme(axis.title.y = element_text(size = 16),
-          axis.text.x = element_text(size = 14),
-          plot.title = element_text(hjust = 0.05, face = "bold",
-                                    size = 16))+
     ylim(NA,max(observations$Chla_ugL_mean)+3)
   
   if(pred_only == TRUE){
@@ -38,10 +36,10 @@ PlotObservations <- function(observations, pred_only, focal_dates, forecast_hori
                 xmax = as.Date(testing_dates[2]) + 1,
                 ymin = -Inf, ymax = Inf, fill = "prediction period", alpha = "prediction period")) +
       scale_fill_manual(values = c("training period" = "lightyellow",
-                                   "prediction period" = "lightgray"),
+                                   "prediction period" = "lightblue"),
                         name = "")+
       scale_alpha_manual(values = c("training period" = 0.7,
-                                    "prediction period" = 0.3),
+                                    "prediction period" = 0.2),
                          name = "")
   } 
   
@@ -54,25 +52,32 @@ PlotObservations <- function(observations, pred_only, focal_dates, forecast_hori
     if(focal_dates_geom == "RECT"){
     
     for(f in 1:length(focal_dates)){
+      
+      panels <- letters
+      num_panels <- panels[1:length(focal_dates)]
+      focal_df <- data.frame(start_dates = as.Date(focal_dates),
+                             names = paste0("Fig. 2",num_panels),
+                             finish_dates = as.Date(focal_dates) + (forecast_horizon + 1))
     p <- p +
-      geom_rect(xmin = as.Date(focal_dates[f]) - (forecast_horizon + 1),
-                xmax = as.Date(focal_dates[f]) + 1,
-                ymin = 5, ymax = max(observations$Chla_ugL_mean, na.rm = TRUE) + 1,
-                fill = NA, color = "#B85233",
-                linetype = 8)
+      geom_rect(data = focal_df,
+                aes(xmin = start_dates,
+                xmax = finish_dates, color = names),
+                ymin = 0, ymax = max(observations$Chla_ugL_mean, na.rm = TRUE) + 1,
+                fill = NA)+
+      scale_color_viridis_d(option = "turbo", name = "Example prediction \ndates")
+
     }
       
     } else {
       
-      panels <- letters[-1]
+      panels <- letters
       num_panels <- panels[1:length(focal_dates)]
       focal_df <- data.frame(dates = as.Date(focal_dates),
-                             names = paste0("panel ",num_panels))
-      plot_cols <- brewer.pal(length(focal_dates),"Paired")
+                             names = paste0("Fig. 2",num_panels))
 
         p <- p +
           geom_vline(data = focal_df, aes(xintercept = dates, color = names), linewidth = 1)+
-          scale_color_manual(values = plot_cols, name = "Example prediction \ndates")
+          scale_color_viridis_d(option = "turbo", name = "Example prediction \ndates")
         
       
     }

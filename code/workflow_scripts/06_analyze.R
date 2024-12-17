@@ -30,11 +30,11 @@ pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"),
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven",
-                                    ifelse(model_id %in% c("ETS_KGML"),"KGML","process-based"))),
+                                    ifelse(model_id %in% c("NNETAR_KGML"),"KGML","process-based"))),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
-                                         ifelse(model_id == "ETS_KGML","ETS-corrected GLM-AED",model_id)))))
+                                         ifelse(model_id == "NNETAR_KGML","NNETAR-corrected GLM-AED",model_id)))))
 ens <- out %>%
   filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","ETS-corrected GLM-AED")) %>%
   group_by(reference_datetime, datetime) %>%
@@ -45,7 +45,7 @@ out <- bind_rows(out, ens)
 
 forecast_horizon = 35
 
-model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","ETS-corrected GLM-AED","ensemble")
+model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble")
 
 obs <- read_csv("./data/data_processed/chla_obs.csv") %>%
   mutate(delta = c(NA,diff(Chla_ugL_mean, na.rm = TRUE)))
@@ -77,6 +77,7 @@ schmidt <- ts.schmidt.stability(wtr = res, bathy = bth, na.rm = TRUE) %>%
   mutate(strat_bin = ifelse(schmidt.stability <= 1, "mixed",
                                 ifelse(schmidt.stability >= 40, "stratified",
                                        ifelse((schmidt.stability > 1 & schmidt.stability < 40 & month(datetime) %in% c(1:7)),"onset","decline"))))
+write.csv(schmidt, "./data/data_processed/schmidt_stability.csv",row.names = FALSE)
 
 #' 2. determine periods that are mixed, stratified, or exhibit increasing/
 #' decreasing stratification

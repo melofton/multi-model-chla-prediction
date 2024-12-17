@@ -175,7 +175,7 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "ETS_KGML") %>%
+  filter(!model_id == "NNETAR_KGML") %>%
   bind_rows(.,pred_NNETAR_KGML)
 
 unique(mod_output$model_id)
