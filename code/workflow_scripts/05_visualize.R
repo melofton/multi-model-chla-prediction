@@ -27,11 +27,11 @@ cal <- read_csv("./model_output/calibration_output.csv") %>%
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven",
-                                    ifelse(model_id %in% c("ETS_KGML"),"KGML","process-based"))),
+                                    ifelse(model_id %in% c("NNETAR_KGML"),"KGML","process-based"))),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
-                                         ifelse(model_id == "ETS_KGML","ETS-corrected GLM-AED",model_id)))))
+                                         ifelse(model_id == "NNETAR_KGML","NNETAR-corrected GLM-AED",model_id)))))
 ens <- out %>%
   filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","ETS-corrected GLM-AED")) %>%
   group_by(reference_datetime, datetime) %>%
@@ -49,13 +49,121 @@ pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"),
 
 #Plot 
 
-p1 <- PlotObservations(observations = obs, pred_only = TRUE,
-                       focal_dates = c("2022-03-26","2022-06-05","2022-09-21","2022-11-06","2023-05-16","2023-07-31","2023-10-02","2023-11-11"),
+# Figure 1
+source("./code/function_library/visualization/PlotObservations.R")
+p1a <- PlotObservations(observations = obs, pred_only = FALSE,
+                       focal_dates = c("2022-01-15","2022-07-15","2023-01-01","2023-07-05"),
                        forecast_horizon = forecast_horizon,
-                       plotly = FALSE)
+                       plotly = FALSE,
+                       train_test_box = TRUE,
+                       training_dates = c("2018-08-06","2021-12-31"),
+                       testing_dates = c("2022-01-01","2023-12-31"),
+                       focal_dates_geom = "LINE")
+p1a
+
+source("./code/function_library/visualization/ExamplePrediction.R")
+plot_cols <- brewer.pal(4,"Paired")
+
+reference_datetime_b = "2022-01-15"
+p1b <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_b, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "b. Mixed: ",
+                         rect_color = plot_cols[1],
+                         legend_option = "all")
+p1b
+
+reference_datetime_c = "2022-07-15"
+p1c <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_c, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "c. Stratified: ",
+                         rect_color = plot_cols[2],
+                         legend_option = "all")
+p1c
+
+reference_datetime_d = "2023-01-01"
+p1d <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_d, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "d. Low variability: ",
+                         rect_color = plot_cols[3],
+                         legend_option = "all")
+p1d
+
+reference_datetime_e = "2023-07-05"
+p1e <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_e, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "e. High variability: ",
+                         rect_color = plot_cols[4],
+                         legend_option = "all")
+p1e
+
+
+
+
+p1f_plot <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_b, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble"),
+                         show_legend = TRUE,
+                         sub_panel_label = "b",
+                         rect_color = "black",
+                         legend_option = "model_id_only")
+
+# Extract the legend. Returns a gtable
+leg <- get_legend(p1f_plot)
+
+# Convert to a ggplot and print
+p1f <- as_ggplot(leg)
+p1f
+
+p1g_plot <- ExamplePrediction(observations = obs, 
+                              model_output = out, 
+                              reference_datetime = reference_datetime_b, 
+                              forecast_horizon = forecast_horizon,
+                              model_ids = c("DOY","persistence","historical mean","ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","GLM-AED","OneDProcessModel","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble"),
+                              show_legend = TRUE,
+                              sub_panel_label = "b",
+                              rect_color = "black",
+                              legend_option = "no_model_id")
+
+# Extract the legend. Returns a gtable
+leg <- get_legend(p1g_plot)
+
+# Convert to a ggplot and print
+p1g <- as_ggplot(leg)
+p1g
+
+p1 <- ggarrange(p1a, 
+                ggarrange(
+                  ggarrange(p1b, p1c, p1d, p1e, ncol = 2, nrow = 2), 
+                  ggarrange(p1f, p1g, nrow = 2), 
+                  ncol = 2,
+                  widths = c(0.7,0.3)
+                ),
+                nrow = 2, 
+                labels = "a" ,
+                heights = c(0.5,1)
+) 
+
+
 p1
-ggsave(p1, filename = "./figures/predictionBlooms.png",
-       device = "png", height = 4, width = 6, units = "in")
+
 
 p2 <- PlotInputData(input_data = input)
 p2

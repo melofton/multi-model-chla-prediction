@@ -25,7 +25,11 @@ ExamplePrediction <- function(observations,
                               model_output, 
                               reference_datetime, 
                               forecast_horizon,
-                              model_ids){
+                              model_ids,
+                              show_legend,
+                              sub_panel_label,
+                              rect_color,
+                              legend_option){
   
   #get plotting dates
   ref_datetime <- as.Date(reference_datetime)
@@ -40,11 +44,11 @@ ExamplePrediction <- function(observations,
   #limit model output to relevant dates
   plot_mod <- model_output %>%
     filter(reference_datetime == ref_datetime & datetime %in% plot_dates & model_id %in% model_ids) %>%
-    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM","MARS","randomForest","ensemble")))
+    mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM","MARS","randomForest","NNETAR-corrected GLM-AED","ensemble")))
   
-  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 7))
-  my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols)
+  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 9))
+  my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols,"navy","darkgray")
 
   p <- ggplot()+
     geom_point(data = plot_obs, aes(x = datetime, y = Chla_ugL_mean, 
@@ -59,24 +63,37 @@ ExamplePrediction <- function(observations,
              label = "past", hjust = 0.25)+
     xlab("")+
     ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
-    scale_color_discrete(name = "Model ID")+ #c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
-    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash"))+
+    scale_color_manual(name = "Model ID", values = my.cols)+ #c("null" = "#948E0A", "process-based" = "#B85233","data-driven" = "#71BFB9")"#71BFB9","#B85233","#E69F00","#0072B2"
+    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed","KGML" = "twodash", "ensemble" = "dotdash"))+
     # if want to group models by type, can do that with colors in line below
     #scale_color_manual(name = "Model ID", values = c("#71BFB9","#B85233","#E69F00","#0072B2"))+
     scale_fill_manual(name = "", values = c("observed, seen by model" = "black",
                                             "observed, not seen by model" = "white"))+
     theme_classic()+
-    ggtitle(paste0("Example prediction: ",reference_datetime))+
-    theme(axis.text = element_text(size = 12),
-          axis.title.y = element_text(size = 16),
-          plot.title = element_text(size = 16, face = "bold", hjust = 1),
+    ggtitle(paste0(sub_panel_label,reference_datetime))+
+    theme(plot.title = element_text(face = "bold"),
           legend.title = element_text(face = "bold"),
-          panel.background = element_rect(color = "black", linewidth = 1),
           legend.key=element_rect(colour="white"),
-          legend.key.width=unit(2,"cm"))+
-    guides(color = guide_legend(order = 1),
+          legend.key.width=unit(2,"cm"),
+          panel.background=element_rect(colour=rect_color, linewidth = 2),
+          axis.line.x.bottom=element_line(color=rect_color),
+          axis.line.y.left=element_line(color=rect_color),
+          legend.box = "horizontal")+
+    guides(color = guide_legend(order = 1, ncol = 2),
            linetype = guide_legend(order = 2),
            fill = guide_legend(order = 3))
+  
+  if(legend_option == "model_id_only"){
+    p <- p + guides(linetype = "none", fill = "none")
+  }
+  
+  if(legend_option == "no_model_id"){
+    p <- p + guides(color = "none")
+  }
+  
+  if(show_legend == FALSE){
+    p <- p + theme(legend.position = "none")
+  }
   
   return(p)
     

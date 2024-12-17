@@ -4,11 +4,11 @@
 
 # Purpose: generate visualizations of all predictions from a model to be checked over
 dat <- read_csv("./model_output/validation_output.csv") %>%
-  filter(model_id == "MARS")
+  filter(model_id == "NNETAR_KGML")
 model_output <- dat
-pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
-plot_title = "MARS predictions at FCR"
-plot_file = "./figures/MARS_trials"
+pred_dates <- seq.Date(from = as.Date("2022-01-02"), to = as.Date("2023-11-26"), by = "day")
+plot_title = "NNETAR_KGML predictions at FCR"
+plot_file = "./figures/NNETAR_KGML_trials"
 obs <- read_csv("./data/data_processed/chla_obs.csv")
 
 CheckPredictions <- function(model_output, pred_dates, plot_title, plot_file, obs){

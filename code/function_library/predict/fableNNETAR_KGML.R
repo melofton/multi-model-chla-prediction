@@ -70,6 +70,9 @@ fableNNETAR_KGML <- function(previous_residuals, process_model_predictions,
   
   for(t in 1:length(pred_dates)){
     
+    #print date to keep track of loop
+    message(pred_dates[t])
+    
     #subset to reference_datetime 
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]+1), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
     
