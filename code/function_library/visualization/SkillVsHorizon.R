@@ -29,7 +29,10 @@ SkillVsHorizon <- function(observations,
                           viz_dates = pred_dates,
                           plot_title = "All predictions",
                           viz_metric = "r2",
-                          show_legend = FALSE){
+                          show_legend = FALSE,
+                          make_combined_bestmodel_legend =TRUE,
+                          add_vline = TRUE,
+                          vline_intercept = 21){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
@@ -83,9 +86,6 @@ SkillVsHorizon <- function(observations,
   
   if(best_models_only == TRUE){
     
-    check <- plot_data %>%
-      filter(horizon == 6)
-    
     if(viz_metric == "r2"){
       bestModByHorizon <- plot_data %>%
         group_by(horizon) %>%
@@ -137,14 +137,42 @@ SkillVsHorizon <- function(observations,
     scale_color_manual(name = "Model type", values = my.cols)+ 
     scale_linetype_discrete(name = "Null model")+
     theme_classic()+
-    theme(axis.text = element_text(size = 12),
-          axis.title = element_text(size = 16),
-          plot.title = element_text(size = 16, face = "bold", hjust = 1),
-          legend.title = element_text(face = "bold"),
+    theme(legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),
           legend.key.width = unit(2,"cm"),
           legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1))
+  }
+  
+  if(make_combined_bestmodel_legend == TRUE){
+    bestModByHorizon1 <- output %>%
+      filter(skill_metric == "rmse") %>%
+      group_by(horizon) %>%
+      filter(skill_value == min(skill_value)) %>%
+      arrange(horizon)
+    bestModByHorizon2 <- output %>%
+      filter(skill_metric == "bias") %>%
+      group_by(horizon) %>%
+      filter(abs(skill_value) == min(abs(skill_value))) %>%
+      arrange(horizon)
+    bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2)
+    
+    p <- ggplot()+
+      geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
+      geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+      facet_wrap(facets = vars(skill_metric))+
+      xlab("Prediction horizon (days)")+
+      ggtitle(plot_title)+
+      scale_shape_manual(name = "Model ID", values = my.shapes)+
+      scale_color_manual(name = "Model Type", values = my.cols)+ 
+      scale_linetype_discrete(name = "Null model")+
+      theme_classic()+
+      theme(legend.title = element_text(face = "bold"),
+            panel.background = element_rect(color = "black", linewidth = 1),
+            legend.key.width = unit(2,"cm"),
+            legend.key=element_rect(colour="white"))+
+      guides(color = guide_legend(order = 1))
+    
   }
   
   if(viz_metric == "rmse"){
@@ -161,6 +189,11 @@ SkillVsHorizon <- function(observations,
   if(show_legend == FALSE){
     p <- p +
       theme(legend.position = "none")
+  }
+  
+  if(add_vline == TRUE){
+    p <- p +
+      geom_vline(xintercept = vline_intercept, linetype = "dashed")
   }
   
   return(p)
