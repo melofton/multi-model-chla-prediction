@@ -303,7 +303,8 @@ p3 <- ggarrange(p3_leg1,
                 ggarrange(p3a, p3b, p3c, p3d,
                 nrow = 2,
                 ncol = 2,
-                labels = c("a","b","c","d")),
+                labels = c("a","b","c","d"),
+                widths = c(1,0.8)),
                 p3_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
@@ -312,7 +313,7 @@ p3 <- ggarrange(p3_leg1,
 p3
 
 ggsave(plot = p3, filename = "./figures/final_figures/Figure3.tif",
-       device = "tiff", height = 6, width = 12, units = "in")
+       device = "tiff", height = 6, width = 10.5, units = "in")
 
 # Figure 3 supplements
 
