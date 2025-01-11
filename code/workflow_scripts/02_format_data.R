@@ -32,6 +32,7 @@ dat_ARIMA <- format_data_ARIMA()
 dat_ARIMA_noDrivers <- format_data_ARIMA(include_drivers = FALSE)
 
 dat_TSLM <- format_data_TSLM()
+dat_TSLM_noDrivers <- format_data_TSLM(include_drivers = FALSE)
 
 dat_XGBoost <- format_data_XGBoost()
 
@@ -69,6 +70,7 @@ write.csv(dat_ETS, "./data/data_processed/ETS.csv",row.names = FALSE)
 write.csv(dat_ARIMA, "./data/data_processed/ARIMA.csv",row.names = FALSE)
 write.csv(dat_ARIMA_noDrivers, "./data/data_processed/ARIMAnoDrivers.csv",row.names = FALSE)
 write.csv(dat_TSLM, "./data/data_processed/TSLM.csv",row.names = FALSE)
+write.csv(dat_TSLM_noDrivers, "./data/data_processed/TSLMnoDrivers.csv",row.names = FALSE)
 write.csv(dat_XGBoost, "./data/data_processed/XGBoost.csv",row.names = FALSE)
 write.csv(dat_processModels, "./data/data_processed/processModels.csv",row.names = FALSE)
 write.csv(dat_LSTM$df.out, "./data/data_processed/LSTM.csv",row.names = FALSE)

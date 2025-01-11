@@ -12,7 +12,7 @@ library(fable)
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
 
-fableTSLM <- function(data, pred_dates, forecast_horizon){
+fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers){
   
   #Fit model
   
@@ -23,15 +23,19 @@ fableTSLM <- function(data, pred_dates, forecast_horizon){
   # vars <- c("AirTemp_C","Shortwave_Wm2","Windspeed_ms","Inflow_cms", "WaterTemp_C" ,"LightAttenuation_Kd", "DIN_ugL", "SRP_ugL")
   # 
   #assign target and predictors
-  df <- as_tsibble(data) %>%
+  df <- as_tsibble(data, index = datetime) %>%
     mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
     filter(datetime < pred_dates[1]) %>%
     slice(-1)
   
   #fit TSLM from fable package
+  if(include_drivers == TRUE){
   my.tslm <- df %>%
     model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean))
-  
+  } else if (include_drivers == FALSE){
+  my.tslm <- df %>%
+    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ Flag_Chla_ugL_mean))
+  }
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
   pred.df <- data.frame(matrix(nrow = 0, ncol = length(df.cols))) 
@@ -81,6 +85,11 @@ fableTSLM <- function(data, pred_dates, forecast_horizon){
                           datetime = forecast_dates,
                           variable = "chlorophyll-a",
                           prediction = c(curr_chla,pred$.mean))
+    
+    if(include_drivers == FALSE){
+      temp.df <- temp.df %>%
+        mutate(model_id = "TSLMnoDrivers")
+    }
     
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)

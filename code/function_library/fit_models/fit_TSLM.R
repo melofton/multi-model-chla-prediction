@@ -41,12 +41,15 @@ fit_TSLM <- function(data, cal_dates){
   my.tslm.w.trend <- df %>%
     model(tslm.w.trend = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean + trend())) 
   
+  my.tslm.lag.only <- df %>%
+    model(tslm.lag.only = fable::TSLM(formula = Chla_ugL_mean ~ lag_Chla_ugL_mean)) 
+  
   diagnostics_no_lag <- gg_tsresiduals(my.tslm)
   diagnostics_lag <- gg_tsresiduals(my.tslm.w.lag)
   
   t1 <- glance(my.tslm)
   t2 <- glance(my.tslm.w.lag)
-  t3 <- glance(my.tslm.w.lag)
+  t3 <- glance(my.tslm.lag.only)
   stat <- bind_rows(t1,t2,t3)
   
   fitted_values <- fitted(my.tslm.w.lag)

@@ -778,7 +778,19 @@ p5
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
        device = "tiff", height = 6, width = 12, units = "in")
 
+# Figure 6
 
+# need to actually make this function real
+# trial <- CompareWithAndWithoutDrivers <- (observations, 
+#                                          model_output, 
+#                                          forecast_horizon,
+#                                          model_ids = model_ids,
+#                                          viz_dates = pred_dates,
+#                                          plot_title = "All predictions",
+#                                          viz_metric = "r2",
+#                                          show_legend = FALSE,
+#                                          make_combined_bestmodel_legend =TRUE,
+#                                          combined_var = "strat")
 
 #need to figure out how to detach legend from this and make it a separate
 #plot, then add

@@ -21,6 +21,7 @@ dat_ETS <- read_csv("./data/data_processed/ETS.csv")
 dat_ARIMA <- read_csv("./data/data_processed/ARIMA.csv")
 dat_ARIMA_noDrivers <- read_csv("./data/data_processed/ARIMAnoDrivers.csv")
 dat_TSLM <- read_csv("./data/data_processed/TSLM.csv")
+dat_TSLM_noDrivers <- read_csv("./data/data_processed/TSLMnoDrivers.csv")
 dat_processModels <- read_csv("./data/data_processed/processModels.csv")
 dat_XGBoost <- read_csv("./data/data_processed/XGBoost.csv")
 dat_Prophet <- read_csv("./data/data_processed/Prophet.csv")
@@ -74,9 +75,14 @@ pred_ARIMA_noDrivers <- fableARIMA(data = dat_ARIMA_noDrivers,
                          forecast_horizon = forecast_horizon, 
                          include_drivers = FALSE)
 
-pred_TSLM <- fableTSLM(data = dat_TSLM,
+pred_TSLM_Drivers <- fableTSLM(data = dat_TSLM,
                          pred_dates = pred_dates,
                          forecast_horizon = forecast_horizon)
+
+pred_TSLM_noDrivers <- fableTSLM(data = dat_TSLM_noDrivers,
+                       pred_dates = pred_dates,
+                       forecast_horizon = forecast_horizon,
+                       include_drivers = FALSE)
 
 pred_Prophet_Drivers <- pred_Prophet(data = dat_Prophet,
                      pred_dates = pred_dates,
@@ -101,7 +107,7 @@ pred_NNETAR_noDrivers <- fableNNETAR(data = dat_NNETAR_noDrivers,
                                    forecast_horizon = forecast_horizon,
                                    include_drivers = FALSE)
 
-pred_MARS <- MARS(data = dat_MARS,
+pred_MARS_Drivers <- MARS(data = dat_MARS,
                   pred_dates = pred_dates,
                   forecast_horizon = forecast_horizon)
 
@@ -175,8 +181,8 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "NNETAR_KGML") %>%
-  bind_rows(.,pred_NNETAR_KGML)
+  #filter(!model_id == "NNETAR_KGML") %>%
+  bind_rows(.,pred_TSLM_noDrivers)
 
 unique(mod_output$model_id)
 
