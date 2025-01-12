@@ -181,7 +181,7 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  #filter(!model_id == "NNETAR_KGML") %>%
+  filter(!model_id == "TSLMnoDrivers") %>%
   bind_rows(.,pred_TSLM_noDrivers)
 
 unique(mod_output$model_id)

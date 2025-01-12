@@ -29,7 +29,7 @@ CompareWithAndWithoutDrivers <- function(observations,
                           plot_title = "All predictions",
                           viz_metric = "r2",
                           show_legend = FALSE,
-                          make_combined_bestmodel_legend =TRUE,
+                          make_combined_legend =TRUE,
                           combined_var = "strat"){
   
   #reformat observations
@@ -58,7 +58,7 @@ CompareWithAndWithoutDrivers <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(strat_bin, model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
     pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else if(combined_var == "var"){
     output <- model_output %>% 
@@ -77,7 +77,7 @@ CompareWithAndWithoutDrivers <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(var_bin, model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else {
     #reformat model output
@@ -97,52 +97,15 @@ CompareWithAndWithoutDrivers <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   }
   
-  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 9))
-  my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols,"navy","darkgray")
-  
   plot_data <- output %>%
-    filter(skill_metric == viz_metric)
+    filter(skill_metric == viz_metric & !model_type == "null")
   
-  p <- ggplot()+
-    geom_line(data = plot_data, aes(x = horizon, y = skill_value,
-                                   group = model_id, color = model_id, linetype = model_type))+
-    xlab("Prediction horizon (days)")+
-    ggtitle(plot_title)+
-    scale_color_manual(name = "Model ID", values = my.cols)+
-    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash","KGML" = "F1"))+
-    theme_classic()+
-    theme(plot.title = element_text(face = "bold"),
-          legend.title = element_text(face = "bold"),
-          panel.background = element_rect(color = "black", linewidth = 1),
-          legend.key.width = unit(2,"cm"),
-          legend.key=element_rect(colour="white"))+
-    guides(color = guide_legend(order = 1)) 
-  
-  if(best_models_only == TRUE){
-    
-    if(viz_metric == "r2"){
-      bestModByHorizon <- plot_data %>%
-        group_by(horizon) %>%
-        filter(skill_value == max(skill_value)) %>%
-        arrange(horizon)
-    } else if(viz_metric == "rmse") {
-      bestModByHorizon <- plot_data %>%
-        group_by(horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-    } else {
-      bestModByHorizon <- plot_data %>%
-        group_by(horizon) %>%
-        filter(abs(skill_value) == min(abs(skill_value))) %>%
-        arrange(horizon)
-    }
-  
-  pers <- plot_data %>%
-    filter(model_id == "persistence")
+  null <- output %>%
+    filter(skill_metric == viz_metric & model_type == "null")
   
   my.shapes <-             c("ARIMA" = 0,
                              "ETS" = 1,
@@ -159,7 +122,12 @@ CompareWithAndWithoutDrivers <- function(observations,
                              "ensemble" = 12,
                              "persistence" = 13,
                              "DOY" = 14,
-                             "historical mean" = 15)
+                             "historical mean" = 15,
+                             "ARIMA (no drivers)" = 19,
+                             "Prophet (no drivers)" = 19,
+                             "NNETAR (no drivers)" = 19,
+                             "TSLM (no drivers)" = 19)
+  
   my.cols <- c("process-based" = "#B85233",
                "data-driven" = "#6FA19D",
                "KGML" = "navy",
@@ -167,8 +135,8 @@ CompareWithAndWithoutDrivers <- function(observations,
                "null" = "#DED50F")
 
   p <- ggplot()+
-    geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
-    geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+    geom_line(data = null, aes(x = horizon, y = skill_value, linetype = "persistence"))+
+    geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
     xlab("Prediction horizon (days)")+
     ggtitle(plot_title)+
     scale_shape_manual(name = "Model ID", values = my.shapes)+
@@ -180,60 +148,6 @@ CompareWithAndWithoutDrivers <- function(observations,
           legend.key.width = unit(2,"cm"),
           legend.key=element_rect(colour="white"))+
     guides(color = guide_legend(order = 1))
-  }
-  
-  if(make_combined_bestmodel_legend == TRUE){
-    
-    if(combined_var == "strat"){
-      bestModByHorizon <- output %>%
-        filter(skill_metric == "rmse") %>%
-        group_by(strat_bin, horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-    } else if(combined_var == "var"){
-      bestModByHorizon <- output %>%
-        filter(skill_metric == "rmse") %>%
-        group_by(var_bin, horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-    }else {
-    bestModByHorizon1 <- output %>%
-      filter(skill_metric == "rmse") %>%
-      group_by(horizon) %>%
-      filter(skill_value == min(skill_value)) %>%
-      arrange(horizon)
-    bestModByHorizon2 <- output %>%
-      filter(skill_metric == "bias") %>%
-      group_by(horizon) %>%
-      filter(abs(skill_value) == min(abs(skill_value))) %>%
-      arrange(horizon)
-    bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2)
-    }
-    
-    p <- ggplot()+
-      geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
-      geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
-      xlab("Prediction horizon (days)")+
-      ggtitle(plot_title)+
-      scale_shape_manual(name = "Model ID", values = my.shapes)+
-      scale_color_manual(name = "Model Type", values = my.cols)+ 
-      scale_linetype_discrete(name = "Null model")+
-      theme_classic()+
-      theme(legend.title = element_text(face = "bold"),
-            panel.background = element_rect(color = "black", linewidth = 1),
-            legend.key.width = unit(2,"cm"),
-            legend.key=element_rect(colour="white"))+
-      guides(color = guide_legend(order = 1))
-    
-    if(combined_var == "strat"){
-      p <- p + facet_wrap(facets = vars(strat_bin))
-    } else if(combined_var == "var"){
-      p <- p + facet_wrap(facets = vars(var_bin))
-    } else {
-      p <- p + facet_wrap(facets = vars(skill_metric))
-    }
-    
-  }
   
   if(viz_metric == "rmse"){
     p <- p +
@@ -249,11 +163,6 @@ CompareWithAndWithoutDrivers <- function(observations,
   if(show_legend == FALSE){
     p <- p +
       theme(legend.position = "none")
-  }
-  
-  if(add_vline == TRUE){
-    p <- p +
-      geom_vline(xintercept = vline_intercept, linetype = "dashed")
   }
   
   return(p)

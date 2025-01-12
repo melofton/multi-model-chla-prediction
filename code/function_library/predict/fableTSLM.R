@@ -34,7 +34,7 @@ fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers){
     model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean))
   } else if (include_drivers == FALSE){
   my.tslm <- df %>%
-    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ Flag_Chla_ugL_mean))
+    model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ lag_Chla_ugL_mean))
   }
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 

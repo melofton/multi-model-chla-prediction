@@ -17,12 +17,13 @@ cal <- read_csv("./model_output/calibration_output.csv") %>%
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
-                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest"),"data-driven",
+                             ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest","TSLMnoDrivers"),"data-driven",
                                     ifelse(model_id %in% c("NNETAR_KGML"),"KGML","process-based"))),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
-                                         ifelse(model_id == "NNETAR_KGML","NNETAR-KGML",model_id)))))
+                                         ifelse(model_id == "NNETAR_KGML","NNETAR-KGML",
+                                                ifelse(model_id == "TSLMnoDrivers","TSLM (no drivers)",model_id))))))
 ens <- out %>%
   filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","NNETAR-KGML")) %>%
   group_by(reference_datetime, datetime) %>%
@@ -780,17 +781,68 @@ ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
 
 # Figure 6
 
-# need to actually make this function real
-# trial <- CompareWithAndWithoutDrivers <- (observations, 
-#                                          model_output, 
-#                                          forecast_horizon,
-#                                          model_ids = model_ids,
-#                                          viz_dates = pred_dates,
-#                                          plot_title = "All predictions",
-#                                          viz_metric = "r2",
-#                                          show_legend = FALSE,
-#                                          make_combined_bestmodel_legend =TRUE,
-#                                          combined_var = "strat")
+# TSLM
+p6a <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("persistence","TSLM","TSLM (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "All predictions",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none")
+
+# ARIMA
+mixed <- ss_data %>%
+  filter(strat_bin == "mixed")
+
+mod_out_mixed <- out %>%
+  filter(datetime %in% mixed$datetime)
+
+p6b <- CompareWithAndWithoutDrivers(observations = obs, 
+                                      model_output = mod_out_mixed, 
+                                      forecast_horizon = forecast_horizon,
+                                      model_ids = c("ARIMA","ARIMA (no drivers)"),
+                                      viz_dates = pred_dates,
+                                      plot_title = "Mixed period",
+                                      viz_metric = "rmse",
+                                      show_legend = TRUE,
+                                      combined_var = "none")
+
+# Prophet
+strat <- ss_data %>%
+  filter(strat_bin == "stratified")
+
+mod_out_strat <- out %>%
+  filter(datetime %in% strat$datetime)
+
+p6c <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_strat, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("Prophet","Prophet (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratified",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none")
+
+
+# NNETAR
+decline <- ss_data %>%
+  filter(strat_bin == "decline")
+
+mod_out_decline <- out %>%
+  filter(datetime %in% decline$datetime)
+
+p6d <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_decline, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("NNETAR","NNETAR (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratification decline",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none")
 
 #need to figure out how to detach legend from this and make it a separate
 #plot, then add
