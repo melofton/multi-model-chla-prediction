@@ -30,6 +30,7 @@ dat_LSTM <- read_csv("./data/data_processed/LSTM.csv")
 dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 dat_NNETAR_KGML <- read_csv("./data/data_processed/NNETAR_KGML.csv")
+dat_GAM <- read_csv("./data/data_processed/GAM.csv")
 
 #Set sim folder (for GLM-AED)
 sim_folder <- "./code/model_files/GLM-AED/calibration"
@@ -118,6 +119,7 @@ ggsave(fit_randomForest$importance_plot, filename = "./figures/randomForest_impo
 ggsave(fit_randomForest$plot, filename = "./figures/randomForest_fit.png",
        height = 3, width = 5, units = "in")
 
+fit_GAM <- fit_GAM(data = dat_GAM, cal_dates = c("2018-08-06","2021-12-31"))
 
 params_list <- list(epochs = c(100,200),
                     dropout = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01),

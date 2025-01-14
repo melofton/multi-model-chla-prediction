@@ -35,6 +35,7 @@ dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 dat_NNETAR_KGML <- read_csv("./data/data_processed/NNETAR_KGML.csv")
 KGML_obs <- read_csv("./data/data_processed/NNETAR.csv")
+dat_GAM <- read_csv("./data/data_processed/GAM.csv")
 
 #Set prediction window and forecast horizon
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
@@ -115,6 +116,10 @@ pred_randomForest <- randomForestrandomForest(data = dat_randomForest,
                                               pred_dates = pred_dates,
                                               forecast_horizon = forecast_horizon)
 
+pred_GAM <- GAM(data = dat_GAM,
+                pred_dates = pred_dates,
+                forecast_horizon = forecast_horizon)
+
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       prediction_folder = "./code/model_files/GLM-AED/prediction",
                       rerun_spinup = TRUE,
@@ -181,8 +186,8 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "TSLMnoDrivers") %>%
-  bind_rows(.,pred_TSLM_noDrivers)
+  #filter(!model_id == "TSLMnoDrivers") %>%
+  bind_rows(.,pred_GAM)
 
 unique(mod_output$model_id)
 
