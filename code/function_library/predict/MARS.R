@@ -18,11 +18,12 @@ MARS <- function(data, pred_dates, forecast_horizon){
   
   #assign target and predictors
   df <- data %>%
-    filter(datetime < pred_dates[1]) #%>%
-    #mutate_at(vars, scale2)
+    filter(datetime < pred_dates[1]) %>%
+    mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+    slice(-1)
   
   #fit ARIMA from fable package
-  earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = df)
+  earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean, data = df)
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -39,18 +40,30 @@ MARS <- function(data, pred_dates, forecast_horizon){
     
     #build driver dataset
     drivers = data %>%
+      mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
       filter(datetime %in% forecast_dates) 
     drivers[,"Chla_ugL_mean"] <- NA
     
     #refit model
     new.data <- data %>%
-      filter(datetime <= pred_dates[t]) #%>%
-      #mutate_at(vars, scale2)
-    ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = new.data)
+      filter(datetime <= pred_dates[t]) %>%
+      mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+      slice(-1)
+    ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean, data = new.data)
     
-    #generate predictions
-    pred <- predict(object = ref, newdata = drivers)
-
+    # generate predictions
+    for(h in 1:forecast_horizon){
+      temp_pred <- predict(object = ref, newdata = drivers[h,])
+      if(h == 1){
+        pred = temp_pred
+      } else {
+        pred = c(pred, temp_pred)
+      }
+      if(h < 35){
+        drivers$lag_Chla_ugL_mean[h+1] <- temp_pred
+      }
+    }
+    
     #set up dataframe for today's prediction
     curr_chla_df <- data %>%
       filter(datetime == pred_dates[t]) %>%

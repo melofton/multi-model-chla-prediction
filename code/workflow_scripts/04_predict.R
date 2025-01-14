@@ -108,7 +108,7 @@ pred_NNETAR_noDrivers <- fableNNETAR(data = dat_NNETAR_noDrivers,
                                    forecast_horizon = forecast_horizon,
                                    include_drivers = FALSE)
 
-pred_MARS_Drivers <- MARS(data = dat_MARS,
+pred_MARS <- MARS(data = dat_MARS,
                   pred_dates = pred_dates,
                   forecast_horizon = forecast_horizon)
 
@@ -186,8 +186,8 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  #filter(!model_id == "TSLMnoDrivers") %>%
-  bind_rows(.,pred_GAM)
+  filter(!model_id == "MARS") %>%
+  bind_rows(.,pred_MARS)
 
 unique(mod_output$model_id)
 

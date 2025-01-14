@@ -20,11 +20,12 @@ fit_MARS <- function(data, cal_dates){
   
   #assign target and predictors
   df <- data %>%
-    filter(datetime >= start_cal & datetime <= stop_cal)# %>%
-    #mutate_at(vars, scale2)
+    filter(datetime >= start_cal & datetime <= stop_cal)%>%
+    mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
+    slice(-1)
   
   #fit MARS model from earth package
-  earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = df)
+  earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean, data = df)
   mod.surface.plot <- plotmo(earth.mod, pmethod = "partdep")
   basis.matrix <- model.matrix(earth.mod)
   basis.functions <- data.frame(basis.functions = colnames(basis.matrix)) %>%
@@ -42,7 +43,8 @@ fit_MARS <- function(data, cal_dates){
 
   #get list of calibration dates
   dates <- data %>%
-    filter(datetime >= start_cal & datetime <= stop_cal)
+    filter(datetime >= start_cal & datetime <= stop_cal) %>%
+    slice(-1)
   
   #build output df
   df.out <- data.frame(model_id = "MARS",
