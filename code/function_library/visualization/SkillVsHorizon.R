@@ -61,7 +61,7 @@ SkillVsHorizon <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(strat_bin, model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
     pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else if(combined_var == "var"){
     output <- model_output %>% 
@@ -80,7 +80,7 @@ SkillVsHorizon <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(var_bin, model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else {
     #reformat model output
@@ -100,11 +100,11 @@ SkillVsHorizon <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   }
   
-  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 9))
+  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 10))
   my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols,"navy","darkgray")
   
   plot_data <- output %>%
@@ -158,11 +158,12 @@ SkillVsHorizon <- function(observations,
                              "OneDProcessModel" = 8,
                               "MARS" = 9,
                              "randomForest" = 10,
-                             "NNETAR-KGML" = 11,
-                             "ensemble" = 12,
-                             "persistence" = 13,
-                             "DOY" = 14,
-                             "historical mean" = 15)
+                             "GAM" = 11,
+                             "NNETAR-KGML" = 12,
+                             "ensemble" = 13,
+                             "persistence" = 14,
+                             "DOY" = 15,
+                             "historical mean" = 17)
   my.cols <- c("process-based" = "#B85233",
                "data-driven" = "#6FA19D",
                "KGML" = "navy",
@@ -189,13 +190,13 @@ SkillVsHorizon <- function(observations,
     
     if(combined_var == "strat"){
       bestModByHorizon <- output %>%
-        filter(skill_metric == "rmse") %>%
+        filter(skill_metric == "rmse" & !is.na(strat_bin)) %>%
         group_by(strat_bin, horizon) %>%
         filter(skill_value == min(skill_value)) %>%
         arrange(horizon)
     } else if(combined_var == "var"){
       bestModByHorizon <- output %>%
-        filter(skill_metric == "rmse") %>%
+        filter(skill_metric == "rmse" & !is.na(var_bin)) %>%
         group_by(var_bin, horizon) %>%
         filter(skill_value == min(skill_value)) %>%
         arrange(horizon)
