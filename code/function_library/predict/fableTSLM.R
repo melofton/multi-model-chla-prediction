@@ -12,7 +12,8 @@ library(fable)
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
 
-fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers){
+fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers,
+                      include_lag){
   
   #Fit model
   
@@ -29,12 +30,17 @@ fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers){
     slice(-1)
   
   #fit TSLM from fable package
-  if(include_drivers == TRUE){
+  if(include_drivers == TRUE & include_lag == TRUE){
   my.tslm <- df %>%
     model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean))
-  } else if (include_drivers == FALSE){
+  } 
+  if (include_drivers == FALSE){
   my.tslm <- df %>%
     model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ lag_Chla_ugL_mean))
+  }
+  if (include_lag == FALSE){
+    my.tslm <- df %>%
+      model(tslm = fable::TSLM(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL))
   }
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -42,6 +48,9 @@ fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers){
   colnames(pred.df) = df.cols
   
   for(t in 1:length(pred_dates)){
+    
+    #message
+    message(pred_dates[t])
     
     #subset to reference_datetime 
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
@@ -89,6 +98,10 @@ fableTSLM <- function(data, pred_dates, forecast_horizon, include_drivers){
     if(include_drivers == FALSE){
       temp.df <- temp.df %>%
         mutate(model_id = "TSLMnoDrivers")
+    }
+    if(include_lag == FALSE){
+      temp.df <- temp.df %>%
+        mutate(model_id = "TSLMnoLag")
     }
     
     #bind today's prediction to larger dataframe

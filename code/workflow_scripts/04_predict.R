@@ -78,12 +78,16 @@ pred_ARIMA_noDrivers <- fableARIMA(data = dat_ARIMA_noDrivers,
 
 pred_TSLM_Drivers <- fableTSLM(data = dat_TSLM,
                          pred_dates = pred_dates,
-                         forecast_horizon = forecast_horizon)
-
+                         forecast_horizon = forecast_horizon,
+                         include_drivers = TRUE, include_lag = TRUE)
 pred_TSLM_noDrivers <- fableTSLM(data = dat_TSLM_noDrivers,
                        pred_dates = pred_dates,
                        forecast_horizon = forecast_horizon,
-                       include_drivers = FALSE)
+                       include_drivers = FALSE, include_lag = TRUE)
+pred_TSLM_noLag <- fableTSLM(data = dat_TSLM,
+                                 pred_dates = pred_dates,
+                                 forecast_horizon = forecast_horizon,
+                                 include_drivers = TRUE, include_lag = FALSE)
 
 pred_Prophet_Drivers <- pred_Prophet(data = dat_Prophet,
                      pred_dates = pred_dates,
@@ -196,7 +200,7 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
   #filter(!model_id == "MARS") %>%
-  bind_rows(.,pred_MARS_noLag)
+  bind_rows(.,pred_TSLM_noLag)
 
 unique(mod_output$model_id)
 
