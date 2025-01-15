@@ -110,7 +110,16 @@ pred_NNETAR_noDrivers <- fableNNETAR(data = dat_NNETAR_noDrivers,
 
 pred_MARS <- MARS(data = dat_MARS,
                   pred_dates = pred_dates,
-                  forecast_horizon = forecast_horizon)
+                  forecast_horizon = forecast_horizon,
+                  include_drivers = TRUE, include_lag = TRUE)
+pred_MARS_noDrivers <- MARS(data = dat_MARS,
+                  pred_dates = pred_dates,
+                  forecast_horizon = forecast_horizon,
+                  include_drivers = FALSE, include_lag = TRUE)
+pred_MARS_noLag <- MARS(data = dat_MARS,
+                            pred_dates = pred_dates,
+                            forecast_horizon = forecast_horizon,
+                            include_drivers = TRUE, include_lag = FALSE)
 
 pred_randomForest <- randomForestrandomForest(data = dat_randomForest,
                                               pred_dates = pred_dates,
@@ -186,8 +195,8 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  filter(!model_id == "MARS") %>%
-  bind_rows(.,pred_MARS)
+  #filter(!model_id == "MARS") %>%
+  bind_rows(.,pred_MARS_noLag)
 
 unique(mod_output$model_id)
 

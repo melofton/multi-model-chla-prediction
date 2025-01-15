@@ -12,7 +12,8 @@ library(earth)
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
 
-MARS <- function(data, pred_dates, forecast_horizon){
+MARS <- function(data, pred_dates, forecast_horizon, include_drivers,
+                 include_lag){
   
   #Fit model
   
@@ -23,7 +24,15 @@ MARS <- function(data, pred_dates, forecast_horizon){
     slice(-1)
   
   #fit ARIMA from fable package
+  if(include_drivers == TRUE & include_lag == TRUE){
   earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean, data = df)
+  }
+  if(include_drivers == FALSE){
+    earth.mod <- earth(Chla_ugL_mean ~ lag_Chla_ugL_mean, data = df)
+  }
+  if(include_lag == FALSE){
+    earth.mod <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = df)
+  }
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -49,7 +58,16 @@ MARS <- function(data, pred_dates, forecast_horizon){
       filter(datetime <= pred_dates[t]) %>%
       mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
       slice(-1)
-    ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean, data = new.data)
+    
+    if(include_drivers == TRUE & include_lag == TRUE){
+      ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL + lag_Chla_ugL_mean, data = new.data)
+    }
+    if(include_drivers == FALSE){
+      ref <- earth(Chla_ugL_mean ~ lag_Chla_ugL_mean, data = new.data)
+    }
+    if(include_lag == FALSE){
+      ref <- earth(Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL, data = new.data)
+    }
     
     # generate predictions
     for(h in 1:forecast_horizon){
@@ -79,6 +97,13 @@ MARS <- function(data, pred_dates, forecast_horizon){
     pred.df <- rbind(pred.df, temp.df)
     
   } #end of all prediction loop
+  
+  if(include_drivers == FALSE){
+    pred.df$model_id <- "MARSnoDrivers"
+  }
+  if(include_lag == FALSE){
+    pred.df$model_id <- "MARSnoLag"
+  }
   
   #return predictions
   pred.df$prediction <- as.double(pred.df$prediction)
