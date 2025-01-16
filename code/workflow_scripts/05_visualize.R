@@ -23,9 +23,13 @@ out <- read_csv("./model_output/validation_output.csv") %>%
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
                                          ifelse(model_id == "NNETAR_KGML","NNETAR-KGML",
-                                                ifelse(model_id == "TSLMnoDrivers","TSLM (no drivers)",model_id))))))
+                                                ifelse(model_id == "TSLMnoDrivers","TSLM (no drivers)",
+                                                       ifelse(model_id == "TSLMnoLag","TSLM (no lag)",
+                                                              ifelse(model_id == "MARSnoDrivers","MARS (no drivers)",
+                                                                     ifelse(model_id == "MARSnoLag","MARS (no lag)",model_id)))))))))
+unique(out$model_id)
 ens <- out %>%
-  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","NNETAR-KGML")) %>%
+  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","NNETAR-KGML","TSLM (no drivers)","MARS (no drivers)","TSLM (no lag)","MARS (no lag)")) %>%
   group_by(reference_datetime, datetime) %>%
   summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
   add_column(model_id = "ensemble", model_type = "ensemble", variable = "chlorophyll-a") 
@@ -780,12 +784,13 @@ ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
        device = "tiff", height = 6, width = 12, units = "in")
 
 # Figure 6
+source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
 # TSLM
 p6a <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = out, 
                                     forecast_horizon = forecast_horizon,
-                                    model_ids = c("persistence","TSLM","TSLM (no drivers)"),
+                                    model_ids = c("MARS","MARS (no drivers)","MARS (no"),
                                     viz_dates = pred_dates,
                                     plot_title = "All predictions",
                                     viz_metric = "rmse",
