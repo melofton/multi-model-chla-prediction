@@ -31,6 +31,7 @@ dat_MARS <- read_csv("./data/data_processed/MARS.csv")
 dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 dat_NNETAR_KGML <- read_csv("./data/data_processed/NNETAR_KGML.csv")
 dat_GAM <- read_csv("./data/data_processed/GAM.csv")
+dat_NNETAR_KGML2 <- read_csv("./data/data_processed/NNETAR_KGML2.csv")
 
 #Set sim folder (for GLM-AED)
 sim_folder <- "./code/model_files/GLM-AED/calibration"
@@ -176,6 +177,12 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 # KGML experiment
 fit_NNETAR_KGML <- fit_NNETAR_KGML(data = dat_NNETAR_KGML, cal_dates = c("2018-08-06","2021-12-31"))
 fit_NNETAR_KGML$plot
+
+fit_NNETAR_KGML2 <- fit_NNETAR_KGML2(data = dat_NNETAR_KGML2, cal_dates = c("2022-01-01","2022-12-31"), target = "residuals")
+fit_NNETAR_KGML2$plot
+
+fit_NNETAR_KGML3 <- fit_NNETAR_KGML2(data = dat_NNETAR_KGML2, cal_dates = c("2022-01-01","2022-12-31"), target = "observations")
+fit_NNETAR_KGML3$plot
 
 
 #Stack model predictions and write to file (not applicable for persistence model

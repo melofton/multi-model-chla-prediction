@@ -30,7 +30,9 @@ CompareWithAndWithoutDrivers <- function(observations,
                           viz_metric = "r2",
                           show_legend = FALSE,
                           make_combined_legend =TRUE,
-                          combined_var = "strat"){
+                          combined_var = "strat",
+                          parent_model = "MARS",
+                          best_performing_horizons = c(29,35)){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
@@ -58,7 +60,7 @@ CompareWithAndWithoutDrivers <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(strat_bin, model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
     pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else if(combined_var == "var"){
     output <- model_output %>% 
@@ -77,7 +79,7 @@ CompareWithAndWithoutDrivers <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(var_bin, model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else {
     #reformat model output
@@ -97,57 +99,47 @@ CompareWithAndWithoutDrivers <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","MARS","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   }
   
   plot_data <- output %>%
-    filter(skill_metric == viz_metric & !model_type == "null")
+    filter(skill_metric == viz_metric) %>%
+    mutate(parent_model = parent_model,
+           model_version = ifelse(grepl('no drivers',model_id), 'chlorophyll-a data only', 
+                                  ifelse(grepl('no lag',model_id), 'environmental variables only','original model'))) %>%
+    mutate(model_version = factor(model_version, levels = c("original model","chlorophyll-a data only","environmental variables only")))
   
-  null <- output %>%
-    filter(skill_metric == viz_metric & model_type == "null")
-  
-  my.shapes <-             c("ARIMA" = 0,
-                             "ETS" = 1,
-                             "TSLM" = 2,
+  my.shapes <-             c("TSLM" = 2,
                              "Prophet" = 3,
-                             "LSTM" = 4,
-                             "XGBoost" = 5,
                              "NNETAR" = 6,
-                             "GLM-AED" = 7,
-                             "OneDProcessModel" = 8,
-                              "MARS" = 9,
-                             "randomForest" = 10,
-                             "NNETAR-KGML" = 11,
-                             "ensemble" = 12,
-                             "persistence" = 13,
-                             "DOY" = 14,
-                             "historical mean" = 15,
-                             "ARIMA (no drivers)" = 19,
-                             "Prophet (no drivers)" = 19,
-                             "NNETAR (no drivers)" = 19,
-                             "TSLM (no drivers)" = 19)
+                             "MARS" = 9)
   
-  my.cols <- c("process-based" = "#B85233",
-               "data-driven" = "#6FA19D",
-               "KGML" = "navy",
-               "ensemble" = "darkgray",
-               "null" = "#DED50F")
+  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 3))
+  my.cols <- c("original model" = my.dd.cols[1],
+               "chlorophyll-a data only" = my.dd.cols[2],
+               "environmental variables only" = my.dd.cols[3])
+  
+  best_horizons <- data.frame(xmin = best_performing_horizons[1],
+                              xmax = best_performing_horizons[2],
+                              ymin = 0,
+                              ymax = max(plot_data$skill_value + 1))
 
   p <- ggplot()+
-    geom_line(data = null, aes(x = horizon, y = skill_value, linetype = "persistence"))+
-    geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+    geom_rect(data = best_performing_horizons, aes(xmin = from - 0.5, xmax = to+0.5, ymin = -Inf, ymax = Inf, fill = "best-performing horizons",), alpha = 0.4, color = NA)+
+    geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = parent_model, color = model_version), size = 2)+
     xlab("Prediction horizon (days)")+
     ggtitle(plot_title)+
-    scale_shape_manual(name = "Model ID", values = my.shapes)+
-    scale_color_manual(name = "Model type", values = my.cols)+ 
-    scale_linetype_discrete(name = "Null model")+
+    scale_shape_manual(name = "Parent model", values = my.shapes)+
+    scale_color_manual(name = "Model version", values = my.cols)+
+    scale_fill_manual(name = "", values = c("best-performing horizons" = "lightgray"))+
     theme_classic()+
     theme(legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),
           legend.key.width = unit(2,"cm"),
           legend.key=element_rect(colour="white"))+
-    guides(color = guide_legend(order = 1))
+    guides(fill = guide_legend(order = 1),
+           shape = guide_legend(order = 2))
   
   if(viz_metric == "rmse"){
     p <- p +

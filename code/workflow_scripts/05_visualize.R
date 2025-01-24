@@ -786,16 +786,133 @@ ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
 # Figure 6
 source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
-# TSLM
+# MARS
+onset <- ss_data %>%
+  filter(strat_bin == "onset")
+
+mod_out_onset <- out %>%
+  filter(datetime %in% onset$datetime)
+
 p6a <- CompareWithAndWithoutDrivers(observations = obs, 
-                                    model_output = out, 
+                                    model_output = mod_out_onset, 
                                     forecast_horizon = forecast_horizon,
-                                    model_ids = c("MARS","MARS (no drivers)","MARS (no"),
+                                    model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "All predictions",
+                                    plot_title = "Stratification onset",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
-                                    combined_var = "none")
+                                    combined_var = "none",
+                                    parent_model = "MARS",
+                                    best_performing_horizons = data.frame(from = c(4,14,29),
+                                                                          to = c(4,15,35)))
+p6a
+
+# Prophet
+strat <- ss_data %>%
+  filter(strat_bin == "stratified")
+
+mod_out_strat <- out %>%
+  filter(datetime %in% strat$datetime)
+
+p6b <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_strat, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("Prophet","Prophet (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratified",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "Prophet",
+                                    best_performing_horizons = data.frame(from = c(19),
+                                                                          to = c(32)))
+p6b
+
+# NNETAR decline
+
+decline <- ss_data %>%
+  filter(strat_bin == "decline")
+
+mod_out_decline <- out %>%
+  filter(datetime %in% decline$datetime)
+
+p6c <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_decline, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("NNETAR","NNETAR (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratification decline",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "NNETAR",
+                                    best_performing_horizons = data.frame(from = c(15),
+                                                                          to = c(35)))
+p6c
+
+
+p6 <- ggarrange(p6a, p6b, p6c,
+                nrow = 3,
+                widths = c(1, 1, 1),
+                labels = c("a","b","c")
+) + bgcolor("white")
+
+p6
+
+ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
+       device = "tiff", height = 10, width = 7, units = "in")
+
+
+# Figure 7
+source("./code/function_library/visualization/CompareKGML.R")
+
+# all predictions
+
+p7a <- CompareKGML(observations = obs, 
+                   model_output = out, 
+                   forecast_horizon = forecast_horizon,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML"),
+                   viz_dates = pred_dates,
+                   plot_title = "All predictions",
+                   viz_metric = "rmse",
+                   show_legend = TRUE)
+p7a
+
+p7b <- CompareKGML(observations = obs, 
+                   model_output = out, 
+                   forecast_horizon = forecast_horizon,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML"),
+                   viz_dates = pred_dates,
+                   plot_title = "All predictions",
+                   viz_metric = "bias",
+                   show_legend = TRUE)
+p7b
+
+# high variability
+obs_var <- obs %>%
+  mutate(delta = c(NA,abs(diff(Chla_ugL_mean, na.rm = TRUE)))) 
+
+dens <- density(obs_var$delta, na.rm = TRUE)
+q90 <- quantile(obs_var$delta, 0.90, na.rm = TRUE)
+var_df <- obs_var %>%
+  mutate(var_bin = ifelse(delta > q90, "high","low"))
+
+high_var <- var_df %>%
+  filter(var_bin == "high")
+
+mod_out_high_var <- out %>%
+  filter(datetime %in% high_var$datetime)
+
+p7c <- CompareKGML(observations = obs, 
+                   model_output = mod_out_high_var, 
+                   forecast_horizon = forecast_horizon,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML"),
+                   viz_dates = pred_dates,
+                   plot_title = "High chl-a variability",
+                   viz_metric = "rmse",
+                   show_legend = TRUE)
+p7c
+
 
 # ARIMA
 mixed <- ss_data %>%

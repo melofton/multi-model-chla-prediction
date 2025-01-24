@@ -53,6 +53,7 @@ dat_MARS <- format_data_MARS()
 dat_randomForest <- format_data_randomForest()
 
 dat_NNETAR_KGML <- format_data_NNETAR_KGML()
+dat_NNETAR_KGML2 <- format_data_NNETAR_KGML2()
 
 dat_GAM <- format_data_GAM()
 
@@ -86,4 +87,5 @@ write.csv(dat_MARS, "./data/data_processed/MARS.csv",row.names = FALSE)
 write.csv(dat_randomForest, "./data/data_processed/randomForest.csv",row.names = FALSE)
 write.csv(dat_NNETAR_KGML, "./data/data_processed/NNETAR_KGML.csv",row.names = FALSE)
 write.csv(dat_GAM, "./data/data_processed/GAM.csv",row.names = FALSE)
+write.csv(dat_NNETAR_KGML2, "./data/data_processed/NNETAR_KGML2.csv",row.names = FALSE)
 

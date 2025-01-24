@@ -36,6 +36,7 @@ dat_randomForest <- read_csv("./data/data_processed/randomForest.csv")
 dat_NNETAR_KGML <- read_csv("./data/data_processed/NNETAR_KGML.csv")
 KGML_obs <- read_csv("./data/data_processed/NNETAR.csv")
 dat_GAM <- read_csv("./data/data_processed/GAM.csv")
+dat_NNETAR_KGML2 <- read_csv("./data/data_processed/NNETAR_KGML2.csv")
 
 #Set prediction window and forecast horizon
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
