@@ -23,22 +23,23 @@ fableNNETAR_KGML2 <- function(data, pred_dates, forecast_horizon, target = "resi
   # vars <- c("AirTemp_C","Shortwave_Wm2","Windspeed_ms","Inflow_cms", "WaterTemp_C" ,"LightAttenuation_Kd", "DIN_ugL", "SRP_ugL")
   # 
   #assign target and predictors
+  last_full_fc_for_eval <- pred_dates[1] - (forecast_horizon + 1)
   df <- data %>%
     select(-datetime) %>%
-    filter(reference_datetime < pred_dates[1] & !horizon == 0) %>%
-    as_tsibble(., index = reference_datetime, key = horizon)
+    filter(reference_datetime < last_full_fc_for_eval & !horizon == 0) %>%
+    as_tsibble(., index = ref_date_KGML_fc, key = horizon)
   
   # fit NNETARs from fable package
   if(target == "residuals"){
     my.nnetar <- df %>%
-      model(`KGML NNETAR2` = fable::NNETAR(formula = residuals ~ AirTemp + ShortWave + LongWave + RelHum + 
+      model(`KGML NNETAR resid` = fable::NNETAR(formula = residuals ~ AirTemp + ShortWave + LongWave + RelHum + 
                                              WindSpeed + Rain +
                                              NIT_amm + NIT_nit + PHS_frp + OGM_doc + prediction,
                                            n_networks = 20)) 
   }
   if(target == "observations"){
     my.nnetar <- df %>%
-      model(`KGML NNETAR2` = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp + ShortWave + LongWave + RelHum + 
+      model(`KGML NNETAR obs` = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp + ShortWave + LongWave + RelHum + 
                                              WindSpeed + Rain +
                                              NIT_amm + NIT_nit + PHS_frp + OGM_doc + prediction,
                                            n_networks = 20))
@@ -51,24 +52,32 @@ fableNNETAR_KGML2 <- function(data, pred_dates, forecast_horizon, target = "resi
   
   for(t in 1:length(pred_dates)){
     
-    #subset to reference_datetime 
-    forecast_dates <- seq.Date(from = as.Date(pred_dates[t]+1), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
+    # message
+    message(pred_dates[t])
+    
+    # get date of last complete forecast available for evaluation
+    last_full_fc_for_eval <- pred_dates[t] - (forecast_horizon)
+    
+    # message
+    message(last_full_fc_for_eval)
+    
+    #refit model
+    new.data <- data %>%
+      select(-datetime) %>%
+      filter(reference_datetime < last_full_fc_for_eval & !horizon == 0) %>%
+      as_tsibble(., index = ref_date_KGML_fc, key = horizon)
+    
+    ref <- refit(object = my.nnetar, new_data = new.data)
     
     #build driver dataset
    drivers <- data %>%
     select(-datetime) %>%
     filter(reference_datetime == pred_dates[t] & !horizon == 0) %>%
-    as_tsibble(., index = reference_datetime, key = horizon)
-    #mutate_at(vars, scale2)
-    drivers[,"Chla_ugL_mean"] <- NA
+    mutate(ref_date_KGML_fc = pred_dates[t]) %>%
+    as_tsibble(., index = ref_date_KGML_fc, key = horizon)
     
-    #refit model
-    new.data <- data %>%
-      select(-datetime) %>%
-      filter(reference_datetime < pred_dates[t] & !horizon == 0) %>%
-      as_tsibble(., index = reference_datetime, key = horizon)
-    
-    ref <- refit(object = my.nnetar, new_data = new.data)
+   drivers[,"Chla_ugL_mean"] <- NA
+   drivers[,"residuals"] <- NA
     
     #generate predictions
     #notes times = 0 specification is critical to avoid super slow runtimes
@@ -82,6 +91,9 @@ fableNNETAR_KGML2 <- function(data, pred_dates, forecast_horizon, target = "resi
     if(target == "observations"){
       pred_final <- pred$.mean
     }
+    
+    #get forecast_dates 
+    forecast_dates <- seq.Date(from = as.Date(pred_dates[t]+1), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
 
     #set up dataframe for today's prediction
     curr_chla_df <- data %>%
