@@ -27,7 +27,7 @@ format_data_NNETAR_KGML2 <- function(filepath_GLMAED = "./model_output/validatio
   resid_df <- left_join(GLMAED_pred, obs, by = "datetime") %>%
     mutate(residuals = prediction - Chla_ugL_mean) %>%
     mutate(horizon = datetime - reference_datetime) %>%
-    mutate(ref_date_last_full_fc_eval = reference_datetime - (forecast_horizon + 1))
+    mutate(ref_date_KGML_fc = reference_datetime + (forecast_horizon + 1))
   
   # pull GLM-AED met driver data
   met <- read_csv("./code/model_files/GLM-AED/prediction/inputs/met.csv") %>%
