@@ -200,14 +200,12 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
 pred_NNETAR_KGML2 <- fableNNETAR_KGML2(data = dat_NNETAR_KGML2,
                                        pred_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
                                        forecast_horizon = 35,
-                                       target = "observations")
+                                       target = "residuals")
 
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
-  #filter(!model_id == "MARS") %>%
-  bind_rows(.,pred_TSLM_noLag) %>%
-  bind_rows(.,pred_MARS_noDrivers) %>%
-  bind_rows(., pred_MARS_noLag)
+  filter(!model_id == "NNETAR_KGML") %>%
+  bind_rows(.,pred_TSLM_noLag) 
 
 unique(mod_output$model_id)
 
