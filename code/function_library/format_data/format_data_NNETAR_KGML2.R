@@ -10,7 +10,8 @@ library(lubridate)
 
 format_data_NNETAR_KGML2 <- function(filepath_GLMAED = "./model_output/validation_output.csv",
                                  filepath_obs = "./data/data_processed/NNETAR.csv",
-                                 cal_val_dates = c("2022-01-01","2023-12-31")){
+                                 cal_val_dates = c("2022-01-01","2023-12-31"),
+                                 forecast_horizon = 35){
   
   # pull GLM_AED chlorophyll-a predictions for 1.6 m and calculate residuals
   GLMAED_pred <- read_csv(filepath_GLMAED) %>%
@@ -25,8 +26,8 @@ format_data_NNETAR_KGML2 <- function(filepath_GLMAED = "./model_output/validatio
   
   resid_df <- left_join(GLMAED_pred, obs, by = "datetime") %>%
     mutate(residuals = prediction - Chla_ugL_mean) %>%
-    mutate(residuals = ifelse(year(reference_datetime) == 2023, NA, residuals)) %>%
-    mutate(horizon = datetime - reference_datetime) 
+    mutate(horizon = datetime - reference_datetime) %>%
+    mutate(ref_date_last_full_fc_eval = reference_datetime - (forecast_horizon + 1))
   
   # pull GLM-AED met driver data
   met <- read_csv("./code/model_files/GLM-AED/prediction/inputs/met.csv") %>%
