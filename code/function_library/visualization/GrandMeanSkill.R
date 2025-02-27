@@ -55,7 +55,7 @@ GrandMeanSkill <- function(observations,
               bias = mean(prediction - Chla_ugL_mean, na.rm = TRUE)) %>%
     arrange(model_type, model_id) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML obs.","NNETAR-KGML resid.","ensemble"))) %>%
     pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value") 
   
   my.cols <- c("process-based" = "#B85233",

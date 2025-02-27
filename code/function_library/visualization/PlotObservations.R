@@ -76,7 +76,7 @@ PlotObservations <- function(observations, pred_only, focal_dates, forecast_hori
                              names = paste0("Fig. 2",num_panels))
 
         p <- p +
-          geom_vline(data = focal_df, aes(xintercept = dates, color = names), linewidth = 1)+
+          geom_vline(data = focal_df, aes(xintercept = dates, color = names))+
           scale_color_viridis_d(option = "turbo", name = "Example prediction \ndates")
         
       
