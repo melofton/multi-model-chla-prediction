@@ -55,7 +55,7 @@ CompareKGML <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML 1","NNETAR-KGML 2","NNETAR-KGML 3","NNETAR-KGML 4","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   
   plot_data <- output %>%
@@ -63,17 +63,25 @@ CompareKGML <- function(observations,
   
   my.shapes <-             c("NNETAR" = 6,
                              "GLM-AED" = 7,
-                             "NNETAR-KGML" = 12)
+                             "NNETAR-KGML 1" = 12,
+                             "NNETAR-KGML 2" = 13,
+                             "NNETAR-KGML 3" = 14,
+                             "NNETAR-KGML 4" = 15)
   my.cols <- c("process-based" = "#B85233",
                "data-driven" = "#6FA19D",
                "KGML" = "navy")
   
+  pers <- plot_data %>%
+    filter(model_id == "persistence")
+  
   p <- ggplot()+
+    geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
     geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
     xlab("Prediction horizon (days)")+
     ggtitle(plot_title)+
     scale_shape_manual(name = "Model ID", values = my.shapes)+
     scale_color_manual(name = "Model type", values = my.cols)+
+    scale_linetype_discrete(name = "Null model")+
     theme_classic()+
     theme(legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),

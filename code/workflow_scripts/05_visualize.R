@@ -18,19 +18,21 @@ cal <- read_csv("./model_output/calibration_output.csv") %>%
 out <- read_csv("./model_output/validation_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest","GAM","TSLMnoDrivers"),"data-driven",
-                                    ifelse(model_id %in% c("NNETAR_KGML_residuals","NNETAR_KGML_observations"),"KGML","process-based"))),
+                                    ifelse(model_id %in% c("NNETAR_KGML_residuals","NNETAR_KGML_observations","NNETAR_KGML_cal_training_resid","NNETAR_KGML_cal_training_obs"),"KGML","process-based"))),
          model_id = ifelse(model_id == "ARIMAnoDrivers","ARIMA (no drivers)",
                            ifelse(model_id == "NNETARnoDrivers","NNETAR (no drivers)",
                                   ifelse(model_id == "ProphetnoDrivers","Prophet (no drivers)",
-                                         ifelse(model_id == "NNETAR_KGML_residuals","NNETAR-KGML resid.",
+                                         ifelse(model_id == "NNETAR_KGML_residuals","NNETAR-KGML 1",
                                                 ifelse(model_id == "TSLMnoDrivers","TSLM (no drivers)",
                                                        ifelse(model_id == "TSLMnoLag","TSLM (no lag)",
                                                               ifelse(model_id == "MARSnoDrivers","MARS (no drivers)",
                                                                      ifelse(model_id == "MARSnoLag","MARS (no lag)",
-                                                                            ifelse(model_id == "NNETAR_KGML_observations","NNETAR-KGML obs.",model_id))))))))))
+                                                                            ifelse(model_id == "NNETAR_KGML_observations","NNETAR-KGML 3",
+                                                                                   ifelse(model_id == "NNETAR_KGML_cal_training_resid","NNETAR-KGML 2",
+                                                                                          ifelse(model_id == "NNETAR_KGML_cal_training_obs","NNETAR-KGML 4",model_id))))))))))))
 unique(out$model_id)
 ens <- out %>%
-  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","TSLM (no drivers)","MARS (no drivers)","TSLM (no lag)","MARS (no lag)","NNETAR-KGML (resid)","NNETAR-KGML (obs)")) %>%
+  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","TSLM (no drivers)","MARS (no drivers)","TSLM (no lag)","MARS (no lag)","NNETAR-KGML 1","NNETAR-KGML 2","NNETAR-KGML 3","NNETAR-KGML 4")) %>%
   group_by(reference_datetime, datetime) %>%
   summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
   add_column(model_id = "ensemble", model_type = "ensemble", variable = "chlorophyll-a") 
@@ -872,8 +874,8 @@ source("./code/function_library/visualization/CompareKGML.R")
 p7a <- CompareKGML(observations = obs, 
                    model_output = out, 
                    forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML"),
-                   viz_dates = pred_dates,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML 1","NNETAR-KGML 2","persistence"),
+                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
                    plot_title = "All predictions",
                    viz_metric = "rmse",
                    show_legend = TRUE)
@@ -882,8 +884,8 @@ p7a
 p7b <- CompareKGML(observations = obs, 
                    model_output = out, 
                    forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML"),
-                   viz_dates = pred_dates,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML 1","NNETAR-KGML 2","persistence"),
+                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
                    plot_title = "All predictions",
                    viz_metric = "bias",
                    show_legend = TRUE)
@@ -907,12 +909,23 @@ mod_out_high_var <- out %>%
 p7c <- CompareKGML(observations = obs, 
                    model_output = mod_out_high_var, 
                    forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML"),
-                   viz_dates = pred_dates,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML 1","NNETAR-KGML 2","persistence"),
+                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
                    plot_title = "High chl-a variability",
                    viz_metric = "rmse",
                    show_legend = TRUE)
 p7c
+
+p7 <- ggarrange(p7a, p7b, p7c,
+                nrow = 3,
+                widths = c(1, 1, 1),
+                labels = c("a","b","c")
+) + bgcolor("white")
+
+p7
+
+ggsave(plot = p7, filename = "./figures/final_figures/Figure7.tif",
+       device = "tiff", height = 10, width = 7, units = "in")
 
 
 # ARIMA

@@ -195,8 +195,8 @@ pred_NNETAR_KGML <- fableNNETAR_KGML(previous_residuals = dat_NNETAR_KGML,
                                observations = KGML_obs,
                                pred_dates = seq.Date(from = as.Date("2022-01-02"), to = as.Date("2023-11-26"), by = "day"),
                                forecast_horizon = forecast_horizon,
-                               spinup_nc_filepath = "./code/model_files/GLM-AED/spinup/output/output.nc")
-
+                               spinup_nc_filepath = "./code/model_files/GLM-AED/spinup/output/output.nc",
+                               target = "observations")
 pred_NNETAR_KGML2 <- fableNNETAR_KGML2(data = dat_NNETAR_KGML2,
                                        pred_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
                                        forecast_horizon = 35,
@@ -205,7 +205,7 @@ pred_NNETAR_KGML2 <- fableNNETAR_KGML2(data = dat_NNETAR_KGML2,
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
   #filter(!model_id == "NNETAR_KGML") %>%
-  bind_rows(.,pred_NNETAR_KGML2) 
+  bind_rows(.,pred_NNETAR_KGML) 
 
 unique(mod_output$model_id)
 

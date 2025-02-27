@@ -15,7 +15,7 @@ library(ncdf4)
 
 fableNNETAR_KGML <- function(previous_residuals, process_model_predictions, 
                           observations, pred_dates, forecast_horizon,
-                          spinup_nc_filepath){
+                          spinup_nc_filepath, target){
   
   #Fit model
   
@@ -56,12 +56,20 @@ fableNNETAR_KGML <- function(previous_residuals, process_model_predictions,
     filter(datetime < pred_dates[1]) %>%
     rows_update(first_residual_df, by = "datetime")
   
-  #fit ETS from fable package
+  #fit NNETAR from fable package
+  if(target == "residuals"){
   my.nnetar <- df %>%
-    model(`KGML NNETAR` = fable::NNETAR(formula = Chla_residuals_ugL ~ AirTemp + ShortWave + LongWave + RelHum + 
+    model(`KGML NNETAR` = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp + ShortWave + LongWave + RelHum + 
                                           WindSpeed + Rain +
                                           NIT_amm + NIT_nit + PHS_frp + OGM_doc + GLMAED_Chla_ugL,
                                         n_networks = 20)) 
+  } else if(target == "observations") {
+    my.nnetar <- df %>%
+      model(`KGML NNETAR` = fable::NNETAR(formula = Chla_residuals_ugL ~ AirTemp + ShortWave + LongWave + RelHum + 
+                                            WindSpeed + Rain +
+                                            NIT_amm + NIT_nit + PHS_frp + OGM_doc + GLMAED_Chla_ugL,
+                                          n_networks = 20)) 
+  }
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -127,15 +135,24 @@ fableNNETAR_KGML <- function(previous_residuals, process_model_predictions,
       pull(prediction)
     
     #correct GLM-AED predictions using new residual predictions
+    if(target == "residuals"){
     final_pred <- current_model_pred - residual_pred$.mean
     final_pred[final_pred < 0] <- 0
+    }
+    if(target == "observations"){
+      final_pred <- residual_pred$.mean
+    }
 
     #format corrected predictions for output
-    temp.df <- data.frame(model_id = "NNETAR_KGML",
+    temp.df <- data.frame(model_id = "NNETAR_KGML_cal_training_resid",
                           reference_datetime = rep(pred_dates[t],forecast_horizon+1),
                           datetime = c(pred_dates[t],forecast_dates),
                           variable = "chlorophyll-a",
                           prediction = c(current_obs,final_pred))
+    
+    if(target == "observations"){
+      temp.df$model_id <- "NNETAR_KGML_cal_training_obs"
+    }
     
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)
