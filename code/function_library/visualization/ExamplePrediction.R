@@ -47,7 +47,7 @@ ExamplePrediction <- function(observations,
     filter(reference_datetime == ref_datetime & datetime %in% plot_dates & model_id %in% model_ids) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
     mutate(horizon = datetime - ref_datetime) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM","MARS","randomForest","GAM","NNETAR-KGML obs.","NNETAR-KGML resid.","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ETS","TSLM","Prophet","XGBoost","NNETAR","LSTM","MARS","randomForest","GAM","NNETAR-KGML","ensemble"))) %>%
     mutate(example_model_names = paste0(model_id," (",model_type,")")) %>%
     mutate(example_model_names = factor(example_model_names, levels = c("persistence (null)",
                                                                         "DOY (null)",
@@ -64,8 +64,7 @@ ExamplePrediction <- function(observations,
                                                                         "MARS (data-driven)",
                                                                         "randomForest (data-driven)",
                                                                         "GAM (data-driven)",
-                                                                        "NNETAR-KGML obs. (KGML)",
-                                                                        "NNETAR-KGML resid. (KGML)",
+                                                                        "NNETAR-KGML (KGML)",
                                                                         "ensemble (ensemble)"
                                                                         
       
@@ -83,8 +82,7 @@ ExamplePrediction <- function(observations,
                              "MARS (data-driven)" = "#6FA19D",
                              "randomForest (data-driven)" = "#6FA19D",
                              "GAM (data-driven)" = "#6FA19D",
-                             "NNETAR-KGML obs. (KGML)" = "navy",
-                           "NNETAR-KGML resid. (KGML)" = "navy",
+                             "NNETAR-KGML (KGML)" = "navy",
                              "ensemble (ensemble)" = "darkgray",
                              "persistence (null)" = "#DED50F",
                              "DOY (null)" = "#DED50F",
@@ -101,12 +99,11 @@ ExamplePrediction <- function(observations,
                              "MARS (data-driven)" = 9,
                              "randomForest (data-driven)" = 10,
                              "GAM (data-driven)" = 11,
-                             "NNETAR-KGML resid. (KGML)" = 12,
-                             "NNETAR-KGML obs. (KGML)" = 13,
-                             "ensemble (ensemble)" = 14,
-                             "persistence (null)" = 15,
-                             "DOY (null)" = 17,
-                             "historical mean (null)" = 18)
+                             "NNETAR-KGML (KGML)" = 12,
+                             "ensemble (ensemble)" = 13,
+                             "persistence (null)" = 14,
+                             "DOY (null)" = 15,
+                             "historical mean (null)" = 17)
 
   p <- ggplot()+
     geom_point(data = plot_obs, aes(x = horizon, y = Chla_ugL_mean, 
