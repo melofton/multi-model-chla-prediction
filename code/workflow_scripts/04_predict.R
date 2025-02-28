@@ -132,7 +132,16 @@ pred_randomForest <- randomForestrandomForest(data = dat_randomForest,
 
 pred_GAM <- GAM(data = dat_GAM,
                 pred_dates = pred_dates,
-                forecast_horizon = forecast_horizon)
+                forecast_horizon = forecast_horizon,
+                include_lag == TRUE, include_drivers == TRUE)
+pred_GAM_noLag <- GAM(data = dat_GAM,
+                pred_dates = pred_dates,
+                forecast_horizon = forecast_horizon,
+                include_lag = FALSE, include_drivers = TRUE)
+pred_GAM_noDrivers <- GAM(data = dat_GAM,
+                      pred_dates = pred_dates,
+                      forecast_horizon = forecast_horizon,
+                      include_lag = TRUE, include_drivers = FALSE)
 
 pred_GLMAED <- GLMAED(spinup_folder = "./code/model_files/GLM-AED/spinup",
                       prediction_folder = "./code/model_files/GLM-AED/prediction",
@@ -205,7 +214,7 @@ pred_NNETAR_KGML2 <- fableNNETAR_KGML2(data = dat_NNETAR_KGML2,
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
   #filter(!model_id == "NNETAR_KGML") %>%
-  bind_rows(.,pred_NNETAR_KGML) 
+  bind_rows(.,pred_GAM_noDrivers) 
 
 unique(mod_output$model_id)
 

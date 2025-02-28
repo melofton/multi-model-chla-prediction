@@ -12,7 +12,8 @@ library(mgcv)
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
 
-GAM <- function(data, pred_dates, forecast_horizon){
+GAM <- function(data, pred_dates, forecast_horizon,
+                include_drivers, include_lag){
   
   #Fit model
   #assign target and predictors
@@ -22,6 +23,7 @@ GAM <- function(data, pred_dates, forecast_horizon){
     mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
     slice(-1)
   
+  if(include_drivers == TRUE & include_lag == TRUE){
   #fit GAM following methods in ggplot()
   my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs") +
                         s(AirTemp_C_mean, bs = "cs") +
@@ -33,6 +35,25 @@ GAM <- function(data, pred_dates, forecast_horizon){
                         s(DIN_ugL, bs = "cs") +
                         s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
                       data = df, method = "REML")
+  }
+  if(include_drivers == FALSE){
+    #fit GAM following methods in ggplot()
+    my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs"), family = gaussian(),
+                        data = df, method = "REML")
+  }
+  if(include_lag == FALSE){
+    #fit GAM following methods in ggplot()
+    my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(AirTemp_C_mean, bs = "cs") +
+                          s(PAR_umolm2s_mean, bs = "cs") +
+                          s(WindSpeed_ms_mean, bs = "cs") +
+                          s(Flow_cms_mean, bs = "cs") +
+                          s(Temp_C_mean, bs = "cs") +
+                          s(SRP_ugL, bs = "cs") +
+                          s(DIN_ugL, bs = "cs") +
+                          s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
+                        data = df, method = "REML")
+  }
+  
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -51,17 +72,36 @@ GAM <- function(data, pred_dates, forecast_horizon){
       mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, n = 1)) %>%
       slice(-1)
     
-    #fit GAM following methods in ggplot()
-    my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs") +
-                          s(AirTemp_C_mean, bs = "cs") +
-                          s(PAR_umolm2s_mean, bs = "cs") +
-                          s(WindSpeed_ms_mean, bs = "cs") +
-                          s(Flow_cms_mean, bs = "cs") +
-                          s(Temp_C_mean, bs = "cs") +
-                          s(SRP_ugL, bs = "cs") +
-                          s(DIN_ugL, bs = "cs") +
-                          s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
-                        data = refit_df, method = "REML")
+    if(include_drivers == TRUE & include_lag == TRUE){
+      #fit GAM following methods in ggplot()
+      my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs") +
+                            s(AirTemp_C_mean, bs = "cs") +
+                            s(PAR_umolm2s_mean, bs = "cs") +
+                            s(WindSpeed_ms_mean, bs = "cs") +
+                            s(Flow_cms_mean, bs = "cs") +
+                            s(Temp_C_mean, bs = "cs") +
+                            s(SRP_ugL, bs = "cs") +
+                            s(DIN_ugL, bs = "cs") +
+                            s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
+                          data = refit_df, method = "REML")
+    }
+    if(include_drivers == FALSE){
+      #fit GAM following methods in ggplot()
+      my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs"), family = gaussian(),
+                          data = refit_df, method = "REML")
+    }
+    if(include_lag == FALSE){
+      #fit GAM following methods in ggplot()
+      my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(AirTemp_C_mean, bs = "cs") +
+                            s(PAR_umolm2s_mean, bs = "cs") +
+                            s(WindSpeed_ms_mean, bs = "cs") +
+                            s(Flow_cms_mean, bs = "cs") +
+                            s(Temp_C_mean, bs = "cs") +
+                            s(SRP_ugL, bs = "cs") +
+                            s(DIN_ugL, bs = "cs") +
+                            s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
+                          data = refit_df, method = "REML")
+    }
     
     #build driver dataset
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
@@ -97,6 +137,13 @@ GAM <- function(data, pred_dates, forecast_horizon){
                           datetime = forecast_dates,
                           variable = "chlorophyll-a",
                           prediction = c(curr_chla,pred))
+    
+    if(include_drivers == FALSE){
+      temp.df$model_id <- "GAMnoDrivers"
+    }
+    if(include_lag == FALSE){
+      temp.df$model_id <- "GAMnoLag"
+    }
 
     #bind today's prediction to larger dataframe
     pred.df <- rbind(pred.df, temp.df)
