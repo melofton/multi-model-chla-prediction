@@ -29,7 +29,9 @@ out <- read_csv("./model_output/validation_output.csv") %>%
                                                                      ifelse(model_id == "MARSnoLag","MARS (no lag)",
                                                                             ifelse(model_id == "NNETAR_KGML_observations","NNETAR-KGML 3",
                                                                                    ifelse(model_id == "NNETAR_KGML_cal_training_resid","NNETAR-KGML",
-                                                                                          ifelse(model_id == "NNETAR_KGML_cal_training_obs","NNETAR-KGML 4",model_id))))))))))))
+                                                                                          ifelse(model_id == "NNETAR_KGML_cal_training_obs","NNETAR-KGML 4",
+                                                                                                 ifelse(model_id == "GAMnoLag","GAM (no lag)",
+                                                                                                        ifelse(model_id == "GAMnoDrivers","GAM (no drivers)",model_id))))))))))))))
 unique(out$model_id)
 ens <- out %>%
   filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","TSLM (no drivers)","MARS (no drivers)","TSLM (no lag)","MARS (no lag)","NNETAR-KGML (trained by horizon)","NNETAR-KGML 3","NNETAR-KGML 4")) %>%
@@ -239,7 +241,7 @@ p3c <- SkillVsHorizon(observations = obs,
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
                       plot_title = "",
-                      viz_metric = "bias",
+                      viz_metric = "r2",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
@@ -256,10 +258,10 @@ p3d <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "bias",
+                      viz_metric = "r2",
                       show_legend = FALSE)
 p3d <- p3d +
-  annotate("text",x = -3.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)
 p3d
 
 leg_plot1 <- SkillVsHorizon(observations = obs, 
@@ -293,7 +295,7 @@ leg_plot2 <- GrandMeanSkill(observations = obs,
                                     "NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons up to 21 days",
-                      viz_metric = "bias",
+                      viz_metric = "r2",
                       show_legend = TRUE)
 
 # Extract the legend. Returns a gtable
@@ -435,7 +437,7 @@ p4a <- SkillVsHorizon(observations = obs,
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
                       plot_title = "Mixed period",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
@@ -451,7 +453,7 @@ p4b <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE)
 p4b <- p4b +
   annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8)
@@ -473,7 +475,7 @@ p4c <- SkillVsHorizon(observations = obs,
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
                       plot_title = "Stratification onset",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
@@ -489,7 +491,7 @@ p4d <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE)
 p4d <- p4d +
   annotate("text",x = 8.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)
@@ -511,7 +513,7 @@ p4e <- SkillVsHorizon(observations = obs,
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
                       plot_title = "Stratified",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
@@ -527,7 +529,7 @@ p4f <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE)
 p4f <- p4f +
   annotate("text",x = 9, y = "LSTM", label = "*", size = 10, vjust = 0.8)
@@ -549,7 +551,7 @@ p4g <- SkillVsHorizon(observations = obs,
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
                       plot_title = "Stratification decline",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
@@ -565,7 +567,7 @@ p4h <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE)
 p4h <- p4h +
   annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8)
@@ -584,7 +586,7 @@ leg_plot1 <- SkillVsHorizon(observations = obs,
                             best_models_only = TRUE,
                             viz_dates = pred_dates,
                             plot_title = "",
-                            viz_metric = "rmse",
+                            viz_metric = "r2",
                             show_legend = TRUE,
                             make_combined_bestmodel_legend = TRUE,
                             combined_var = "strat")
@@ -629,7 +631,7 @@ p4 <- ggarrange(p4_leg1,
 
 p4
 
-ggsave(plot = p4, filename = "./figures/final_figures/Figure4.tif",
+ggsave(plot = p4, filename = "./figures/final_figures/Figure4_r2.tif",
        device = "tiff", height = 10, width = 12, units = "in")
 
 
@@ -648,14 +650,14 @@ q90 <- quantile(obs_var$delta, 0.90, na.rm = TRUE)
 var_df <- obs_var %>%
   mutate(var_bin = ifelse(delta > q90, "high","low"))
 
-low_var <- var_df %>%
-  filter(var_bin == "low")
+high_var <- var_df %>%
+  filter(var_bin == "high")
 
-mod_out_low_var <- out %>%
-  filter(datetime %in% low_var$datetime)
+mod_out_high_var <- out %>%
+  filter(datetime %in% high_var$datetime)
 
 p5a <- SkillVsHorizon(observations = obs, 
-                      model_output = mod_out_low_var, 
+                      model_output = mod_out_high_var, 
                       forecast_horizon = forecast_horizon,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
@@ -663,7 +665,7 @@ p5a <- SkillVsHorizon(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
-                      plot_title = "Low chl-a variability",
+                      plot_title = "High chl-a variability",
                       viz_metric = "rmse",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
@@ -672,7 +674,7 @@ p5a <- SkillVsHorizon(observations = obs,
 p5a
 
 p5b <- GrandMeanSkill(observations = obs, 
-                      model_output = mod_out_low_var, 
+                      model_output = mod_out_high_var, 
                       forecast_horizon = 35,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
@@ -683,14 +685,8 @@ p5b <- GrandMeanSkill(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE)
 p5b <- p5b +
-  annotate("text",x = 8.2, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)
 p5b
-
-high_var <- var_df %>%
-  filter(var_bin == "high")
-
-mod_out_high_var <- out %>%
-  filter(datetime %in% high_var$datetime)
 
 p5c <- SkillVsHorizon(observations = obs, 
                       model_output = mod_out_high_var, 
@@ -702,7 +698,7 @@ p5c <- SkillVsHorizon(observations = obs,
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
                       plot_title = "High chl-a variability",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
@@ -718,18 +714,14 @@ p5d <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "rmse",
+                      viz_metric = "r2",
                       show_legend = FALSE)
 p5d <- p5d +
-  annotate("text",x = 19.3, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)
 p5d
 
-mod_out_all_var <- out %>%
-  left_join(., var_df, by = "datetime") %>%
-  select(-Chla_ugL_mean)
-
 leg_plot1 <- SkillVsHorizon(observations = obs, 
-                            model_output = mod_out_all_var, 
+                            model_output = mod_out_high_var, 
                             forecast_horizon = forecast_horizon,
                             model_ids = c("DOY","persistence","historical mean","ARIMA",
                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
@@ -741,7 +733,7 @@ leg_plot1 <- SkillVsHorizon(observations = obs,
                             viz_metric = "rmse",
                             show_legend = TRUE,
                             make_combined_bestmodel_legend = TRUE,
-                            combined_var = "var")
+                            combined_var = "none")
 
 # Extract the legend. Returns a gtable
 leg1 <- get_legend(leg_plot1)
@@ -785,6 +777,51 @@ p5
 
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
        device = "tiff", height = 6, width = 12, units = "in")
+
+# additional Fig 5 code (low variability)
+
+mod_out_all_var <- out %>%
+  left_join(., var_df, by = "datetime") %>%
+  select(-Chla_ugL_mean)
+
+low_var <- var_df %>%
+  filter(var_bin == "low")
+
+mod_out_low_var <- out %>%
+  filter(datetime %in% low_var$datetime)
+
+p5a <- SkillVsHorizon(observations = obs, 
+                      model_output = mod_out_low_var, 
+                      forecast_horizon = forecast_horizon,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "Low chl-a variability",
+                      viz_metric = "rmse",
+                      show_legend = FALSE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = FALSE,
+                      combined_var = "none")
+p5a
+
+p5b <- GrandMeanSkill(observations = obs, 
+                      model_output = mod_out_low_var, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "rmse",
+                      show_legend = FALSE)
+p5b <- p5b +
+  annotate("text",x = 8.2, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+p5b
+
 
 # Figure 6
 source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")

@@ -189,11 +189,19 @@ SkillVsHorizon <- function(observations,
   if(make_combined_bestmodel_legend == TRUE){
     
     if(combined_var == "strat"){
+      if(viz_metric == "r2"){
+        bestModByHorizon <- output %>%
+          filter(skill_metric == "r2") %>%
+          group_by(horizon) %>%
+          filter(skill_value == max(skill_value)) %>%
+          arrange(horizon)
+      } else {
       bestModByHorizon <- output %>%
         filter(skill_metric == "rmse" & !is.na(strat_bin)) %>%
         group_by(strat_bin, horizon) %>%
         filter(skill_value == min(skill_value)) %>%
         arrange(horizon)
+      }
     } else if(combined_var == "var"){
       bestModByHorizon <- output %>%
         filter(skill_metric == "rmse" & !is.na(var_bin)) %>%
@@ -207,9 +215,9 @@ SkillVsHorizon <- function(observations,
       filter(skill_value == min(skill_value)) %>%
       arrange(horizon)
     bestModByHorizon2 <- output %>%
-      filter(skill_metric == "bias") %>%
+      filter(skill_metric == "r2") %>%
       group_by(horizon) %>%
-      filter(abs(skill_value) == min(abs(skill_value))) %>%
+      filter(skill_value == max(skill_value)) %>%
       arrange(horizon)
     bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2)
     }
@@ -244,7 +252,8 @@ SkillVsHorizon <- function(observations,
       ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))
   } else if(viz_metric == "r2"){
     p <- p +
-      ylab(expression(paste(R^2)))
+      ylab(expression(paste(R^2)))+
+      geom_hline(yintercept = 0, linetype = "dashed")
   } else {
     p <- p +
       ylab(expression(paste("mean bias (",mu,g,~L^-1,")")))
