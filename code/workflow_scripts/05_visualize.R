@@ -826,14 +826,65 @@ p5b
 # Figure 6
 source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
-# MARS
+# TSLM overall
+p6a <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "All predictions",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(10)))
+p6a
+
+# GAM overall
+p6b <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("GAM","GAM (no drivers)","GAM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "All predictions",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "GAM",
+                                    best_performing_horizons = data.frame(from = c(11),
+                                                                          to = c(13)))
+p6b
+
+# NNETAR mixed
+mixed <- ss_data %>%
+  filter(strat_bin == "mixed")
+
+mod_out_mixed <- out %>%
+  filter(datetime %in% mixed$datetime)
+
+p6c <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_mixed, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("NNETAR","NNETAR (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Mixed period",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "NNETAR",
+                                    best_performing_horizons = data.frame(from = c(24),
+                                                                          to = c(35)))
+p6c
+
+# MARS onset
 onset <- ss_data %>%
   filter(strat_bin == "onset")
 
 mod_out_onset <- out %>%
   filter(datetime %in% onset$datetime)
 
-p6a <- CompareWithAndWithoutDrivers(observations = obs, 
+p6d <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = mod_out_onset, 
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
@@ -845,16 +896,16 @@ p6a <- CompareWithAndWithoutDrivers(observations = obs,
                                     parent_model = "MARS",
                                     best_performing_horizons = data.frame(from = c(4,14,29),
                                                                           to = c(4,15,35)))
-p6a
+p6d
 
-# Prophet
+# Prophet stratified
 strat <- ss_data %>%
   filter(strat_bin == "stratified")
 
 mod_out_strat <- out %>%
   filter(datetime %in% strat$datetime)
 
-p6b <- CompareWithAndWithoutDrivers(observations = obs, 
+p6e <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = mod_out_strat, 
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("Prophet","Prophet (no drivers)"),
@@ -866,7 +917,7 @@ p6b <- CompareWithAndWithoutDrivers(observations = obs,
                                     parent_model = "Prophet",
                                     best_performing_horizons = data.frame(from = c(19),
                                                                           to = c(32)))
-p6b
+p6e
 
 # NNETAR decline
 
@@ -876,7 +927,7 @@ decline <- ss_data %>%
 mod_out_decline <- out %>%
   filter(datetime %in% decline$datetime)
 
-p6c <- CompareWithAndWithoutDrivers(observations = obs, 
+p6f <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = mod_out_decline, 
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("NNETAR","NNETAR (no drivers)"),
@@ -888,47 +939,25 @@ p6c <- CompareWithAndWithoutDrivers(observations = obs,
                                     parent_model = "NNETAR",
                                     best_performing_horizons = data.frame(from = c(15),
                                                                           to = c(35)))
-p6c
+p6f
 
 
-p6 <- ggarrange(p6a, p6b, p6c,
-                nrow = 3,
+p6 <- ggarrange(p6a, p6b, p6c, p6d, p6e, p6f,
+                nrow = 3, ncol = 2,
                 widths = c(1, 1, 1),
-                labels = c("a","b","c")
+                labels = c("a","b","c","d","e","f")
 ) + bgcolor("white")
 
 p6
 
 ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
-       device = "tiff", height = 10, width = 7, units = "in")
+       device = "tiff", height = 8, width = 12, units = "in")
 
 
 # Figure 7
 source("./code/function_library/visualization/CompareKGML.R")
 
-# all predictions
-
-p7a <- CompareKGML(observations = obs, 
-                   model_output = out, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML 1","NNETAR-KGML 2","persistence"),
-                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "All predictions",
-                   viz_metric = "rmse",
-                   show_legend = TRUE)
-p7a
-
-p7b <- CompareKGML(observations = obs, 
-                   model_output = out, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML 1","NNETAR-KGML 2","persistence"),
-                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "All predictions",
-                   viz_metric = "bias",
-                   show_legend = TRUE)
-p7b
-
-# high variability
+# high chl-a variability 2022-2023
 obs_var <- obs %>%
   mutate(delta = c(NA,abs(diff(Chla_ugL_mean, na.rm = TRUE)))) 
 
@@ -943,26 +972,40 @@ high_var <- var_df %>%
 mod_out_high_var <- out %>%
   filter(datetime %in% high_var$datetime)
 
-p7c <- CompareKGML(observations = obs, 
+p7a <- CompareKGML(observations = obs, 
                    model_output = mod_out_high_var, 
                    forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML 1","NNETAR-KGML 2","persistence"),
-                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "High chl-a variability",
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                   plot_title = "High chl-a variability (2022-2023)",
                    viz_metric = "rmse",
-                   show_legend = TRUE)
-p7c
+                   show_legend = TRUE,
+                   best_performing_horizons = data.frame(from = c(22),
+                                                         to = c(35)))
+p7a
 
-p7 <- ggarrange(p7a, p7b, p7c,
-                nrow = 3,
-                widths = c(1, 1, 1),
-                labels = c("a","b","c")
+p7b <- CompareKGML(observations = obs, 
+                   model_output = mod_out_high_var, 
+                   forecast_horizon = forecast_horizon,
+                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","NNETAR-KGML (trained by horizon)","persistence"),
+                   viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                   plot_title = "High chl-a variability (2023 only)",
+                   viz_metric = "rmse",
+                   show_legend = TRUE,
+                   best_performing_horizons = data.frame(from = c(22),
+                                                         to = c(35)))
+p7b
+
+p7 <- ggarrange(p7a, p7b, 
+                nrow = 1, ncol = 2,
+                widths = c(1,1.1),
+                labels = c("a","b")
 ) + bgcolor("white")
 
 p7
 
 ggsave(plot = p7, filename = "./figures/final_figures/Figure7.tif",
-       device = "tiff", height = 10, width = 7, units = "in")
+       device = "tiff", height = 4, width = 14, units = "in")
 
 
 # ARIMA

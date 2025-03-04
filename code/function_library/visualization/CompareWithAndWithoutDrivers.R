@@ -60,7 +60,7 @@ CompareWithAndWithoutDrivers <- function(observations,
     filter(horizon <= forecast_horizon) %>%
     arrange(strat_bin, model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+    mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","GAM","GAM (no drivers)","GAM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
     pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else if(combined_var == "var"){
     output <- model_output %>% 
@@ -79,7 +79,7 @@ CompareWithAndWithoutDrivers <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(var_bin, model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","GAM","GAM (no drivers)","GAM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   } else {
     #reformat model output
@@ -99,7 +99,7 @@ CompareWithAndWithoutDrivers <- function(observations,
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
-      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
+      mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","GAM","GAM (no drivers)","GAM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
       pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
   }
   
@@ -113,7 +113,8 @@ CompareWithAndWithoutDrivers <- function(observations,
   my.shapes <-             c("TSLM" = 2,
                              "Prophet" = 3,
                              "NNETAR" = 6,
-                             "MARS" = 9)
+                             "MARS" = 9,
+                             "GAM" = 11)
   
   my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 3))
   my.cols <- c("original model" = my.dd.cols[1],
