@@ -52,11 +52,11 @@ GrandMeanSkill <- function(observations,
     group_by(model_type, model_id) %>%
     summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE)),
               r2 = rsq(prediction, Chla_ugL_mean),
-              bias = mean(prediction - Chla_ugL_mean, na.rm = TRUE)) %>%
+              mae = mean(abs(prediction - Chla_ugL_mean), na.rm = TRUE)) %>%
     arrange(model_type, model_id) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
     mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
-    pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value") 
+    pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value") 
   
   my.cols <- c("process-based" = "#B85233",
                "data-driven" = "#6FA19D",
@@ -75,9 +75,9 @@ GrandMeanSkill <- function(observations,
     p <- ggplot()+
       geom_bar(data = plot_data, aes(x = skill_value, y = reorder(model_id,skill_value),
                                      group = model_id, fill = model_type), color = "black",stat = "identity")
-  } else if(viz_metric == "bias"){
+  } else if(viz_metric == "mae"){
     p <- ggplot()+
-      geom_bar(data = plot_data, aes(x = skill_value, y = reorder(model_id,-abs(skill_value)),
+      geom_bar(data = plot_data, aes(x = skill_value, y = reorder(model_id,-skill_value),
                                      group = model_id, fill = model_type), color = "black",stat = "identity")
   }
   
@@ -98,7 +98,7 @@ GrandMeanSkill <- function(observations,
       xlab(expression(paste(R^2)))
   } else {
     p <- p +
-      xlab(expression(paste("mean bias (",mu,g,~L^-1,")")))
+      xlab(expression(paste("MAE (",mu,g,~L^-1,")")))
   }
   
   if(show_legend == FALSE){

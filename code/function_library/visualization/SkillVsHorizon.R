@@ -33,7 +33,8 @@ SkillVsHorizon <- function(observations,
                           make_combined_bestmodel_legend =TRUE,
                           add_vline = TRUE,
                           vline_intercept = 21,
-                          combined_var = "strat"){
+                          combined_var = "strat",
+                          show_null_model = TRUE){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
@@ -55,14 +56,14 @@ SkillVsHorizon <- function(observations,
     group_by(model_type, model_id, horizon, strat_bin) %>%
     summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE)),
               r2 = rsq(prediction, Chla_ugL_mean),
-              bias = mean(prediction - Chla_ugL_mean, na.rm = TRUE)) %>%
+              mae = mean(abs(prediction - Chla_ugL_mean), na.rm = TRUE)) %>%
     filter(!horizon == 0) %>%
     mutate(horizon = as.numeric(horizon)) %>%
     filter(horizon <= forecast_horizon) %>%
     arrange(strat_bin, model_type, model_id, horizon) %>%
     mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
     mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
-    pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
+    pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value")
   } else if(combined_var == "var"){
     output <- model_output %>% 
       filter(model_id %in% model_ids & reference_datetime %in% viz_dates) %>%
@@ -74,14 +75,14 @@ SkillVsHorizon <- function(observations,
       group_by(model_type, model_id, horizon, var_bin) %>%
       summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE)),
                 r2 = rsq(prediction, Chla_ugL_mean),
-                bias = mean(prediction - Chla_ugL_mean, na.rm = TRUE)) %>%
+                mae = mean(abs(prediction - Chla_ugL_mean), na.rm = TRUE)) %>%
       filter(!horizon == 0) %>%
       mutate(horizon = as.numeric(horizon)) %>%
       filter(horizon <= forecast_horizon) %>%
       arrange(var_bin, model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
       mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
-      pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
+      pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value")
   } else {
     #reformat model output
     output <- model_output %>% 
@@ -94,14 +95,14 @@ SkillVsHorizon <- function(observations,
       group_by(model_type, model_id, horizon) %>%
       summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE)),
                 r2 = rsq(prediction, Chla_ugL_mean),
-                bias = mean(prediction - Chla_ugL_mean, na.rm = TRUE)) %>%
+                mae = mean(abs(prediction - Chla_ugL_mean), na.rm = TRUE)) %>%
       filter(!horizon == 0) %>%
       mutate(horizon = as.numeric(horizon)) %>%
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
       mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","MARS","randomForest","GAM","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","ensemble"))) %>%
-      pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
+      pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value")
   }
   
   my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 10))
@@ -132,20 +133,36 @@ SkillVsHorizon <- function(observations,
         group_by(horizon) %>%
         filter(skill_value == max(skill_value)) %>%
         arrange(horizon)
+      
+      best_performing_null <- plot_data %>%
+        filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+        group_by(horizon) %>%
+        filter(skill_value == max(skill_value)) %>%
+        arrange(horizon)
+      
     } else if(viz_metric == "rmse") {
       bestModByHorizon <- plot_data %>%
+        group_by(horizon) %>%
+        filter(skill_value == min(skill_value)) %>%
+        arrange(horizon)
+      
+      best_performing_null <- plot_data %>%
+        filter(model_id %in% c("persistence","historical mean","DOY")) %>%
         group_by(horizon) %>%
         filter(skill_value == min(skill_value)) %>%
         arrange(horizon)
     } else {
       bestModByHorizon <- plot_data %>%
         group_by(horizon) %>%
-        filter(abs(skill_value) == min(abs(skill_value))) %>%
+        filter(skill_value == min(skill_value)) %>%
+        arrange(horizon)
+      
+      best_performing_null <- plot_data %>%
+        filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+        group_by(horizon) %>%
+        filter(skill_value == min(skill_value)) %>%
         arrange(horizon)
     }
-  
-  pers <- plot_data %>%
-    filter(model_id == "persistence")
   
   my.shapes <-             c("ARIMA" = 0,
                              "ETS" = 1,
@@ -170,14 +187,17 @@ SkillVsHorizon <- function(observations,
                "ensemble" = "darkgray",
                "null" = "#DED50F")
 
-  p <- ggplot()+
-    geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
+  p <- ggplot()
+  if(show_null_model == TRUE){
+    p <- p + geom_line(data = best_performing_null, aes(x = horizon, y = skill_value, linetype = "best null model"))+
+      scale_linetype_discrete(name = "")
+  }
+  p <- p +
     geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
     xlab("Prediction horizon (days)")+
     ggtitle(plot_title)+
     scale_shape_manual(name = "Model ID", values = my.shapes)+
     scale_color_manual(name = "Model type", values = my.cols)+ 
-    scale_linetype_discrete(name = "Null model")+
     theme_classic()+
     theme(legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),
@@ -222,20 +242,20 @@ SkillVsHorizon <- function(observations,
     bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2)
     }
     
-    p <- ggplot()+
-      geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
-      geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
-      xlab("Prediction horizon (days)")+
-      ggtitle(plot_title)+
-      scale_shape_manual(name = "Model ID", values = my.shapes)+
-      scale_color_manual(name = "Model Type", values = my.cols)+ 
-      scale_linetype_discrete(name = "Null model")+
-      theme_classic()+
-      theme(legend.title = element_text(face = "bold"),
-            panel.background = element_rect(color = "black", linewidth = 1),
-            legend.key.width = unit(2,"cm"),
-            legend.key=element_rect(colour="white"))+
-      guides(color = guide_legend(order = 1))
+    # p <- ggplot()+
+    #   geom_line(data = best_performing_null, aes(x = horizon, y = skill_value, linetype = "best null model"))+
+    #   geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+    #   xlab("Prediction horizon (days)")+
+    #   ggtitle(plot_title)+
+    #   scale_shape_manual(name = "Model ID", values = my.shapes)+
+    #   scale_color_manual(name = "Model Type", values = my.cols)+ 
+    #   scale_linetype_discrete(name = "")+
+    #   theme_classic()+
+    #   theme(legend.title = element_text(face = "bold"),
+    #         panel.background = element_rect(color = "black", linewidth = 1),
+    #         legend.key.width = unit(2,"cm"),
+    #         legend.key=element_rect(colour="white"))+
+    #   guides(color = guide_legend(order = 1))
     
     if(combined_var == "strat"){
       p <- p + facet_wrap(facets = vars(strat_bin))
@@ -256,7 +276,7 @@ SkillVsHorizon <- function(observations,
       geom_hline(yintercept = 0, linetype = "dashed")
   } else {
     p <- p +
-      ylab(expression(paste("mean bias (",mu,g,~L^-1,")")))
+      ylab(expression(paste("MAE (",mu,g,~L^-1,")")))
   }
   
   if(show_legend == FALSE){
