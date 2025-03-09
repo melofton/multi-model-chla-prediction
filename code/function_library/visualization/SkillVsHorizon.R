@@ -242,20 +242,22 @@ SkillVsHorizon <- function(observations,
     bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2)
     }
     
-    # p <- ggplot()+
-    #   geom_line(data = best_performing_null, aes(x = horizon, y = skill_value, linetype = "best null model"))+
-    #   geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
-    #   xlab("Prediction horizon (days)")+
-    #   ggtitle(plot_title)+
-    #   scale_shape_manual(name = "Model ID", values = my.shapes)+
-    #   scale_color_manual(name = "Model Type", values = my.cols)+ 
-    #   scale_linetype_discrete(name = "")+
-    #   theme_classic()+
-    #   theme(legend.title = element_text(face = "bold"),
-    #         panel.background = element_rect(color = "black", linewidth = 1),
-    #         legend.key.width = unit(2,"cm"),
-    #         legend.key=element_rect(colour="white"))+
-    #   guides(color = guide_legend(order = 1))
+    p <- ggplot()
+    if(show_null_model == TRUE){
+      p <- p + geom_line(data = best_performing_null, aes(x = horizon, y = skill_value, linetype = "best null model"))
+    }
+      p <- p + geom_point(data = bestModByHorizon, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+      xlab("Prediction horizon (days)")+
+      ggtitle(plot_title)+
+      scale_shape_manual(name = "Model ID", values = my.shapes)+
+      scale_color_manual(name = "Model Type", values = my.cols)+
+      scale_linetype_discrete(name = "")+
+      theme_classic()+
+      theme(legend.title = element_text(face = "bold"),
+            panel.background = element_rect(color = "black", linewidth = 1),
+            legend.key.width = unit(2,"cm"),
+            legend.key=element_rect(colour="white"))+
+      guides(color = guide_legend(order = 1))
     
     if(combined_var == "strat"){
       p <- p + facet_wrap(facets = vars(strat_bin))
@@ -269,14 +271,17 @@ SkillVsHorizon <- function(observations,
   
   if(viz_metric == "rmse"){
     p <- p +
-      ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))
+      ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
+      ylim(c(1,12))
   } else if(viz_metric == "r2"){
     p <- p +
       ylab(expression(paste(R^2)))+
-      geom_hline(yintercept = 0, linetype = "dashed")
+      geom_hline(yintercept = 0, linetype = "dashed")+
+      ylim(c(-0.6,1))
   } else {
     p <- p +
-      ylab(expression(paste("MAE (",mu,g,~L^-1,")")))
+      ylab(expression(paste("MAE (",mu,g,~L^-1,")")))+
+      ylim(c(0,8))
   }
   
   if(show_legend == FALSE){
