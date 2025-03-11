@@ -31,10 +31,11 @@ out <- read_csv("./model_output/validation_output.csv") %>%
                                                                                    ifelse(model_id == "NNETAR_KGML_cal_training_resid","NNETAR-KGML",
                                                                                           ifelse(model_id == "NNETAR_KGML_cal_training_obs","NNETAR-KGML 4",
                                                                                                  ifelse(model_id == "GAMnoLag","GAM (no lag)",
-                                                                                                        ifelse(model_id == "GAMnoDrivers","GAM (no drivers)",model_id))))))))))))))
+                                                                                                        ifelse(model_id == "GAMnoDrivers","GAM (no drivers)",
+                                                                                                               ifelse(model_id == "XGBoostNoLag","XGBoost (no lag)",model_id)))))))))))))))
 unique(out$model_id)
 ens <- out %>%
-  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","TSLM (no drivers)","MARS (no drivers)","TSLM (no lag)","MARS (no lag)","NNETAR-KGML (trained by horizon)","NNETAR-KGML 3","NNETAR-KGML 4")) %>%
+  filter(!model_id %in% c("ARIMA (no drivers)","NNETAR (no drivers)","Prophet (no drivers)","TSLM (no drivers)","MARS (no drivers)","TSLM (no lag)","MARS (no lag)","NNETAR-KGML (trained by horizon)","NNETAR-KGML 3","NNETAR-KGML 4","XGBoost (no lag)")) %>%
   group_by(reference_datetime, datetime) %>%
   summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
   add_column(model_id = "ensemble", model_type = "ensemble", variable = "chlorophyll-a") 
@@ -1574,12 +1575,141 @@ p6 <- ggarrange(p6a, p6b, p6c, p6d, p6e, p6f,
                 nrow = 3, ncol = 2,
                 widths = c(1, 1, 1),
                 labels = c("a","b","c","d","e","f")
-) + bgcolor("white")
+) 
 
 p6
 
 ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
-       device = "tiff", height = 8, width = 12, units = "in")
+       device = "tiff", height = 8, width = 12, units = "in", bg = "white")
+
+# Figure 6 supplements
+
+# TSLM overall
+p6_supp1a <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "All predictions",
+                                    viz_metric = "mae",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(18)))
+p6_supp1a
+
+# XGBoost overall
+p6_supp1b <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("XGBoost","XGBoost (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "All predictions",
+                                    viz_metric = "mae",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "XGBoost",
+                                    best_performing_horizons = data.frame(from = c(NA),
+                                                                          to = c(NA)))
+p6_supp1b
+
+# XGBoost mixed
+mixed <- ss_data %>%
+  filter(strat_bin == "mixed")
+
+mod_out_mixed <- out %>%
+  filter(datetime %in% mixed$datetime)
+
+p6_supp1c <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_mixed, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("XGBoost","XGBoost (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Mixed period",
+                                    viz_metric = "mae",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "XGBoost",
+                                    best_performing_horizons = data.frame(from = c(9,11),
+                                                                          to = c(9,22)))
+p6_supp1c
+
+# TSLM onset
+onset <- ss_data %>%
+  filter(strat_bin == "onset")
+
+mod_out_onset <- out %>%
+  filter(datetime %in% onset$datetime)
+
+p6_supp1d <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_onset, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratification onset",
+                                    viz_metric = "mae",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(35)))
+p6_supp1d
+
+# TSLM stratified
+strat <- ss_data %>%
+  filter(strat_bin == "stratified")
+
+mod_out_strat <- out %>%
+  filter(datetime %in% strat$datetime)
+
+p6_supp1e <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_strat, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratified",
+                                    viz_metric = "mae",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(2),
+                                                                          to = c(20)))
+p6_supp1e
+
+# TSLM decline
+
+decline <- ss_data %>%
+  filter(strat_bin == "decline")
+
+mod_out_decline <- out %>%
+  filter(datetime %in% decline$datetime)
+
+p6_supp1f <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_decline, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Stratification decline",
+                                    viz_metric = "mae",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(1,6,24,30),
+                                                                          to = c(1,22,26,32)))
+p6_supp1f
+
+
+p6_supp1 <- ggarrange(p6_supp1a, p6_supp1b, p6_supp1c, p6_supp1d, p6_supp1e, p6_supp1f,
+                nrow = 3, ncol = 2,
+                widths = c(1, 1, 1),
+                labels = c("a","b","c","d","e","f")
+) 
+
+p6_supp1
+
+ggsave(plot = p6_supp1, filename = "./figures/final_figures/Figure6_supp1.tif",
+       device = "tiff", height = 8, width = 12, units = "in",bg = "white")
 
 
 # Figure 7
