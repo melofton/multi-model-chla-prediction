@@ -103,6 +103,12 @@ pred_XGBoost <- parsnipXGBoost(data = dat_XGBoost,
                                pred_dates = pred_dates,
                                forecast_horizon = forecast_horizon, 
                                final_workflow = fit_XGBoost$final_workflow)
+pred_XGBoost_noLag <- parsnipXGBoost(data = dat_XGBoost,
+                               pred_dates = pred_dates,
+                               forecast_horizon = forecast_horizon, 
+                               final_workflow = fit_XGBoost$final_workflow,
+                               include_lag = FALSE)
+pred_XGBoost_noLag$model_id <- "XGBoostNoLag"
 
 pred_NNETAR_Drivers <- fableNNETAR(data = dat_NNETAR,
                          pred_dates = pred_dates,
@@ -214,7 +220,7 @@ pred_NNETAR_KGML2 <- fableNNETAR_KGML2(data = dat_NNETAR_KGML2,
 #OR if you only want to run one model
 mod_output <- read_csv("./model_output/validation_output.csv") %>%
   #filter(!model_id == "NNETAR_KGML") %>%
-  bind_rows(.,pred_GAM_noDrivers) 
+  bind_rows(.,pred_XGBoost_noLag) 
 
 unique(mod_output$model_id)
 

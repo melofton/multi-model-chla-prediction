@@ -50,14 +50,14 @@ CompareKGML <- function(observations,
       group_by(model_type, model_id, horizon) %>%
       summarize(rmse = sqrt(mean((Chla_ugL_mean - prediction)^2, na.rm = TRUE)),
                 r2 = rsq(prediction, Chla_ugL_mean),
-                bias = mean(prediction - Chla_ugL_mean, na.rm = TRUE)) %>%
+                mae = mean(abs(prediction - Chla_ugL_mean), na.rm = TRUE)) %>%
       filter(!horizon == 0) %>%
       mutate(horizon = as.numeric(horizon)) %>%
       filter(horizon <= forecast_horizon) %>%
       arrange(model_type, model_id, horizon) %>%
       mutate(model_type = factor(model_type, levels = c("null","process-based","data-driven","KGML","ensemble"))) %>%
       mutate(model_id = factor(model_id, levels = c("DOY","historical mean","persistence","OneDProcessModel","GLM-AED","ARIMA","ARIMA (no drivers)","ETS","TSLM","TSLM (no drivers)","TSLM (no lag)","MARS","MARS (no drivers)","MARS (no lag)","randomForest","Prophet","Prophet (no drivers)","XGBoost","NNETAR","NNETAR (no drivers)","LSTM","NNETAR-KGML","NNETAR-KGML (trained by horizon)","ensemble"))) %>%
-      pivot_longer(rmse:bias, names_to = "skill_metric", values_to = "skill_value")
+      pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value")
   
   plot_data <- output %>%
     filter(skill_metric == viz_metric) 
@@ -103,10 +103,11 @@ CompareKGML <- function(observations,
       ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))
   } else if(viz_metric == "r2"){
     p <- p +
-      ylab(expression(paste(R^2)))
+      ylab(expression(paste(R^2)))+
+      geom_hline(yintercept = 0, linetype = "dashed")
   } else {
     p <- p +
-      ylab(expression(paste("mean bias (",mu,g,~L^-1,")")))
+      ylab(expression(paste("MAE (",mu,g,~L^-1,")")))
   }
   
   if(show_legend == FALSE){

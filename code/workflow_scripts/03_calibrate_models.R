@@ -78,7 +78,7 @@ stats_table <- fit_TSLM$stats %>%
                 .fns  = ~ round(., 2)))
 write.csv(stats_table, "./model_output/TSLM_diagnostics.csv",row.names = FALSE)
 
-fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
+fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"), include_lag = FALSE)
 ggsave(fit_XGBoost$plot, filename = "./figures/XGBoost_fit.png",
        height = 3, width = 5, units = "in")
 ggsave(fit_XGBoost$vip_plot, filename = "./figures/XGBoost_feature_importance.png",

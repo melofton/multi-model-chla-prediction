@@ -14,7 +14,7 @@ set.seed(100)
 #'@param cal_dates list of two dates (yyyy-mm-dd) for start and
 #'stop of calibration/fit period
 
-fit_XGBoost <- function(data, cal_dates){
+fit_XGBoost <- function(data, cal_dates, include_lag){
   
   #assign model fit start and stop dates
   start_cal <- date(cal_dates[1])
@@ -24,10 +24,18 @@ fit_XGBoost <- function(data, cal_dates){
   dates <- as_tibble(data) %>%
     filter(datetime >= start_cal & datetime <= stop_cal) %>%
     select(datetime)
+  
+  if(include_lag == TRUE){
   df <- as_tibble(data) %>%
     mutate(lag_Chla_ugL_mean = stats::lag(Chla_ugL_mean, k = 1)) %>%
     filter(datetime >= start_cal & datetime <= stop_cal) %>%
-    select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean, lag_Chla_ugL_mean) 
+    select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean, lag_Chla_ugL_mean)
+  }
+  if(include_lag == FALSE){
+    df <- as_tibble(data) %>%
+      filter(datetime >= start_cal & datetime <= stop_cal) %>%
+      select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean)
+  }
 
   #set recipe
   xgboost_recipe <- df |> 

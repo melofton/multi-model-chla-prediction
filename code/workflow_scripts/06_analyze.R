@@ -238,5 +238,12 @@ bias_vs_sd_by_horizon <- ggplot(data = chla_var_3d_data, aes(x = chla_sd, y = bi
   theme_bw()
 bias_vs_sd_by_horizon
 
+compareToNull <- data.frame(horizon = bestModByHorizon$horizon,
+                            skill_metric = bestModByHorizon$skill_metric,
+                            model_id = bestModByHorizon$model_id,
+                            null_model_id = best_performing_null$model_id,
+                            compare_to_null = best_performing_null$skill_value - bestModByHorizon$skill_value) %>%
+  slice_max(compare_to_null)
+
 
 

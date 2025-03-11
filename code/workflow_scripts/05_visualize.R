@@ -183,14 +183,129 @@ p2 <- ggarrange(ggarrange(p2a, p2b, p2c, p2d, p2e, p2f, nrow = 3, ncol = 2),
                 p2_leg,
                 ncol = 2,
                 widths = c(1, 0.4)
-) +
-  bgcolor("white")+
-  theme(plot.margin = margin(0.2,0.1,1.5,0.1, "cm")) 
+) +theme(plot.margin = margin(0.2,0.1,1.5,0.1, "cm"))
+  #bgcolor("white")
+   
 
 p2
 
 ggsave(plot = p2, filename = "./figures/final_figures/Figure2.tif",
-       device = "tiff", height = 11, width = 10, units = "in")
+       device = "tiff", height = 11, width = 10, units = "in",bg = "white")
+
+# Figure 2 supplement
+p2_supp1a <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_a, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                                   "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                                   "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                                   "GAM","NNETAR-KGML","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "a. Mixed: ",
+                         rect_color = plot_cols[1],
+                         ylim_values = c(0,40))
+p2_supp1a
+
+p2_supp1b <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_b, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                       "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                       "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                       "GAM","NNETAR-KGML","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "b. Onset: ",
+                         rect_color = plot_cols[2],
+                         ylim_values = c(0,40))
+p2_supp1b
+
+p2_supp1c <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_c, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                       "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                       "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                       "GAM","NNETAR-KGML","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "c. Stratified: ",
+                         rect_color = plot_cols[3],
+                         ylim_values = c(0,40))
+p2_supp1c
+
+p2_supp1d <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_d, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                       "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                       "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                       "GAM","NNETAR-KGML","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "d. Decline: ",
+                         rect_color = plot_cols[4],
+                         ylim_values = c(0,40))
+p2_supp1d
+
+p2_supp1e <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_e, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                       "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                       "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                       "GAM","NNETAR-KGML","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "e. Low variability: ",
+                         rect_color = plot_cols[5],
+                         ylim_values = c(0,40))
+p2_supp1e
+
+p2_supp1f <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = reference_datetime_f, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                       "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                       "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                       "GAM","NNETAR-KGML","ensemble"),
+                         show_legend = FALSE,
+                         sub_panel_label = "f. High variability: ",
+                         rect_color = plot_cols[6],
+                         ylim_values = c(0,65))
+p2_supp1f
+
+p2_supp_leg_plot <- ExamplePrediction(observations = obs, 
+                              model_output = out, 
+                              reference_datetime = reference_datetime_b, 
+                              forecast_horizon = forecast_horizon,
+                              model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
+                              show_legend = TRUE,
+                              sub_panel_label = "b",
+                              rect_color = "black",
+                              ylim_values = c(0,40))
+
+# Extract the legend. Returns a gtable
+p2_supp1_leg1 <- get_legend(p2_supp_leg_plot)
+
+# Convert to a ggplot and print
+p2_supp1_leg1 <- as_ggplot(p2_supp1_leg1)
+p2_supp1_leg1
+
+p2_supp1 <- ggarrange(ggarrange(p2_supp1a, p2_supp1b, p2_supp1c, p2_supp1d, p2_supp1e, p2_supp1f, nrow = 3, ncol = 2),
+                p2_supp1_leg1,
+                ncol = 2,
+                widths = c(1, 0.4)
+) +theme(plot.margin = margin(0.2,0.1,1.5,0.1, "cm"))
+#bgcolor("white")
+
+
+p2_supp1
+
+ggsave(plot = p2_supp1, filename = "./figures/final_figures/Figure2_supp1.tif",
+       device = "tiff", height = 11, width = 10, units = "in",bg = "white")
 
 # Figure 3
 
@@ -348,12 +463,12 @@ p3 <- ggarrange(p3_leg1,
                 p3_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
-) + bgcolor("white")
+) #+ bgcolor("white")
 
 p3
 
 ggsave(plot = p3, filename = "./figures/final_figures/Figure3.tif",
-       device = "tiff", height = 9, width = 12, units = "in")
+       device = "tiff", height = 9, width = 12, units = "in",bg = "white")
 
 # Figure 3 supplements
 
@@ -456,6 +571,7 @@ p3_supp1_leg1 <- get_legend(p3_supp1_leg_plot1)
 
 # Convert to a ggplot and print
 p3_supp1_leg1 <- as_ggplot(p3_supp1_leg1)
+p3_supp1_leg1 <- p3_supp1_leg1 #+ theme(plot.background = element_blank()) + bgcolor("white")
 p3_supp1_leg1
 
 p3_supp1_leg_plot2 <- GrandMeanSkill(observations = obs, 
@@ -471,9 +587,9 @@ p3_supp1_leg_plot2 <- GrandMeanSkill(observations = obs,
 p3_supp1_leg2 <- get_legend(p3_supp1_leg_plot2)
 
 # Convert to a ggplot and print
-p3_supp1_leg2 <- as_ggplot(p3_supp1_leg2)
+p3_supp1_leg2 <- as_ggplot(p3_supp1_leg2) 
+p3_supp1_leg2 <- p3_supp1_leg2 #+ theme(plot.background = element_blank()) + bgcolor("white")
 p3_supp1_leg2
-
 
 p3_supp1 <- ggarrange(p3_supp1_leg1,
                 ggarrange(p3_supp1a, p3_supp1b, p3_supp1c, p3_supp1d, p3_supp1e, p3_supp1f, 
@@ -484,7 +600,7 @@ p3_supp1 <- ggarrange(p3_supp1_leg1,
                 p3_supp1_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
-) + bgcolor("white")
+) #+ bgcolor("white") + theme(plot.background = element_blank())
 
 p3_supp1
 
@@ -530,7 +646,7 @@ p4b <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "mae",
+                      viz_metric = "rmse",
                       show_legend = FALSE)
 p4b <- p4b +
   annotate("text",x = 8.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.24,
@@ -570,7 +686,7 @@ p4d <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "mae",
+                      viz_metric = "rmse",
                       show_legend = FALSE)
 p4d <- p4d +
   annotate("text",x = 6.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 8.6, r2 x = -0.4,
@@ -609,7 +725,7 @@ p4f <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "mae",
+                      viz_metric = "rmse",
                       show_legend = FALSE)
 p4f <- p4f +
   annotate("text",x = 6.7, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 9, r2 x = -0.45,
@@ -648,7 +764,7 @@ p4h <- GrandMeanSkill(observations = obs,
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
-                      viz_metric = "mae",
+                      viz_metric = "rmse",
                       show_legend = FALSE)
 p4h <- p4h +
   annotate("text",x = 7.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.6,
@@ -710,12 +826,12 @@ p4 <- ggarrange(p4_leg1,
                 p4_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
-) + bgcolor("white")
+) #+ bgcolor("white")
 
 p4
 
 ggsave(plot = p4, filename = "./figures/final_figures/Figure4_mae.tif",
-       device = "tiff", height = 10, width = 12, units = "in")
+       device = "tiff", height = 10, width = 12, units = "in", bg = "white")
 
 # Figure 4 supplement
 
@@ -976,12 +1092,12 @@ p4_supp1 <- ggarrange(p4_supp1_leg1,
                 p4_supp1_leg2,
                 ncol = 3,
                 widths = c(0.2, 1, 0.2)
-) + bgcolor("white")
+) #+ bgcolor("white")
 
 p4_supp1
 
 ggsave(plot = p4_supp1, filename = "./figures/final_figures/Figure4_supp1.tif",
-       device = "tiff", height = 10, width = 15, units = "in")
+       device = "tiff", height = 10, width = 15, units = "in", bg = "white")
 
 # Figure 5
 
@@ -1015,8 +1131,10 @@ p5a <- SkillVsHorizon(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
-                      add_vline = FALSE,
-                      combined_var = "none")
+                      add_vline = TRUE,
+                      vline_intercept = 8,
+                      combined_var = "none",
+                      show_null_model = TRUE)
 p5a
 
 p5b <- GrandMeanSkill(observations = obs, 
@@ -1066,6 +1184,39 @@ p5d <- p5d +
   annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)
 p5d
 
+p5e <- SkillVsHorizon(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = forecast_horizon,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "High chl-a variability",
+                      viz_metric = "mae",
+                      show_legend = FALSE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = TRUE,
+                      vline_intercept = 8,
+                      combined_var = "none")
+p5e
+
+p5f <- GrandMeanSkill(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "mae",
+                      show_legend = FALSE)
+p5f <- p5f +
+  annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+p5f
+
 leg_plot1 <- SkillVsHorizon(observations = obs, 
                             model_output = mod_out_high_var, 
                             forecast_horizon = forecast_horizon,
@@ -1096,8 +1247,8 @@ leg_plot2 <- GrandMeanSkill(observations = obs,
                                           "GLM-AED","OneDProcessModel","MARS","randomForest",
                                           "NNETAR-KGML","ensemble"),
                             viz_dates = pred_dates,
-                            plot_title = "All horizons up to 21 days",
-                            viz_metric = "bias",
+                            plot_title = "All horizons",
+                            viz_metric = "mae",
                             show_legend = TRUE)
 
 # Extract the legend. Returns a gtable
@@ -1109,20 +1260,151 @@ p5_leg2
 
 
 p5 <- ggarrange(p5_leg1,
-                ggarrange(p5a, p5b, p5c, p5d,
-                          nrow = 2,
+                ggarrange(p5a, p5b, p5c, p5d, p5e, p5f,
+                          nrow = 3,
                           ncol = 2,
-                          labels = c("a","b","c","d"),
+                          labels = c("a","b","c","d","e","f"),
                           widths = c(1,0.8)),
                 p5_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
-) + bgcolor("white")
+) #+ bgcolor("white")
 
 p5
 
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
-       device = "tiff", height = 6, width = 12, units = "in")
+       device = "tiff", height = 9, width = 12, units = "in", bg = "white")
+
+# Figure 5 supplement
+
+p5_supp1a <- SkillVsHorizon(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = forecast_horizon,
+                      model_ids = c("DOY","persistence","historical mean"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "High chl-a variability",
+                      viz_metric = "rmse",
+                      show_legend = FALSE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = FALSE,
+                      vline_intercept = 8,
+                      combined_var = "none",
+                      show_null_model = FALSE)
+p5_supp1a
+
+p5_supp1b <- GrandMeanSkill(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "rmse",
+                      show_legend = FALSE)
+p5_supp1b
+
+p5_supp1c <- SkillVsHorizon(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = forecast_horizon,
+                      model_ids = c("DOY","persistence","historical mean"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "High chl-a variability",
+                      viz_metric = "r2",
+                      show_legend = FALSE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = FALSE,
+                      combined_var = "none",
+                      show_null_model = FALSE)
+p5_supp1c
+
+p5_supp1d <- GrandMeanSkill(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "r2",
+                      show_legend = FALSE)
+p5_supp1d
+
+p5_supp1e <- SkillVsHorizon(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = forecast_horizon,
+                      model_ids = c("DOY","persistence","historical mean"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "High chl-a variability",
+                      viz_metric = "mae",
+                      show_legend = FALSE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = FALSE,
+                      vline_intercept = 8,
+                      combined_var = "none",
+                      show_null_model = FALSE)
+p5_supp1e
+
+p5_supp1f <- GrandMeanSkill(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "mae",
+                      show_legend = FALSE)
+p5_supp1f
+
+leg_plot1 <- SkillVsHorizon(observations = obs, 
+                            model_output = mod_out_high_var, 
+                            forecast_horizon = forecast_horizon,
+                            model_ids = c("DOY","persistence","historical mean"),
+                            best_models_only = TRUE,
+                            viz_dates = pred_dates,
+                            plot_title = "",
+                            viz_metric = "rmse",
+                            show_legend = TRUE,
+                            make_combined_bestmodel_legend = TRUE,
+                            combined_var = "none")
+
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p5_supp1_leg1 <- as_ggplot(leg1)
+p5_supp1_leg1
+
+leg_plot2 <- GrandMeanSkill(observations = obs, 
+                            model_output = out, 
+                            forecast_horizon = forecast_horizon,
+                            model_ids = c("DOY","persistence","historical mean"),
+                            viz_dates = pred_dates,
+                            plot_title = "All horizons",
+                            viz_metric = "mae",
+                            show_legend = TRUE)
+
+# Extract the legend. Returns a gtable
+leg2 <- get_legend(leg_plot2)
+
+# Convert to a ggplot and print
+p5_supp1_leg2 <- as_ggplot(leg2)
+p5_supp1_leg2
+
+
+p5_supp1 <- ggarrange(p5_supp1_leg1,
+                ggarrange(p5_supp1a, p5_supp1b, p5_supp1c, p5_supp1d, p5_supp1e, p5_supp1f,
+                          nrow = 3,
+                          ncol = 2,
+                          labels = c("a","b","c","d","e","f"),
+                          widths = c(1,0.8)),
+                p5_supp1_leg2,
+                ncol = 3,
+                widths = c(0.3, 1, 0.3)
+) #+ bgcolor("white")
+
+p5_supp1
+
+ggsave(plot = p5_supp1, filename = "./figures/final_figures/Figure5_supp1.tif",
+       device = "tiff", height = 9, width = 12, units = "in", bg = "white")
 
 # additional Fig 5 code (low variability)
 
@@ -1202,7 +1484,7 @@ p6b <- CompareWithAndWithoutDrivers(observations = obs,
                                                                           to = c(13)))
 p6b
 
-# NNETAR mixed
+# ARIMA mixed
 mixed <- ss_data %>%
   filter(strat_bin == "mixed")
 
@@ -1212,15 +1494,15 @@ mod_out_mixed <- out %>%
 p6c <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = mod_out_mixed, 
                                     forecast_horizon = forecast_horizon,
-                                    model_ids = c("NNETAR","NNETAR (no drivers)"),
+                                    model_ids = c("ARIMA","ARIMA (no drivers)"),
                                     viz_dates = pred_dates,
                                     plot_title = "Mixed period",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
-                                    parent_model = "NNETAR",
-                                    best_performing_horizons = data.frame(from = c(24),
-                                                                          to = c(35)))
+                                    parent_model = "ARIMA",
+                                    best_performing_horizons = data.frame(from = c(20),
+                                                                          to = c(23)))
 p6c
 
 # MARS onset
@@ -1318,19 +1600,26 @@ high_var <- var_df %>%
 mod_out_high_var <- out %>%
   filter(datetime %in% high_var$datetime)
 
-p7a <- CompareKGML(observations = obs, 
+p7 <- CompareKGML(observations = obs, 
                    model_output = mod_out_high_var, 
                    forecast_horizon = forecast_horizon,
                    model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
                    viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "High chl-a variability (2022-2023)",
+                   plot_title = "High chl-a variability",
                    viz_metric = "rmse",
                    show_legend = TRUE,
                    best_performing_horizons = data.frame(from = c(22),
                                                          to = c(35)))
-p7a
+p7
 
-p7b <- CompareKGML(observations = obs, 
+ggsave(plot = p7, filename = "./figures/final_figures/Figure7.tif",
+       device = "tiff", height = 4, width = 7, units = "in")
+
+# Figure 7 supplements
+
+# supp1
+
+p7_supp1 <- CompareKGML(observations = obs, 
                    model_output = mod_out_high_var, 
                    forecast_horizon = forecast_horizon,
                    model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","NNETAR-KGML (trained by horizon)","persistence"),
@@ -1340,18 +1629,71 @@ p7b <- CompareKGML(observations = obs,
                    show_legend = TRUE,
                    best_performing_horizons = data.frame(from = c(22),
                                                          to = c(35)))
-p7b
+p7_supp1
 
-p7 <- ggarrange(p7a, p7b, 
-                nrow = 1, ncol = 2,
+ggsave(plot = p7_supp1, filename = "./figures/final_figures/Figure7_supp1.tif",
+       device = "tiff", height = 4, width = 7, units = "in")
+
+# supp2
+
+p7_supp2a <- CompareKGML(observations = obs, 
+                  model_output = mod_out_high_var, 
+                  forecast_horizon = forecast_horizon,
+                  model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                  viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                  plot_title = "High chl-a variability (2022-2023)",
+                  viz_metric = "r2",
+                  show_legend = TRUE,
+                  best_performing_horizons = data.frame(from = c(22),
+                                                        to = c(35)))
+p7_supp2a
+
+p7_supp2b <- CompareKGML(observations = obs, 
+                        model_output = mod_out_high_var, 
+                        forecast_horizon = forecast_horizon,
+                        model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","NNETAR-KGML (trained by horizon)","persistence"),
+                        viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                        plot_title = "High chl-a variability (2023 only)",
+                        viz_metric = "r2",
+                        show_legend = TRUE,
+                        best_performing_horizons = data.frame(from = c(22),
+                                                              to = c(35)))
+p7_supp2b
+
+p7_supp2c <- CompareKGML(observations = obs, 
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability (2022-2023)",
+                         viz_metric = "mae",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(22),
+                                                               to = c(35)))
+p7_supp2c
+
+p7_supp2d <- CompareKGML(observations = obs, 
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","NNETAR-KGML (trained by horizon)","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2023-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability (2023 only)",
+                         viz_metric = "mae",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(22),
+                                                               to = c(35)))
+p7_supp2d
+
+p7_supp2 <- ggarrange(p7_supp2a, p7_supp2b, p7_supp2c, p7_supp2d,
+                nrow = 2, ncol = 2,
                 widths = c(1,1.1),
-                labels = c("a","b")
-) + bgcolor("white")
+                labels = c("a","b","c","d")
+) 
 
-p7
+p7_supp2
 
-ggsave(plot = p7, filename = "./figures/final_figures/Figure7.tif",
-       device = "tiff", height = 4, width = 14, units = "in")
+ggsave(plot = p7_supp2, filename = "./figures/final_figures/Figure7_supp2.tif",
+       device = "tiff", height = 8, width = 14, units = "in",bg = "white")
 
 
 # ARIMA

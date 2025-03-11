@@ -110,7 +110,8 @@ CompareWithAndWithoutDrivers <- function(observations,
                                   ifelse(grepl('no lag',model_id), 'environmental variables only','original model'))) %>%
     mutate(model_version = factor(model_version, levels = c("original model","chlorophyll-a data only","environmental variables only")))
   
-  my.shapes <-             c("TSLM" = 2,
+  my.shapes <-             c("ARIMA" = 0,
+                             "TSLM" = 2,
                              "Prophet" = 3,
                              "NNETAR" = 6,
                              "MARS" = 9,

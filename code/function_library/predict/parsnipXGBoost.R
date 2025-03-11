@@ -16,7 +16,7 @@ set.seed(100)
 #'@param model xgb.booster object fitted and saved from 03_calibrate_models.R
 
 parsnipXGBoost <- function(data, pred_dates, forecast_horizon,
-                           final_workflow){
+                           final_workflow, include_lag){
   
   #set up empty dataframe
   df.cols = c("model_id","reference_datetime","datetime","variable","prediction") 
@@ -28,12 +28,19 @@ parsnipXGBoost <- function(data, pred_dates, forecast_horizon,
     #print current pred_date
     message(pred_dates[t])
     
+    if(include_lag == TRUE){
     #refit model
     new.df <- as_tibble(data) %>%
       mutate(lag_Chla_ugL_mean = stats::lag(Chla_ugL_mean, k = 1)) %>%
       filter(datetime < pred_dates[t]) %>%
       select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean, lag_Chla_ugL_mean)  
-    
+    }
+    if(include_lag == FALSE){
+      #refit model
+      new.df <- as_tibble(data) %>%
+        filter(datetime < pred_dates[t]) %>%
+        select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean)  
+    }
     #train model
     xgboost_fit <- final_workflow |> 
       fit(data = new.df)
@@ -41,14 +48,22 @@ parsnipXGBoost <- function(data, pred_dates, forecast_horizon,
     #subset to reference_datetime 
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]+1), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")
     
+    if(include_lag == TRUE){
     #build driver dataset
     drivers = as_tibble(data) %>%
       mutate(lag_Chla_ugL_mean = dplyr::lag(Chla_ugL_mean, 1)) %>%
       filter(datetime %in% forecast_dates) %>%
       select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean, lag_Chla_ugL_mean)  
-    
+    }
+    if(include_lag == FALSE){
+      #build driver dataset
+      drivers = as_tibble(data) %>%
+        filter(datetime %in% forecast_dates) %>%
+        select(AirTemp_C_mean, PAR_umolm2s_mean, WindSpeed_ms_mean, Flow_cms_mean, Temp_C_mean, LightAttenuation_Kd, DIN_ugL, SRP_ugL, Chla_ugL_mean)  
+    }
     drivers[,"Chla_ugL_mean"] <- NA
     
+    if(include_lag == TRUE){
     for(h in 1:forecast_horizon){
     #generate predictions
     temp_pred <- predict(xgboost_fit, new_data = drivers[h,])
@@ -60,6 +75,11 @@ parsnipXGBoost <- function(data, pred_dates, forecast_horizon,
     if(h < 35){
     drivers$lag_Chla_ugL_mean[h+1] <- temp_pred$.pred
     }
+    }
+    }
+    if(include_lag == FALSE){
+      #generate predictions
+      pred <- predict(xgboost_fit, new_data = drivers)
     }
 
     #set up dataframe for today's prediction

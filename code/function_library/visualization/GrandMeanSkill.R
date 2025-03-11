@@ -65,7 +65,8 @@ GrandMeanSkill <- function(observations,
                "null" = "#DED50F")
   
   plot_data <- output %>%
-    filter(skill_metric == viz_metric) 
+    filter(skill_metric == viz_metric) %>%
+    arrange(skill_value)
   
   if(viz_metric == "rmse"){
     p <- ggplot()+
