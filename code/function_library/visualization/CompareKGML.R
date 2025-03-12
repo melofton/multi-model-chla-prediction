@@ -29,7 +29,9 @@ CompareKGML <- function(observations,
                           plot_title = "All predictions",
                           viz_metric = "r2",
                           show_legend = FALSE,
-                        best_performing_horizons = c(29,35)){
+                        best_performing_horizons = c(29,35),
+                        add_vline = TRUE,
+                        vline_intercept){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
@@ -70,8 +72,22 @@ CompareKGML <- function(observations,
                "data-driven" = "#6FA19D",
                "KGML" = "navy")
   
-  pers <- plot_data %>%
-    filter(model_id == "persistence")
+  if(viz_metric == "r2"){
+  best_performing_null <- plot_data %>%
+    filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+    group_by(horizon) %>%
+    filter(skill_value == max(skill_value)) %>%
+    arrange(horizon)
+  } else {
+    best_performing_null <- plot_data %>%
+      filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+      group_by(horizon) %>%
+      filter(skill_value == min(skill_value)) %>%
+      arrange(horizon)
+  }
+  
+  plot_data2 <- plot_data %>%
+    filter(!model_id %in% c("persistence","historical mean","DOY")) 
   
   best_horizons <- data.frame(xmin = best_performing_horizons[1],
                               xmax = best_performing_horizons[2],
@@ -80,14 +96,14 @@ CompareKGML <- function(observations,
   
   p <- ggplot()+
     geom_rect(data = best_performing_horizons, aes(xmin = from - 0.5, xmax = to+0.5, ymin = -Inf, ymax = Inf, fill = "best-performing horizons",), alpha = 0.4, color = NA)+
-    geom_line(data = pers, aes(x = horizon, y = skill_value, linetype = "persistence"))+
-    geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+    geom_line(data = best_performing_null, aes(x = horizon, y = skill_value, linetype = "best null model"))+
+    geom_point(data = plot_data2, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
     xlab("Prediction horizon (days)")+
     ggtitle(plot_title)+
     scale_shape_manual(name = "Model ID", values = my.shapes)+
     scale_color_manual(name = "Model type", values = my.cols)+
     scale_fill_manual(name = "", values = c("best-performing horizons" = "lightgray"))+
-    scale_linetype_discrete(name = "Null model")+
+    scale_linetype_discrete(name = "")+
     theme_classic()+
     theme(legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1),
@@ -97,6 +113,11 @@ CompareKGML <- function(observations,
            shape = guide_legend(order = 4),
            color = guide_legend(order = 2),
            linetype = guide_legend(order = 3))
+  
+  if(add_vline == TRUE){
+    p <- p +
+      geom_vline(xintercept = vline_intercept, linetype = "dashed")
+  }
   
   if(viz_metric == "rmse"){
     p <- p +
