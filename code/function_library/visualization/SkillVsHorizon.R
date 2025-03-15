@@ -34,7 +34,9 @@ SkillVsHorizon <- function(observations,
                           add_vline = TRUE,
                           vline_intercept = 21,
                           combined_var = "strat",
-                          show_null_model = TRUE){
+                          show_null_model = TRUE,
+                          fixed_ylim,
+                          ylims){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
@@ -271,17 +273,23 @@ SkillVsHorizon <- function(observations,
   
   if(viz_metric == "rmse"){
     p <- p +
-      ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))#+
-      #ylim(c(1,12))
+      ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))
+    if(fixed_ylim == TRUE){
+      p <- p + ylim(ylims)
+    }
   } else if(viz_metric == "r2"){
     p <- p +
       ylab(expression(paste(R^2)))+
-      geom_hline(yintercept = 0, linetype = "dashed")#+
-      #ylim(c(-1.5,1))
+      geom_hline(yintercept = 0, linetype = "dashed")
+    if(fixed_ylim == TRUE){
+      p <- p + ylim(ylims)
+    }
   } else {
     p <- p +
-      ylab(expression(paste("MAE (",mu,g,~L^-1,")")))#+
-      #ylim(c(0,8))
+      ylab(expression(paste("MAE (",mu,g,~L^-1,")")))
+    if(fixed_ylim == TRUE){
+      p <- p + ylim(ylims)
+    }
   }
   
   if(show_legend == FALSE){

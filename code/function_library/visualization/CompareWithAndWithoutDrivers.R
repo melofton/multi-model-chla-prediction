@@ -146,7 +146,8 @@ CompareWithAndWithoutDrivers <- function(observations,
   
   if(viz_metric == "rmse"){
     p <- p +
-      ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))
+      ylab(expression(paste("RMSE (",mu,g,~L^-1,")")))+
+      ylim(c(2,14))
   } else if(viz_metric == "r2"){
     p <- p +
       ylab(expression(paste(R^2)))+

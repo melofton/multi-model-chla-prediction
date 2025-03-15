@@ -245,5 +245,56 @@ compareToNull <- data.frame(horizon = bestModByHorizon$horizon,
                             compare_to_null = best_performing_null$skill_value - bestModByHorizon$skill_value) %>%
   slice_max(compare_to_null)
 
+# range and mean of chl-a during various stratification periods
+mixed_chla <- left_join(mixed, obs, by = "datetime")
+mean(mixed_chla$Chla_ugL_mean, na.rm = TRUE)
+range(mixed_chla$Chla_ugL_mean, na.rm = TRUE)
 
+onset_chla <- left_join(onset, obs, by = "datetime")
+mean(onset_chla$Chla_ugL_mean, na.rm = TRUE)
+range(onset_chla$Chla_ugL_mean, na.rm = TRUE)
 
+strat_chla <- left_join(strat, obs, by = "datetime")
+mean(strat_chla$Chla_ugL_mean, na.rm = TRUE)
+range(strat_chla$Chla_ugL_mean, na.rm = TRUE)
+
+decline_chla <- left_join(decline, obs, by = "datetime")
+mean(decline_chla$Chla_ugL_mean, na.rm = TRUE)
+range(decline_chla$Chla_ugL_mean, na.rm = TRUE)
+
+# Fig 6 stats
+
+# compare NNETAR model skill w/ and w/o drivers in strat decline
+compare_NNETAR <- plot_data %>%
+  select(-model_version) %>%
+  pivot_wider(names_from = "model_id", values_from = "skill_value") %>%
+  mutate(diff = `NNETAR (no drivers)` - NNETAR)
+
+# compare TSLM model skill w/ and w/o drivers in strat decline
+compare_TSLM <- plot_data %>%
+  ungroup() %>%
+  select(-model_version, -model_type) %>%
+  pivot_wider(names_from = "model_id", values_from = "skill_value") %>%
+  mutate(diff = `TSLM (no drivers)` - TSLM)
+
+# water residence time for FCR during the study period
+
+url_inflow <- "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-inflow-targets.csv.gz"
+
+#read in discharge data
+inf <- read_csv(url_inflow) %>%
+  filter(variable == "Flow_cms_mean" & datetime >= "2018-08-05" & datetime <= "2023-12-31")
+
+#calculate WRT
+FCR_vol_cm <- 310000
+
+inf$WRT_day <- FCR_vol_cm / (inf$observation * 60 * 60 * 24)
+hist(inf$WRT_day)
+median(inf$WRT_day, na.rm = TRUE)
+
+ggplot(data = inf, aes(x = Date, y = WRT_day))+
+  geom_point()+
+  geom_line()+
+  theme_classic()
+
+write.csv(inf, "./0_Data_files/WRT.csv",row.names = FALSE)
