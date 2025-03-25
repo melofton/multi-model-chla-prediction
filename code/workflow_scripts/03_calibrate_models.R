@@ -58,7 +58,7 @@ fit_ARIMAs <- fit_ARIMAs(data = dat_ARIMA, cal_dates = c("2018-08-06","2021-12-3
 ggsave(fit_ARIMAs$plot, filename = "./figures/ARIMAs_fit.png",
        height = 3, width = 10, units = "in")
 ARIMA_diagnostics <- ggarrange(plotlist = c(fit_ARIMAs$diagnostics_chla_only, fit_ARIMAs$diagnostics_drivers),
-                              labels = "auto")
+                              labels = c("(a)","(b)","(c)","(d)","(e)","(f)"))
 ggsave(ARIMA_diagnostics, filename = "./figures/ARIMA_diagnostics.png",
        height = 6, width = 10, units = "in")
 write.csv(fit_ARIMAs$model_params, "./model_output/ARIMA_parameters.csv",row.names = FALSE)
@@ -68,7 +68,7 @@ fit_TSLM$plot
 ggsave(fit_TSLM$plot, filename = "./figures/TSLM_fit.png",
        height = 3, width = 5, units = "in")
 TSLM_diagnostics <- ggarrange(plotlist = c(fit_TSLM$diagnostics_no_lag, fit_TSLM$diagnostics),
-                              labels = "auto")
+                              labels = c("(a)","(b)","(c)","(d)","(e)","(f)"))
 ggsave(TSLM_diagnostics, filename = "./figures/TSLM_diagnostics.png",
        height = 6, width = 10, units = "in")
 stats_table <- fit_TSLM$stats %>%
@@ -91,11 +91,11 @@ ggsave(fit_Prophets$plot, filename = "./figures/Prophet_fit.png",
 ggsave(fit_Prophets$rmse_plot, filename = "./figures/Prophet_fit_rmse.png",
        height = 3, width = 5, units = "in")
 Prophet_components_chlaOnly <- ggarrange(plotlist = c(fit_Prophets$prophet_components),
-          nrow = 2, ncol = 2, labels = "auto")
+          nrow = 2, ncol = 2, labels = c("(a)","(b)","(c)"))
 ggsave(Prophet_components_chlaOnly, filename = "./figures/Prophet_components_chlaOnly.png",
        height = 5.5, width = 10, units = "in")
 Prophet_components_drivers <- ggarrange(plotlist = c(fit_Prophets$prophet_components_w_drivers),
-                                         nrow = 2, ncol = 2, labels = "auto")
+                                         nrow = 2, ncol = 2, labels = c("(a)","(b)","(c)","(d)"))
 ggsave(Prophet_components_drivers, filename = "./figures/Prophet_components_drivers.png",
        height = 5.5, width = 10, units = "in")
 write.csv(fit_Prophets$reg_coeffs, "./model_output/Prophet_regressor_coefficients.csv",row.names = FALSE)

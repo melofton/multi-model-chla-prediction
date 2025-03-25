@@ -32,8 +32,8 @@ fit_NNETARs <- function(data, cal_dates){
   
   # fit NNETARs from fable package
   my.nnetars <- df %>%
-    model(`Chla only NNETAR` = fable::NNETAR(Chla_ugL_mean, n_networks = 20),
-          `NNETAR w/ drivers` = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL,
+    model(`(a) Chla only NNETAR` = fable::NNETAR(Chla_ugL_mean, n_networks = 20),
+          `(b) NNETAR w/ drivers` = fable::NNETAR(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL,
                                               n_networks = 20)) 
   
   # get fitted values

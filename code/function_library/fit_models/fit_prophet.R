@@ -80,9 +80,9 @@ fit_Prophets <- function(data, cal_dates, include_drivers = TRUE){
   
   # calculate performance metrics
   perf_metrics <- performance_metrics(cross_val, rolling_window = 0) %>%
-    add_column(model_id = "Chla only Prophet")
+    add_column(model_id = "(a) Chla only Prophet")
   perf_metrics_w_drivers <- performance_metrics(cross_val_w_drivers, rolling_window = 0) %>%
-    add_column(model_id = "Prophet w/ drivers")
+    add_column(model_id = "(b) Prophet w/ drivers")
   
   all_perf_metrics <- bind_rows(perf_metrics, perf_metrics_w_drivers)
   
@@ -96,10 +96,10 @@ fit_Prophets <- function(data, cal_dates, include_drivers = TRUE){
   # generate forecasts
   forecast <- predict(my.prophet, future) %>%
     filter(ds <= "2021-12-31") %>%
-    add_column(model_id = "Chla only Prophet")
+    add_column(model_id = "(a) Chla only Prophet")
   forecast_w_drivers <- predict(my.prophet.w.drivers, future_w_drivers) %>%
     filter(ds <= "2021-12-31") %>%
-    add_column(model_id = "Prophet w/ drivers")
+    add_column(model_id = "(b) Prophet w/ drivers")
   
   # plot components
   prophet_components <- prophet_plot_components(my.prophet, forecast)

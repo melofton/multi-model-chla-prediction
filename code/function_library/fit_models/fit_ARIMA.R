@@ -27,19 +27,19 @@ fit_ARIMAs <- function(data, cal_dates){
   
   #fit ARIMAs from fable package
   my.arimas <- df %>%
-    model(`Chla ARIMA` = fable::ARIMA(Chla_ugL_mean),
-          `Reg. w/ ARIMA errors` = fable::ARIMA(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
+    model(`(a) Chla ARIMA` = fable::ARIMA(Chla_ugL_mean),
+          `(b) Reg. w/ ARIMA errors` = fable::ARIMA(formula = Chla_ugL_mean ~ AirTemp_C_mean + PAR_umolm2s_mean + WindSpeed_ms_mean + Flow_cms_mean + Temp_C_mean + LightAttenuation_Kd + DIN_ugL + SRP_ugL)) 
   
   # get model parameters
-  params_chla_only <- coefficients(my.arimas %>% select(`Chla ARIMA`))
-  params_drivers <- coefficients(my.arimas %>% select(`Reg. w/ ARIMA errors`))
+  params_chla_only <- coefficients(my.arimas %>% select(`(a) Chla ARIMA`))
+  params_drivers <- coefficients(my.arimas %>% select(`(b) Reg. w/ ARIMA errors`))
   model_params <- bind_rows(params_chla_only, params_drivers) %>%
     mutate(across(.cols = -c(.model, term),
                   .fns  = ~ round(., 2)))
   
   # plot model diagnostics
-  diagnostics_chla_only <- gg_tsresiduals(my.arimas %>% select(`Chla ARIMA`))
-  diagnostics_drivers <- gg_tsresiduals(my.arimas %>% select(`Reg. w/ ARIMA errors`))
+  diagnostics_chla_only <- gg_tsresiduals(my.arimas %>% select(`(a) Chla ARIMA`))
+  diagnostics_drivers <- gg_tsresiduals(my.arimas %>% select(`(b) Reg. w/ ARIMA errors`))
   
   fitted_values <- fitted(my.arimas)
   
