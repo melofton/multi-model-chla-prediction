@@ -42,7 +42,7 @@ fit_NNETAR_KGML <- function(data, cal_dates){
   
   KGML_NNETAR_plot <- ggplot()+
     xlab("")+
-    ylab("Chla (ug/L)")+
+    ylab("Chla residuals (ug/L)")+
     geom_point(data = df, aes(x = datetime, y = Chla_residuals_ugL, fill = "obs"))+
     geom_line(data = fitted_values, aes(x = datetime, y = .fitted, group = .model, color = .model))+
     labs(color = NULL, fill = NULL)+

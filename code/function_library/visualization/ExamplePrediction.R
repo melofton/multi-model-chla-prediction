@@ -29,7 +29,8 @@ ExamplePrediction <- function(observations,
                               show_legend,
                               sub_panel_label,
                               rect_color,
-                              ylim_values){
+                              ylim_values,
+                              show_shapes){
   
   #get plotting dates
   ref_datetime <- as.Date(reference_datetime)
@@ -139,6 +140,41 @@ ExamplePrediction <- function(observations,
            fill = guide_legend(order = 3))+
     ylim(ylim_values)+
     scale_x_continuous(breaks = c(-5, 0, 5, 10, 15, 20, 25, 30, 35))
+  
+  if(show_shapes == TRUE){
+    p <- ggplot()+
+      geom_point(data = plot_obs, aes(x = horizon, y = Chla_ugL_mean, 
+                                      group = variable, fill = variable),
+                 shape = 21)+
+      geom_point(data = plot_mod, aes(x = horizon, y = prediction,
+                                      group = model_id, color = model_type,
+                                      shape = example_model_names))+
+      geom_vline(xintercept = 0, linetype = "dashed")+
+      annotate("text", x = 2, y = ylim_values[2]-5, 
+               label = "future", hjust = 0.25)+
+      annotate("text", x = -3.5, y = ylim_values[2]-5, 
+               label = "past", hjust = 0.25)+
+      xlab("Prediction horizon (days)")+
+      ylab(expression(paste("Chlorophyll-a (",mu,g,~L^-1,")")))+
+      scale_shape_manual(name = "Model ID (model type)", values = my.shapes)+
+      # if want to group models by type, can do that with colors in line below
+      scale_color_manual(name = "Model type", values = c("#DED50F","#B85233","#6FA19D","navy","darkgray"))+
+      scale_fill_manual(name = "", values = c("obs. seen by model" = "black",
+                                              "obs. not seen by model" = "white"))+
+      theme_classic()+
+      ggtitle(paste0(sub_panel_label,reference_datetime))+
+      theme(plot.title = element_text(face = "bold"),
+            legend.title = element_text(face = "bold"),
+            legend.key=element_rect(colour="white"),
+            legend.key.width=unit(2,"cm"),
+            panel.background=element_rect(colour=rect_color, linewidth = 2),
+            axis.line.x.bottom=element_line(color=rect_color),
+            axis.line.y.left=element_line(color=rect_color),
+            legend.box = "vertical")+
+      guides(color = guide_legend(order = 1))+
+      ylim(ylim_values)+
+      scale_x_continuous(breaks = c(-5, 0, 5, 10, 15, 20, 25, 30, 35))
+  }
   
   if(show_legend == FALSE){
     p <- p + theme(legend.position = "none")

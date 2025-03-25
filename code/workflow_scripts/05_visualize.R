@@ -80,9 +80,9 @@ p1c <- PlotChlaVariability(obs)
 p1c$p
 
 p1 <- ggarrange(p1a, 
-                  ggarrange(p1b, p1c$p, ncol = 2, labels = c("b","c")), 
+                  ggarrange(p1b, p1c$p, ncol = 2, labels = c("(b)","(c)")), 
                   nrow = 2,
-                labels = "a"
+                labels = "(a)"
                 )
 p1
 ggsave(plot = p1, filename = "./figures/final_figures/Figure1.tif",
@@ -101,9 +101,10 @@ p2a <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "a. Mixed: ",
+                         sub_panel_label = "(a) Mixed: ",
                          rect_color = plot_cols[1],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
 p2a
 
 reference_datetime_b = focal_dates[2]
@@ -113,9 +114,10 @@ p2b <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "b. Onset: ",
+                         sub_panel_label = "(b) Onset: ",
                          rect_color = plot_cols[2],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
 p2b
 
 reference_datetime_c = focal_dates[3]
@@ -125,9 +127,10 @@ p2c <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "c. Stratified: ",
+                         sub_panel_label = "(c) Stratified: ",
                          rect_color = plot_cols[3],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
 p2c
 
 reference_datetime_d = focal_dates[4]
@@ -137,9 +140,10 @@ p2d <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "d. Decline: ",
+                         sub_panel_label = "(d) Decline: ",
                          rect_color = plot_cols[4],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
 p2d
 
 reference_datetime_e = focal_dates[5]
@@ -149,9 +153,10 @@ p2e <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "e. Low variability: ",
+                         sub_panel_label = "(e) Low variability: ",
                          rect_color = plot_cols[5],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
 p2e
 
 reference_datetime_f = focal_dates[6]
@@ -161,9 +166,10 @@ p2f <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "f. High variability: ",
+                         sub_panel_label = "(f) High variability: ",
                          rect_color = plot_cols[6],
-                         ylim_values = c(0,65))
+                         ylim_values = c(0,65),
+                         show_shapes = FALSE)
 p2f
 
 leg_plot <- ExamplePrediction(observations = obs, 
@@ -174,7 +180,8 @@ leg_plot <- ExamplePrediction(observations = obs,
                          show_legend = TRUE,
                          sub_panel_label = "b",
                          rect_color = "black",
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
 
 # Extract the legend. Returns a gtable
 leg <- get_legend(leg_plot)
@@ -206,9 +213,10 @@ p2_supp1a <- ExamplePrediction(observations = obs,
                                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
                                                    "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "a. Mixed: ",
+                         sub_panel_label = "(a) Mixed: ",
                          rect_color = plot_cols[1],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = TRUE)
 p2_supp1a
 
 p2_supp1b <- ExamplePrediction(observations = obs, 
@@ -220,9 +228,10 @@ p2_supp1b <- ExamplePrediction(observations = obs,
                                        "GLM-AED","OneDProcessModel","MARS","randomForest",
                                        "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "b. Onset: ",
+                         sub_panel_label = "(b) Onset: ",
                          rect_color = plot_cols[2],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = TRUE)
 p2_supp1b
 
 p2_supp1c <- ExamplePrediction(observations = obs, 
@@ -234,9 +243,10 @@ p2_supp1c <- ExamplePrediction(observations = obs,
                                        "GLM-AED","OneDProcessModel","MARS","randomForest",
                                        "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "c. Stratified: ",
+                         sub_panel_label = "(c) Stratified: ",
                          rect_color = plot_cols[3],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = TRUE)
 p2_supp1c
 
 p2_supp1d <- ExamplePrediction(observations = obs, 
@@ -248,9 +258,10 @@ p2_supp1d <- ExamplePrediction(observations = obs,
                                        "GLM-AED","OneDProcessModel","MARS","randomForest",
                                        "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "d. Decline: ",
+                         sub_panel_label = "(d) Decline: ",
                          rect_color = plot_cols[4],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = TRUE)
 p2_supp1d
 
 p2_supp1e <- ExamplePrediction(observations = obs, 
@@ -262,9 +273,10 @@ p2_supp1e <- ExamplePrediction(observations = obs,
                                        "GLM-AED","OneDProcessModel","MARS","randomForest",
                                        "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "e. Low variability: ",
+                         sub_panel_label = "(e) Low variability: ",
                          rect_color = plot_cols[5],
-                         ylim_values = c(0,40))
+                         ylim_values = c(0,40),
+                         show_shapes = TRUE)
 p2_supp1e
 
 p2_supp1f <- ExamplePrediction(observations = obs, 
@@ -276,20 +288,25 @@ p2_supp1f <- ExamplePrediction(observations = obs,
                                        "GLM-AED","OneDProcessModel","MARS","randomForest",
                                        "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
-                         sub_panel_label = "f. High variability: ",
+                         sub_panel_label = "(f) High variability: ",
                          rect_color = plot_cols[6],
-                         ylim_values = c(0,65))
+                         ylim_values = c(0,65),
+                         show_shapes = TRUE)
 p2_supp1f
 
 p2_supp_leg_plot <- ExamplePrediction(observations = obs, 
                               model_output = out, 
                               reference_datetime = reference_datetime_b, 
                               forecast_horizon = forecast_horizon,
-                              model_ids = c("persistence","TSLM","GLM-AED","NNETAR-KGML","ensemble"),
+                              model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                            "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                            "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                            "GAM","NNETAR-KGML","ensemble"),
                               show_legend = TRUE,
                               sub_panel_label = "b",
                               rect_color = "black",
-                              ylim_values = c(0,40))
+                              ylim_values = c(0,40),
+                              show_shapes = TRUE)
 
 # Extract the legend. Returns a gtable
 p2_supp1_leg1 <- get_legend(p2_supp_leg_plot)
@@ -309,7 +326,7 @@ p2_supp1 <- ggarrange(ggarrange(p2_supp1a, p2_supp1b, p2_supp1c, p2_supp1d, p2_s
 p2_supp1
 
 ggsave(plot = p2_supp1, filename = "./figures/final_figures/Figure2_supp1.tif",
-       device = "tiff", height = 11, width = 10, units = "in",bg = "white")
+       device = "tiff", height = 11, width = 11, units = "in",bg = "white")
 
 # Figure 3
 
@@ -843,7 +860,7 @@ p4 <- ggarrange(p4_leg1,
                 ggarrange(p4a, p4b, p4c, p4d, p4e, p4f, p4g, p4h,
                           nrow = 4,
                           ncol = 2,
-                          labels = c("a","b","c","d","e","f","g","h"),
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)"),
                           widths = c(1,0.8)),
                 p4_leg2,
                 ncol = 3,
@@ -1077,7 +1094,7 @@ p4_r2 <- ggarrange(p4_leg1_r2,
                 ggarrange(p4a_r2, p4b_r2, p4c_r2, p4d_r2, p4e_r2, p4f_r2, p4g_r2, p4h_r2,
                           nrow = 4,
                           ncol = 2,
-                          labels = c("a","b","c","d","e","f","g","h"),
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)"),
                           widths = c(1,0.8)),
                 p4_leg2_r2,
                 ncol = 3,
@@ -1309,7 +1326,7 @@ p4_mae <- ggarrange(p4_leg1_mae,
                 ggarrange(p4a_mae, p4b_mae, p4c_mae, p4d_mae, p4e_mae, p4f_mae, p4g_mae, p4h_mae,
                           nrow = 4,
                           ncol = 2,
-                          labels = c("a","b","c","d","e","f","g","h"),
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)"),
                           widths = c(1,0.8)),
                 p4_leg2_mae,
                 ncol = 3,
@@ -1755,7 +1772,7 @@ p5 <- ggarrange(p5_leg1,
                 ggarrange(p5a, p5b, p5c, p5d, p5e, p5f,
                           nrow = 3,
                           ncol = 2,
-                          labels = c("a","b","c","d","e","f"),
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
                           widths = c(1,0.8)),
                 p5_leg2,
                 ncol = 3,
@@ -1782,7 +1799,8 @@ p5_supp1a <- SkillVsHorizon(observations = obs,
                       add_vline = FALSE,
                       vline_intercept = 8,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p5_supp1a
 
 p5_supp1b <- GrandMeanSkill(observations = obs, 
@@ -1807,7 +1825,8 @@ p5_supp1c <- SkillVsHorizon(observations = obs,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p5_supp1c
 
 p5_supp1d <- GrandMeanSkill(observations = obs, 
@@ -1833,7 +1852,8 @@ p5_supp1e <- SkillVsHorizon(observations = obs,
                       add_vline = FALSE,
                       vline_intercept = 8,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p5_supp1e
 
 p5_supp1f <- GrandMeanSkill(observations = obs, 
@@ -1856,7 +1876,9 @@ leg_plot1 <- SkillVsHorizon(observations = obs,
                             viz_metric = "rmse",
                             show_legend = TRUE,
                             make_combined_bestmodel_legend = TRUE,
-                            combined_var = "none")
+                            combined_var = "none",
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 
 # Extract the legend. Returns a gtable
 leg1 <- get_legend(leg_plot1)
@@ -1886,7 +1908,7 @@ p5_supp1 <- ggarrange(p5_supp1_leg1,
                 ggarrange(p5_supp1a, p5_supp1b, p5_supp1c, p5_supp1d, p5_supp1e, p5_supp1f,
                           nrow = 3,
                           ncol = 2,
-                          labels = c("a","b","c","d","e","f"),
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
                           widths = c(1,0.8)),
                 p5_supp1_leg2,
                 ncol = 3,
@@ -2065,7 +2087,7 @@ p6f
 p6 <- ggarrange(p6a, p6b, p6c, p6d, p6e, p6f,
                 nrow = 3, ncol = 2,
                 widths = c(1, 1, 1),
-                labels = c("a","b","c","d","e","f")
+                labels = c("(a)","(b)","(c)","(d)","(e)","(f)")
 ) 
 
 p6
@@ -2194,7 +2216,7 @@ p6_supp1f
 p6_supp1 <- ggarrange(p6_supp1a, p6_supp1b, p6_supp1c, p6_supp1d, p6_supp1e, p6_supp1f,
                       nrow = 3, ncol = 2,
                       widths = c(1, 1, 1),
-                      labels = c("a","b","c","d","e","f")
+                      labels = c("(a)","(b)","(c)","(d)","(e)","(f)")
 ) 
 
 p6_supp1
@@ -2268,7 +2290,7 @@ p7c
 
 p7 <- ggarrange(p7a, p7b, p7c,
                 nrow = 3, ncol = 1,
-                labels = c("a","b","c")
+                labels = c("(a)","(b)","(c)")
 ) 
 
 p7
@@ -2341,7 +2363,7 @@ p7_supp1c
 
 p7_supp1 <- ggarrange(p7_supp1a, p7_supp1b, p7_supp1c,
                 nrow = 3, ncol = 1,
-                labels = c("a","b","c")
+                labels = c("(a)","(b)","(c)")
 ) 
 
 p7_supp1
@@ -2414,7 +2436,7 @@ p7_supp2c
 
 p7_supp2 <- ggarrange(p7_supp2a, p7_supp2b, p7_supp2c,
                       nrow = 3, ncol = 1,
-                      labels = c("a","b","c")
+                      labels = c("(a)","(b)","(c)")
 ) 
 
 p7_supp2

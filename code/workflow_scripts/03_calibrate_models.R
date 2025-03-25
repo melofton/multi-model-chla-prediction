@@ -135,11 +135,6 @@ LSTM_out <- fit_LSTM$out
 #Calibrate process models (this completes one run + diagnostics + assessment
 # metrics for GLM-AED) - you must be in a container to run this!
 GLMAED_run <- calibrate_GLMAED(sim_folder = sim_folder, save_plot = TRUE)
-GLMAED_run$rmse_all
-GLMAED_run$rmse_2020_2021
-GLMAED_run$cor_all
-GLMAED_run$cor_2020_2021
-
 OneDProcessModel_run <- calibrate_1DProcessModel(
   data = dat_1DProcessModel,
   parms = c(-0.001, #w_p (negative is down, positive is up)
@@ -182,6 +177,8 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
 # KGML experiment
 fit_NNETAR_KGML <- fit_NNETAR_KGML(data = dat_NNETAR_KGML, cal_dates = c("2018-08-06","2021-12-31"))
 fit_NNETAR_KGML$plot
+ggsave(fit_NNETAR_KGML$plot, filename = "./figures/NNETAR_KGML_fit.png",
+       height = 3, width = 5, units = "in")
 
 fit_NNETAR_KGML2 <- fit_NNETAR_KGML2(data = dat_NNETAR_KGML2, cal_dates = c("2022-01-01","2022-12-31"), target = "residuals")
 fit_NNETAR_KGML2$plot
