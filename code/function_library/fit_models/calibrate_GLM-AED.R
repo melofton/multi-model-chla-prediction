@@ -21,7 +21,7 @@
 # 5.  Navigate to correct RProject and script to run GLM-AED
 
 # install and load packages ----
-install.packages("cowplot")
+# install.packages("cowplot")
 # install.packages("akima")
 # install.packages("reshape2")
 # install.packages("gridExtra")
