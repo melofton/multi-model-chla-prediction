@@ -17,5 +17,5 @@ We have also provided a script, `generate_final_figures.R`, that uses the final 
   d. `workflow_scripts` scripts that scale up the example_prediction_workflow to be applied across many models
 2. `data` contains processed project data; note that all of the raw project data is downloaded directly from the [Environmental Data Initiative repository](https://edirepository.org/) and the [Virginia Ecoforecast Reservoir Analysis forecasting challenge](https://www.ltreb-reservoirs.org/vera4cast/) using custom functions and therefore raw data ares not stored in this repository
 3. `figures` contains figures associated with the project; final figures are in the `final_figures` sub-folder
-4. `model_output` contains all model output associated with the project; the final results are provided in `validation_output.csv`
+4. `model_output` contains all model output associated with the project, including, e.g., tables of parameters for fitted models and model diagnostics; the final model prediction results are provided in `validation_output.csv`
 
