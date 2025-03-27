@@ -7,7 +7,7 @@
 library(tidyverse)
 library(lubridate)
 
-#'Function to fit day of year model for chla
+#'Function to plot skill vs horizon for chl-a
 #'@param observations data frame with columns:
 #'Date: yyyy-mm-dd
 #'Chla_ugL: observed daily median of chlorophyll-a from EXO in ug/L
@@ -26,7 +26,7 @@ library(lubridate)
 #'@param plot_title character vector for desired plot title
 #'@param viz_metric choose from "rmse", "r2", "mae" to visualize the model assessment metric you prefer
 #'@param show_legend TRUE/FALSE whether to show plot legend
-#'@param make_combined_bestmodel_legend TRUE/FALSE for generating a plot with multiple sub-panels, e.g., Figs 3, 4, 5 in main manuscript
+#'@param make_combined_bestmodel_legend TRUE/FALSE make combined legend for a plot with multiple sub-panels, e.g., Figs 3, 4, 5 in main manuscript
 #'@param add_vline TRUE/FALSE to add a vertical line, usually used to denote the horizon where performance of all models according to R2 declines to 0
 #'@param vline_intercept numeric value of horizon at which to insert vline
 #'@param combined_var assigned in combination with make_combined_bestmodel_legend - which variable are you combining across? choose from "strat" for stratficiation period or "var" for high/low variability or "none" for none

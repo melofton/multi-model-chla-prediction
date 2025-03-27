@@ -1,14 +1,13 @@
-#RMSE vs horizon plot
+#Grand mean skill for all models across horizons
 #Author: Mary Lofton
 #Date last updated: 15APR24
 
-#Purpose: plot a prediction from 1-7 days into future with all models plotted
+#Purpose: rank models in order of skill for a specified set of predictions
 
 library(tidyverse)
 library(lubridate)
-library(ggpattern)
 
-#'Function to fit day of year model for chla
+#'Function to rank models in order of skill averaged across horizons
 #'@param observations data frame with columns:
 #'Date: yyyy-mm-dd
 #'Chla_ugL: observed daily median of chlorophyll-a from EXO in ug/L
@@ -21,6 +20,11 @@ library(ggpattern)
 #'@param reference_datetime date (yyyy-mm-dd) on which prediction you want to 
 #'plot starts
 #'@param forecast_horizon maximum horizon that you want to plot
+#'@param model_ids character vector of model_ids from validation_output.csv to plot
+#'@param viz_dates vector of dates to include when assessing skill (need all dates in vector, not just start/end dates)
+#'@param plot_title character vector for desired plot title
+#'@param viz_metric choose from "rmse", "r2", "mae" to visualize the model assessment metric you prefer
+#'@param show_legend TRUE/FALSE whether to show plot legend
 
 GrandMeanSkill <- function(observations, 
                           model_output, 
@@ -86,7 +90,6 @@ GrandMeanSkill <- function(observations,
     ylab("")+
     ggtitle(plot_title)+
     scale_fill_manual(name = "Model Type", values = my.cols)+
-    scale_pattern_manual(values = c("yes" = "stripe", "no" = "none"),guide = "none") +
     theme_classic()+
     theme(legend.title = element_text(face = "bold"),
           panel.background = element_rect(color = "black", linewidth = 1))

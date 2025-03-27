@@ -5,7 +5,11 @@
 # Purpose: plot histogram of day-to-day change in chl-a at FCR to assess
 # variability
 
-obs <- read_csv("./data/data_processed/chla_obs.csv")
+#'Function to plot chl-a observations
+#'@param obs data frame with columns:
+#'Date: yyyy-mm-dd
+#'Chla_ugL: observed daily mean of chlorophyll-a from EXO in ug/L
+
 
 PlotChlaVariability <- function(obs){
   

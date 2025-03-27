@@ -1,13 +1,13 @@
-#RMSE vs horizon plot
+#Compare KGML plotting function
 #Author: Mary Lofton
 #Date last updated: 15APR24
 
-#Purpose: plot a prediction from 1-7 days into future with all models plotted
+#Purpose: compare KGML model to its parent models: GLM-AED and NNETAR
 
 library(tidyverse)
 library(lubridate)
 
-#'Function to fit day of year model for chla
+#'Function to compare KGML model to parent models
 #'@param observations data frame with columns:
 #'Date: yyyy-mm-dd
 #'Chla_ugL: observed daily median of chlorophyll-a from EXO in ug/L
@@ -17,9 +17,16 @@ library(lubridate)
 #'datetime: date of prediction (yyyy-mm-dd)
 #'variable: predicted variable (chlorophyll-a)
 #'prediction: value of prediction (ug/L)
-#'@param reference_datetime date (yyyy-mm-dd) on which prediction you want to 
-#'plot starts
 #'@param forecast_horizon maximum horizon that you want to plot
+#'@param model_ids character vector of model_ids from validation_output.csv to plot
+#'@param viz_dates vector of dates to include when assessing skill (need all dates in vector, not just start/end dates)
+#'@param plot_title character vector for desired plot title
+#'@param viz_metric choose from "rmse", "r2", "mae" to visualize the model assessment metric you prefer
+#'@param show_legend TRUE/FALSE whether to show plot legend
+#'@param best_performing_horizons data frame with two columns, 'from' and 'to', where 'from' is first horizon where model performs well
+#'and 'to' is last horizon; allows for multiple periods of top performance, e.g., from 2-5 days and from 13-16 days into the future
+#'@param add_vline TRUE/FALSE to add a vertical line, usually used to denote the horizon where performance of all models according to R2 declines to 0
+#'@param vline_intercept numeric value of horizon at which to insert vline
 
 CompareKGML <- function(observations, 
                           model_output, 
@@ -29,7 +36,8 @@ CompareKGML <- function(observations,
                           plot_title = "All predictions",
                           viz_metric = "r2",
                           show_legend = FALSE,
-                        best_performing_horizons = c(29,35),
+                        best_performing_horizons = data.frame(from = c(1),
+                                                              to = c(10)),
                         add_vline = TRUE,
                         vline_intercept){
   

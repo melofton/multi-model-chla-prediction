@@ -7,6 +7,11 @@
 # load packages
 library(viridis)
 
+#'Function to plot chl-a observations
+#'@param ss_data data frame of Schmidt stability at study site with
+#'datetime, schmidt.stability, and strat_bin columns
+#'@param training_dates character vector of start and end dates for training period (yyyy-mm-dd) if train_test_box == TRUE
+
 # define function
 PlotSchmidtStability <- function(ss_data, testing_dates){
   

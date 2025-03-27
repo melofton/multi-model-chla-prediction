@@ -2,19 +2,33 @@
 #Author: Mary Lofton
 #Date last updated: 15APR24
 
+# Purpose: plot chlorophyll-a observations with shading for training/
+# calibration periods and lines for example prediction dates
+
 library(RColorBrewer)
+
+#'Function to plot chl-a observations
+#'@param observations data frame with columns:
+#'Date: yyyy-mm-dd
+#'Chla_ugL: observed daily mean of chlorophyll-a from EXO in ug/L
+#'@param pred_only TRUE/FALSE if you want to plot only the prediction period
+#'@param focal_dates list of dates where you want to insert vlines to indicate example prediction dates
+#'@param forecast_horizon numeric; use only if you are plotting a rectangle to indicate example prediction periods
+#'@param plotly TRUE/FALSE should output be plotly figure? doesn't work well with some of the other aesthetics tho
+#'@param train_test_box TRUE/FALSE plot rectangles to indicate train/test periods?
+#'@param training_dates character vector of start and end dates for training period (yyyy-mm-dd) if train_test_box == TRUE
+#'@param testing_dates character vector of start and end dates for testing period (yyyy-mm-dd) if train_test_box == TRUE
+#'@param focal_dates_geom either "RECT" or "LINE"
 
 
 PlotObservations <- function(observations, pred_only, focal_dates, forecast_horizon,
                              plotly, train_test_box, training_dates, testing_dates,
-                             focal_dates_geom, ss_data){
+                             focal_dates_geom){
   
   if(pred_only == TRUE){
     observations <- observations %>%
       filter(lubridate::year(datetime) %in% c(2022,2023))
   }
-  
-  observations <- left_join(observations, ss_data, by = "datetime")
   
   p <- ggplot()+
     xlab("")+

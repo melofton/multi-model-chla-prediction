@@ -1,13 +1,14 @@
-#RMSE vs horizon plot
+#Compare models with and without drivers/lags
 #Author: Mary Lofton
 #Date last updated: 15APR24
 
-#Purpose: plot a prediction from 1-7 days into future with all models plotted
+#Purpose: plot original model performance against alternative versions developed
+#with/without drivers and lags
 
 library(tidyverse)
 library(lubridate)
 
-#'Function to fit day of year model for chla
+#'Function to compare models with and without drivers/lags
 #'@param observations data frame with columns:
 #'Date: yyyy-mm-dd
 #'Chla_ugL: observed daily median of chlorophyll-a from EXO in ug/L
@@ -17,9 +18,17 @@ library(lubridate)
 #'datetime: date of prediction (yyyy-mm-dd)
 #'variable: predicted variable (chlorophyll-a)
 #'prediction: value of prediction (ug/L)
-#'@param reference_datetime date (yyyy-mm-dd) on which prediction you want to 
-#'plot starts
 #'@param forecast_horizon maximum horizon that you want to plot
+#'@param model_ids character vector of model_ids from validation_output.csv to plot
+#'@param viz_dates vector of dates to include when assessing skill (need all dates in vector, not just start/end dates)
+#'@param plot_title character vector for desired plot title
+#'@param viz_metric choose from "rmse", "r2", "mae" to visualize the model assessment metric you prefer
+#'@param show_legend TRUE/FALSE whether to show plot legend
+#'@param make_combined_legend TRUE/FALSE make combined legend for a plot with multiple sub-panels, e.g., Figs 3, 4, 5 in main manuscript
+#'@param combined_var assigned in combination with make_combined_legend - which variable are you combining across? choose from "strat" for stratification period or "var" for high/low variability or "none" for none
+#'@param parent_model character string of model_id for parent model from which drivers and/or lag have been removed for comparison; e.g., "MARS"
+#'@param best_performing_horizons data frame with two columns, 'from' and 'to', where 'from' is first horizon where model performs well
+#'and 'to' is last horizon; allows for multiple periods of top performance, e.g., from 2-5 days and from 13-16 days into the future
 
 CompareWithAndWithoutDrivers <- function(observations, 
                           model_output, 
@@ -32,7 +41,8 @@ CompareWithAndWithoutDrivers <- function(observations,
                           make_combined_legend =TRUE,
                           combined_var = "strat",
                           parent_model = "MARS",
-                          best_performing_horizons = c(29,35)){
+                          best_performing_horizons = data.frame(from = c(1),
+                                                                to = c(10))){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
