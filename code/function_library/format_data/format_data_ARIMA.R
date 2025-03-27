@@ -34,6 +34,9 @@ source("./code/function_library/format_data/interpolation.R")
 #'@param res_url url to in situ reservoir targets data for VERA
 #'#'@param inf_url url to inflow targets data for VERA
 #'@param met_url url to meteorology targets data for VERA
+#'@param start_date start date for final, formatted dataset as a character "yyyy-mm-dd"
+#'@param end_date end date for final, formatted dataset as a character "yyyy-mm-dd"
+#'@param include_drivers TRUE/FALSE whether to include environmental variables in final dataset
 
 
 

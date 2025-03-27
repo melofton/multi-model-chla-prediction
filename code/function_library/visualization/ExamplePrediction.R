@@ -12,6 +12,7 @@ library(lubridate)
 #'Date: yyyy-mm-dd
 #'Chla_ugL: observed daily median of chlorophyll-a from EXO in ug/L
 #'@param model_output data frame with columns:
+#'model_type: type of model (e.g., data-driven)
 #'model_id: name of model (e.g., persistence)
 #'reference_datetime: date prediction was issued (yyyy-mm-dd)
 #'datetime: date of prediction (yyyy-mm-dd)
@@ -20,6 +21,12 @@ library(lubridate)
 #'@param reference_datetime date (yyyy-mm-dd) on which prediction you want to 
 #'plot starts
 #'@param forecast_horizon maximum horizon that you want to plot
+#'@param model_ids character vector of model_ids from validation_output.csv to plot
+#'@param show_legend TRUE/FALSE whether to show legend for figure
+#'@param sub_panel_label default to reference_datetime only; specify any additional text as a character string in this argument
+#'@param rect_color color of plot border as a hex code or character string recognized by R
+#'@param ylim_values vector of two numeric values for y axis limits
+#'@param show_shapes TRUE/FALSE; if true, model predictions will be plotted as points; if false, as lines
 
 ExamplePrediction <- function(observations, 
                               model_output, 

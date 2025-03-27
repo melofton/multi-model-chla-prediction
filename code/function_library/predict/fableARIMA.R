@@ -11,6 +11,7 @@ library(fable)
 #'format_data_ARIMA() function in 02_format_data.R workflow script
 #'@param pred_dates list of dates on which you are making predictions
 #'@param forecast_horizon maximum forecast horizon of predictions
+#'@param include_drivers TRUE/FALSE whether to include environmental drivers in the model used to generate predictions
 
 fableARIMA <- function(data, pred_dates, forecast_horizon, include_drivers = TRUE){
   
@@ -44,6 +45,9 @@ fableARIMA <- function(data, pred_dates, forecast_horizon, include_drivers = TRU
   colnames(pred.df) = df.cols
   
   for(t in 1:length(pred_dates)){
+    
+    # print reference_datetime
+    message(pred_dates[t])
     
     #subset to reference_datetime 
     forecast_dates <- seq.Date(from = as.Date(pred_dates[t]+1), to = as.Date(pred_dates[t]+forecast_horizon), by = "day")

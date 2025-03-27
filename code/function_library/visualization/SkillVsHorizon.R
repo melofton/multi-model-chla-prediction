@@ -20,6 +20,19 @@ library(lubridate)
 #'@param reference_datetime date (yyyy-mm-dd) on which prediction you want to 
 #'plot starts
 #'@param forecast_horizon maximum horizon that you want to plot
+#'@param model_ids character vector of model_ids from validation_output.csv to plot
+#'@param best_models_only TRUE/FALSE whether to only show best model for each horizon
+#'@param viz_dates vector of dates to include when assessing skill (need all dates in vector, not just start/end dates)
+#'@param plot_title character vector for desired plot title
+#'@param viz_metric choose from "rmse", "r2", "mae" to visualize the model assessment metric you prefer
+#'@param show_legend TRUE/FALSE whether to show plot legend
+#'@param make_combined_bestmodel_legend TRUE/FALSE for generating a plot with multiple sub-panels, e.g., Figs 3, 4, 5 in main manuscript
+#'@param add_vline TRUE/FALSE to add a vertical line, usually used to denote the horizon where performance of all models according to R2 declines to 0
+#'@param vline_intercept numeric value of horizon at which to insert vline
+#'@param combined_var assigned in combination with make_combined_bestmodel_legend - which variable are you combining across? choose from "strat" for stratficiation period or "var" for high/low variability or "none" for none
+#'@param show_null_model TRUE/FALSE show best-performing null model at each horizon for comparison?
+#'@param fixed_ylim TRUE/FALSE fix ylims or not
+#'@param ylims vector of max/min ylims to be provided if fixed_ylim == TRUE
 
 SkillVsHorizon <- function(observations, 
                           model_output, 
@@ -107,65 +120,6 @@ SkillVsHorizon <- function(observations,
       pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value")
   }
   
-  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 10))
-  my.cols <- c("#948E0A","#DED50F","#F3EC48","#B85233","#E48A71",my.dd.cols,"navy","darkgray")
-  
-  plot_data <- output %>%
-    filter(skill_metric == viz_metric)
-  
-  p <- ggplot()+
-    geom_line(data = plot_data, aes(x = horizon, y = skill_value,
-                                   group = model_id, color = model_id, linetype = model_type))+
-    xlab("Prediction horizon (days)")+
-    ggtitle(plot_title)+
-    scale_color_manual(name = "Model ID", values = my.cols)+
-    scale_linetype_manual(name = "Model Type", values = c("null" = "solid", "process-based" = "dotted", "data-driven" = "dashed", "ensemble" = "dotdash","KGML" = "F1"))+
-    theme_classic()+
-    theme(plot.title = element_text(face = "bold"),
-          legend.title = element_text(face = "bold"),
-          panel.background = element_rect(color = "black", linewidth = 1),
-          legend.key.width = unit(2,"cm"),
-          legend.key=element_rect(colour="white"))+
-    guides(color = guide_legend(order = 1)) 
-  
-  if(best_models_only == TRUE){
-    
-    if(viz_metric == "r2"){
-      bestModByHorizon <- plot_data %>%
-        group_by(horizon) %>%
-        filter(skill_value == max(skill_value)) %>%
-        arrange(horizon)
-      
-      best_performing_null <- plot_data %>%
-        filter(model_id %in% c("persistence","historical mean","DOY")) %>%
-        group_by(horizon) %>%
-        filter(skill_value == max(skill_value)) %>%
-        arrange(horizon)
-      
-    } else if(viz_metric == "rmse") {
-      bestModByHorizon <- plot_data %>%
-        group_by(horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-      
-      best_performing_null <- plot_data %>%
-        filter(model_id %in% c("persistence","historical mean","DOY")) %>%
-        group_by(horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-    } else {
-      bestModByHorizon <- plot_data %>%
-        group_by(horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-      
-      best_performing_null <- plot_data %>%
-        filter(model_id %in% c("persistence","historical mean","DOY")) %>%
-        group_by(horizon) %>%
-        filter(skill_value == min(skill_value)) %>%
-        arrange(horizon)
-    }
-  
   my.shapes <-             c("ARIMA" = 0,
                              "ETS" = 1,
                              "TSLM" = 2,
@@ -175,7 +129,7 @@ SkillVsHorizon <- function(observations,
                              "NNETAR" = 6,
                              "GLM-AED" = 7,
                              "OneDProcessModel" = 8,
-                              "MARS" = 9,
+                             "MARS" = 9,
                              "randomForest" = 10,
                              "GAM" = 11,
                              "NNETAR-KGML" = 12,
@@ -188,6 +142,76 @@ SkillVsHorizon <- function(observations,
                "KGML" = "navy",
                "ensemble" = "darkgray",
                "null" = "#DED50F")
+  
+  plot_data <- output %>%
+    filter(skill_metric == viz_metric)
+  
+  if(show_null_model == TRUE){
+  
+  if(viz_metric == "r2"){
+    
+    best_performing_null <- plot_data %>%
+      filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+      group_by(horizon) %>%
+      filter(skill_value == max(skill_value)) %>%
+      arrange(horizon)
+    
+  } else if(viz_metric == "rmse") {
+    
+    best_performing_null <- plot_data %>%
+      filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+      group_by(horizon) %>%
+      filter(skill_value == min(skill_value, na.rm = TRUE)) %>%
+      arrange(horizon)
+  } else {
+    
+    best_performing_null <- plot_data %>%
+      filter(model_id %in% c("persistence","historical mean","DOY")) %>%
+      group_by(horizon) %>%
+      filter(skill_value == min(skill_value, na.rm = TRUE)) %>%
+      arrange(horizon)
+  }
+  }
+  
+  p <- ggplot()
+  if(show_null_model == TRUE){
+    p <- p + geom_line(data = best_performing_null, aes(x = horizon, y = skill_value, linetype = "best null model"))+
+      scale_linetype_discrete(name = "")
+  }
+  p <- p +
+    geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = model_id, color = model_type), size = 2)+
+    xlab("Prediction horizon (days)")+
+    ggtitle(plot_title)+
+    scale_shape_manual(name = "Model ID", values = my.shapes)+
+    scale_color_manual(name = "Model type", values = my.cols)+ 
+    theme_classic()+
+    theme(legend.title = element_text(face = "bold"),
+          panel.background = element_rect(color = "black", linewidth = 1),
+          legend.key.width = unit(2,"cm"),
+          legend.key=element_rect(colour="white"))+
+    guides(color = guide_legend(order = 1))
+  
+  if(best_models_only == TRUE){
+    
+    if(viz_metric == "r2"){
+      bestModByHorizon <- plot_data %>%
+        group_by(horizon) %>%
+        filter(skill_value == max(skill_value)) %>%
+        arrange(horizon)
+      
+    } else if(viz_metric == "rmse") {
+      bestModByHorizon <- plot_data %>%
+        group_by(horizon) %>%
+        filter(skill_value == min(skill_value, na.rm = TRUE)) %>%
+        arrange(horizon)
+    
+    } else {
+      bestModByHorizon <- plot_data %>%
+        group_by(horizon) %>%
+        filter(skill_value == min(skill_value, na.rm = TRUE)) %>%
+        arrange(horizon)
+      
+    }
 
   p <- ggplot()
   if(show_null_model == TRUE){

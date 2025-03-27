@@ -1,0 +1,176 @@
+---
+title: "Example prediction workflow"
+author: "Lofton, M.E."
+date: "2025-03-27"
+output: html_document
+---
+
+## Workflow overview
+
+This RMarkdown document contains a complete chlorophyll-a prediction workflow for an ARIMA model fit using the `fable` package in R. All intermediate files and output of the workflow will be written to the `example_workflow_output` folder in the `multi-model-chla-prediction` GitHub repository. The steps of the workflow are:
+
+1. Download and write a local copy of lake data from Environmental Data Initiative repository
+2. Download lake data from the Virginia EcoForecast Reservoir Analysis forecasting challenge and format lake data before model training to meet model input data formatting requirements
+3. Train ARIMA model using data from 2018-08-06 to 2021-12-31 and visualize model diagnostics
+4. Generate chlorophyll-a predictions from 1-35 days into the future for every day from 2022-01-01 to 2023-11-26
+5. Visualize an example chlorophyll-a prediction and assess predictive skill of the ARIMA model
+6. Additional guidelines for those who wish to run this workflow for a different model
+
+Several custom functions are sourced throughout the workflow. Function metadata for these functions can be found in the source files for each function.
+
+First, install and load packages.
+```{r packages, message = FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, lubridate, ggpubr, data.table, zoo, fable, viridis, knitr)
+```
+
+
+## 1. Download and write a local copy of lake data from Environmental Data Initiative repository
+
+```{r read_data, message = FALSE}
+#Download and read in data from Falling Creek Reservoir stored in the 
+#Environmental Data Initiative Repository
+
+#Data needed:
+#'water chemistry (SRP, DIN)
+
+options(timeout=10000)
+
+# chemistry
+inUrl1  <- "https://portal.edirepository.org/nis/dataviewer?packageid=edi.199.12&entityid=a33a5283120c56e90ea414e76d5b7ddb" 
+infile1 <- paste0("./example_workflow_output/chemistry_2013_2023.csv")
+try(download.file(inUrl1,infile1,method="curl"))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+```
+## 2. Download lake data from the Virginia Ecoforecast Reservoir Analysis forecasting challenge and format lake data before model training to meet model input data formatting requirements
+
+```{r format_data, message = FALSE}
+# Source script with function to format data for ARIMA model and to format chloropyll-a observations for comparison to model
+source("./code/function_library/format_data/format_data_ARIMA.R")
+source("./code/function_library/format_data/format_chla_obs.R")
+
+# Run functions
+dat_ARIMA <- format_data_ARIMA(filepath_chemistry = "./example_workflow_output/chemistry_2013_2023.csv",
+                              res_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz",
+                              inf_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-inflow-targets.csv.gz",
+                              met_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-met-targets.csv.gz",
+                              start_date = "2018-08-06",
+                              end_date = "2023-12-31",
+                              include_drivers = TRUE)
+
+obs <- format_chla_obs(res_url = "https://renc.osn.xsede.org/bio230121-bucket01/vera4cast/targets/project_id=vera4cast/duration=P1D/daily-insitu-targets.csv.gz")
+
+# Write formatted data to file
+write.csv(obs, "./example_workflow_output/chla_obs.csv",row.names = FALSE)
+write.csv(dat_ARIMA, "./example_workflow_output/ARIMA.csv",row.names = FALSE)
+```
+
+## 3. Train ARIMA model using data from 2018-08-06 to 2021-12-31 and assess model goodness-of-fit
+
+```{r train_model, message = FALSE}
+# Source script with function to format data for ARIMA model
+source("./code/function_library/fit_models/fit_ARIMA.R")
+
+# Read in formatted ARIMA data
+dat_ARIMA <- read_csv("./example_workflow_output/ARIMA.csv")
+
+# Run fit_ARIMAs function; this will fit models both with and without environmental variables as drivers
+fit_ARIMAs <- fit_ARIMAs(data = dat_ARIMA, cal_dates = c("2018-08-06","2021-12-31"))
+
+# Generate plot of model fits
+fit_ARIMAs$plot
+
+# Generate plot of model diagnostics
+ARIMA_diagnostics <- ggarrange(plotlist = c(fit_ARIMAs$diagnostics_chla_only, fit_ARIMAs$diagnostics_drivers),
+                              labels = c("(a)","(b)","(c)","(d)","(e)","(f)"))
+ARIMA_diagnostics
+
+# View table of model parameters
+knitr::kable(fit_ARIMAs$model_params)
+```
+
+## 4. Generate chlorophyll-a predictions from 1-35 days into the future for every day from 2022-01-01 to 2023-11-26
+
+```{r generate_predictions, message = FALSE}
+# Source script with function to format data for ARIMA model
+source("./code/function_library/predict/fableARIMA.R")
+
+# Read in formatted ARIMA data
+dat_ARIMA <- read_csv("./example_workflow_output/ARIMA.csv")
+
+# Set prediction window and forecast horizon
+pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
+forecast_horizon = 35
+
+# Generate 1-35-day-ahead predictions for every day from 2022-01-01 to 2023-11-26; in this case, we are generating predictions using an ARIMA model that uses all environmental variables as regessors
+pred_ARIMA_Drivers <- fableARIMA(data = dat_ARIMA,
+                pred_dates = pred_dates,
+                forecast_horizon = forecast_horizon,
+                include_drivers = TRUE)
+
+write.csv(pred_ARIMA_Drivers, "./example_workflow_output/validation_output.csv", row.names = FALSE)
+
+```
+
+## 5. Visualize an example chlorophyll-a prediction and assess predictive skill of the ARIMA model
+
+```{r visualization, message = FALSE}
+# Read in model predictions
+out <- read_csv("./example_workflow_output/validation_output.csv") %>%
+  mutate(model_type = "data-driven")
+unique(out$model_id)
+
+# Read in observed lake data
+obs <- read_csv("./example_workflow_output/chla_obs.csv")
+input <- read_csv("./example_workflow_output/ARIMA.csv")
+
+# Source plotting functions
+source("./code/function_library/visualization/ExamplePrediction.R")
+source("./code/function_library/visualization/SkillVsHorizon.R")
+
+#Set arguments for plotting functions
+forecast_horizon = 35
+pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
+plot_cols <- viridis(6, option = "turbo")
+focal_date = c("2022-01-10")
+
+example_pred_plot <- ExamplePrediction(observations = obs, 
+                         model_output = out, 
+                         reference_datetime = focal_date, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("ARIMA"),
+                         show_legend = TRUE,
+                         sub_panel_label = "Focal date: ",
+                         rect_color = plot_cols[1],
+                         ylim_values = c(0,40),
+                         show_shapes = FALSE)
+example_pred_plot
+
+skill_vs_horizon_plot <- SkillVsHorizon(observations = obs, 
+                      model_output = out, 
+                      forecast_horizon = 35,
+                      model_ids = c("ARIMA"),
+                      best_models_only = FALSE,
+                      viz_dates = pred_dates,
+                      plot_title = "All predictions from 2022-01-01 to 2023-11-26",
+                      viz_metric = "rmse",
+                      show_legend = TRUE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = FALSE,
+                      vline_intercept = 26,
+                      combined_var = "none",
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
+skill_vs_horizon_plot
+
+```
+
+## 6. Additional guidelines for those who wish to run this workflow for a different model
+
+For many of the other models in this analysis, the full prediction workflow can be run by sourcing the relevant custom functions for that model rather than the ARIMA model. For example, for the TSLM model, the user would source the `./code/function_library/format_data/format_data_TSLM.R` function in step 2, the `./code/function_library/fit_models/fit_TSLM.R` in step 3, and so on. 
+
+Sourcing different functions will also require additional changes to the code depending on the requirements of that function. For example code to run functions relevant for each model, users can look in the `workflow_scripts` folder and find the script corresponding to each step in this example prediction workflow. For example, to find code to generate predictions for the TSLM model, the user would open the file `./code/workflow_scripts/04_predict.R` and look through that file for code relevant to the TSLM model.
+
+There are two models for which workflows are more complex: the LSTM model and the GLM-AED model. Due to high model structural complexity, long run times, and a substantial number of dependencies, the workflows for both of these models were run via high-performance computing in containerized environments. Specifically, the LSTM model was run using a slightly modified version of the `ml-verse` container which can be downloaded at `https://hub.docker.com/repository/docker/melofton/ml-verse/general`, and the GLM-AED model was run using a container developed by R. Quinn Thomas for the Forecasting Lake and Reservoir Ecosystems (FLARE) platform which can be downloaded at `https://hub.docker.com/layers/rqthomas/flare-rocker/4.4/images/sha256-3f6c7df54b67dc7bd4dbec54f69edf8068c1a786c831381e1907b5fb33678d3c`.
+
+We encourage users to contact the corresponding author (Mary Lofton; melofton@vt.edu) with any questions related to implementing or reproducing model and prediction workflows.
