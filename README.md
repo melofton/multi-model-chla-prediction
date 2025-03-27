@@ -16,10 +16,11 @@ Users who wish to apply the example workflow for other models will find addition
 ## Repository folder structure:
 
 1. `code` contains all project code
-    a. `archive` code that is no longer in use
-    b. `function_library` custom functions associated with the project; each sub-folder within this directory contains functions associated with each stage of the workflow (e.g., formatting data or generating prediction)
-    c. `model_files` additional files for complex models (LSTM, GLM-AED, and OneDProcessModel)
-    d. `workflow_scripts` scripts that scale up the example_prediction_workflow to be applied across many models
+     a. `archive` code that is no longer in use
+     b. `function_library` custom functions associated with the project; each sub-folder within this directory contains functions associated with each stage 
+         of the workflow (e.g., formatting data or generating prediction)
+     c. `model_files` additional files for complex models (LSTM, GLM-AED, and OneDProcessModel)
+     d. `workflow_scripts` scripts that scale up the example_prediction_workflow to be applied across many models
 2. `data` contains processed project data; note that all of the raw project data is downloaded directly from the [Environmental Data Initiative repository](https://edirepository.org/) and the [Virginia Ecoforecast Reservoir Analysis forecasting challenge](https://www.ltreb-reservoirs.org/vera4cast/) using custom functions and therefore raw data ares not stored in this repository
 3. `example_workflow_output` contains output files from the `example_prediction_workflow.Rmd`
 4. `figures` contains figures associated with the project; final figures are in the `final_figures` sub-folder
