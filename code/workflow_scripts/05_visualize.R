@@ -365,7 +365,8 @@ p3b <- GrandMeanSkill(observations = obs,
                     viz_metric = "rmse",
                     show_legend = FALSE)
 p3b <- p3b +
-  annotate("text",x = 10.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = 10.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 7.5, size = 1)
 p3b
 
 
@@ -400,7 +401,8 @@ p3d <- GrandMeanSkill(observations = obs,
                       viz_metric = "r2",
                       show_legend = FALSE)
 p3d <- p3d +
-  annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 7.5, size = 1)
 p3d
 
 p3e <- SkillVsHorizon(observations = obs, 
@@ -434,7 +436,8 @@ p3f <- GrandMeanSkill(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE)
 p3f <- p3f +
-  annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 11.5, size = 1)
 p3f
 
 leg_plot1 <- SkillVsHorizon(observations = obs, 
@@ -450,7 +453,8 @@ leg_plot1 <- SkillVsHorizon(observations = obs,
                             viz_metric = "rmse",
                             show_legend = TRUE,
                             make_combined_bestmodel_legend = TRUE,
-                            combined_var = "none")
+                            combined_var = "none",
+                            fixed_ylim = FALSE)
 
 # Extract the legend. Returns a gtable
 leg1 <- get_legend(leg_plot1)
@@ -479,21 +483,22 @@ p3_leg2 <- as_ggplot(leg2)
 p3_leg2
 
 
-p3 <- ggarrange(p3_leg1,
+p3 <- ggarrange(ggarrange(p3_leg1,p3_leg2,
+                          nrow = 2,
+                          ncol = 1),
                 ggarrange(p3a, p3b, p3c, p3d, p3e, p3f,
                 nrow = 3,
                 ncol = 2,
                 labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
                 widths = c(1,0.8)),
-                p3_leg2,
-                ncol = 3,
-                widths = c(0.3, 1, 0.3)
+                ncol = 2,
+                widths = c(0.3, 1)
 ) #+ bgcolor("white")
 
 p3
 
 ggsave(plot = p3, filename = "./figures/final_figures/Figure3.tif",
-       device = "tiff", height = 9, width = 12, units = "in",bg = "white")
+       device = "tiff", height = 8, width = 11, units = "in",bg = "white")
 
 # Figure 3 supplements
 
@@ -620,13 +625,13 @@ p3_supp1_leg2 <- as_ggplot(p3_supp1_leg2)
 p3_supp1_leg2 <- p3_supp1_leg2 #+ theme(plot.background = element_blank()) + bgcolor("white")
 p3_supp1_leg2
 
-p3_supp1 <- ggarrange(p3_supp1_leg1,
+p3_supp1 <- ggarrange(ggarrange(p3_supp1_leg1,p3_supp1_leg2,
+                                nrow = 2, ncol = 1),
                 ggarrange(p3_supp1a, p3_supp1b, p3_supp1c, p3_supp1d, p3_supp1e, p3_supp1f, 
                           nrow = 3,
                           ncol = 2,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
                           widths = c(1,0.8)),
-                p3_supp1_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
 ) #+ bgcolor("white") + theme(plot.background = element_blank())
@@ -634,7 +639,7 @@ p3_supp1 <- ggarrange(p3_supp1_leg1,
 p3_supp1
 
 ggsave(plot = p3_supp1, filename = "./figures/final_figures/Figure3_supp1.tif",
-       device = "tiff", height = 9, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 8, width = 11, units = "in", bg = "white")
 
 
 # Figure 4
@@ -680,7 +685,8 @@ p4b <- GrandMeanSkill(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE)
 p4b <- p4b +
-  annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
 p4b
 
 onset <- ss_data %>%
@@ -722,7 +728,8 @@ p4d <- GrandMeanSkill(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE)
 p4d <- p4d +
-  annotate("text",x = 8.6, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
+  annotate("text",x = 8.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
+  geom_hline(yintercept = 10.5, size = 1)
 p4d
 
 strat <- ss_data %>%
@@ -763,7 +770,8 @@ p4f <- GrandMeanSkill(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE)
 p4f <- p4f +
-  annotate("text",x = 9, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
+  annotate("text",x = 9, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
+  geom_hline(yintercept = 15.5, size = 1)
 p4f
 
 decline <- ss_data %>%
@@ -804,7 +812,8 @@ p4h <- GrandMeanSkill(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE)
 p4h <- p4h +
-  annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
+  annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
+  geom_hline(yintercept = 7.5, size = 1)
 p4h
 
 mod_out_all_strat <- out %>%
@@ -856,21 +865,23 @@ p4_leg2 <- as_ggplot(leg2)
 p4_leg2
 
 
-p4 <- ggarrange(p4_leg1,
+p4 <- ggarrange(ggarrange(p4_leg1,p4_leg2,
+                          nrow = 2,
+                          ncol = 1,
+                          heights = c(1, 0.5)),
                 ggarrange(p4a, p4b, p4c, p4d, p4e, p4f, p4g, p4h,
                           nrow = 4,
                           ncol = 2,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)"),
                           widths = c(1,0.8)),
-                p4_leg2,
-                ncol = 3,
-                widths = c(0.3, 1, 0.3)
+                ncol = 2,
+                widths = c(0.3, 1)
 ) #+ bgcolor("white")
 
 p4
 
 ggsave(plot = p4, filename = "./figures/final_figures/Figure4.tif",
-       device = "tiff", height = 10, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 10, width = 11, units = "in", bg = "white")
 
 # Figure 4 supplement
 
@@ -914,7 +925,8 @@ p4b_r2 <- GrandMeanSkill(observations = obs,
                       viz_metric = "r2",
                       show_legend = FALSE)
 p4b_r2 <- p4b_r2 +
-  annotate("text",x = -0.24, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  annotate("text",x = -0.24, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
 p4b_r2
 
 onset <- ss_data %>%
@@ -956,7 +968,8 @@ p4d_r2 <- GrandMeanSkill(observations = obs,
                       viz_metric = "r2",
                       show_legend = FALSE)
 p4d_r2 <- p4d_r2 +
-  annotate("text",x = -0.4, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
+  annotate("text",x = -0.4, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
+  geom_hline(yintercept = 10.5, size = 1)
 p4d_r2
 
 strat <- ss_data %>%
@@ -997,7 +1010,8 @@ p4f_r2 <- GrandMeanSkill(observations = obs,
                       viz_metric = "r2",
                       show_legend = FALSE)
 p4f_r2 <- p4f_r2 +
-  annotate("text",x = -0.45, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
+  annotate("text",x = -0.45, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
+  geom_hline(yintercept = 15.5, size = 1)
 p4f_r2
 
 decline <- ss_data %>%
@@ -1038,7 +1052,8 @@ p4h_r2 <- GrandMeanSkill(observations = obs,
                       viz_metric = "r2",
                       show_legend = FALSE)
 p4h_r2 <- p4h_r2 +
-  annotate("text",x = -0.6, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
+  annotate("text",x = -0.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
+  geom_hline(yintercept = 7.5, size = 1)
 p4h_r2
 
 mod_out_all_strat <- out %>%
@@ -1090,13 +1105,15 @@ p4_leg2_r2 <- as_ggplot(leg2_r2)
 p4_leg2_r2
 
 
-p4_r2 <- ggarrange(p4_leg1_r2,
+p4_r2 <- ggarrange(ggarrange(p4_leg1_r2,p4_leg2_r2,
+                             nrow = 2,
+                             ncol = 1,
+                             heights = c(1, 0.5)),
                 ggarrange(p4a_r2, p4b_r2, p4c_r2, p4d_r2, p4e_r2, p4f_r2, p4g_r2, p4h_r2,
                           nrow = 4,
                           ncol = 2,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)"),
                           widths = c(1,0.8)),
-                p4_leg2_r2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
 ) #+ bgcolor("white")
@@ -1104,7 +1121,7 @@ p4_r2 <- ggarrange(p4_leg1_r2,
 p4_r2
 
 ggsave(plot = p4_r2, filename = "./figures/final_figures/Figure4_r2.tif",
-       device = "tiff", height = 10, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 10, width = 11, units = "in", bg = "white")
 
 # mae
 
@@ -1146,7 +1163,8 @@ p4b_mae <- GrandMeanSkill(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE)
 p4b_mae <- p4b_mae +
-  annotate("text",x = 8.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  annotate("text",x = 8.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 15.5, size = 1)
 p4b_mae
 
 onset <- ss_data %>%
@@ -1188,7 +1206,8 @@ p4d_mae <- GrandMeanSkill(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE)
 p4d_mae <- p4d_mae +
-  annotate("text",x = 6.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
+  annotate("text",x = 6.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
+  geom_hline(yintercept = 10.5, size = 1)
 p4d_mae
 
 strat <- ss_data %>%
@@ -1229,7 +1248,8 @@ p4f_mae <- GrandMeanSkill(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE)
 p4f_mae <- p4f_mae +
-  annotate("text",x = 6.7, y = "LSTM", label = "*", size = 10, vjust = 0.8) # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
+  annotate("text",x = 6.7, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
+  geom_hline(yintercept = 14.5, size = 1)
 p4f_mae
 
 decline <- ss_data %>%
@@ -1270,7 +1290,8 @@ p4h_mae <- GrandMeanSkill(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE)
 p4h_mae <- p4h_mae +
-  annotate("text",x = 7.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
+  annotate("text",x = 7.8, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
+  geom_hline(yintercept = 10.5, size = 1)
 p4h_mae
 
 mod_out_all_strat <- out %>%
@@ -1322,13 +1343,15 @@ p4_leg2_mae <- as_ggplot(leg2_mae)
 p4_leg2_mae
 
 
-p4_mae <- ggarrange(p4_leg1_mae,
+p4_mae <- ggarrange(ggarrange(p4_leg1_mae,p4_leg2_mae,
+                              nrow = 2,
+                              ncol = 1,
+                              heights = c(1, 0.5)),
                 ggarrange(p4a_mae, p4b_mae, p4c_mae, p4d_mae, p4e_mae, p4f_mae, p4g_mae, p4h_mae,
                           nrow = 4,
                           ncol = 2,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)"),
                           widths = c(1,0.8)),
-                p4_leg2_mae,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
 ) #+ bgcolor("white")
@@ -1336,7 +1359,7 @@ p4_mae <- ggarrange(p4_leg1_mae,
 p4_mae
 
 ggsave(plot = p4_mae, filename = "./figures/final_figures/Figure4_mae.tif",
-       device = "tiff", height = 10, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 10, width = 11, units = "in", bg = "white")
 
 # null models
 
@@ -1358,7 +1381,8 @@ p4_supp1a <- SkillVsHorizon(observations = obs,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p4_supp1a
 
 p4_supp1b <- SkillVsHorizon(observations = obs, 
@@ -1373,7 +1397,8 @@ p4_supp1b <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1b
 
 p4_supp1c <- SkillVsHorizon(observations = obs, 
@@ -1388,7 +1413,8 @@ p4_supp1c <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1c
 
 onset <- ss_data %>%
@@ -1410,7 +1436,8 @@ p4_supp1d <- SkillVsHorizon(observations = obs,
                       add_vline = FALSE,
                       vline_intercept = 18,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p4_supp1d
 
 p4_supp1e <- SkillVsHorizon(observations = obs, 
@@ -1426,7 +1453,8 @@ p4_supp1e <- SkillVsHorizon(observations = obs,
                             add_vline = FALSE,
                             vline_intercept = 18,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1e
 
 p4_supp1f <- SkillVsHorizon(observations = obs, 
@@ -1442,7 +1470,8 @@ p4_supp1f <- SkillVsHorizon(observations = obs,
                             add_vline = FALSE,
                             vline_intercept = 18,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1f
 
 strat <- ss_data %>%
@@ -1463,7 +1492,8 @@ p4_supp1g <- SkillVsHorizon(observations = obs,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p4_supp1g
 
 p4_supp1h <- SkillVsHorizon(observations = obs, 
@@ -1478,7 +1508,8 @@ p4_supp1h <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1h
 
 p4_supp1i <- SkillVsHorizon(observations = obs, 
@@ -1493,7 +1524,8 @@ p4_supp1i <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1i
 
 decline <- ss_data %>%
@@ -1514,7 +1546,8 @@ p4_supp1j <- SkillVsHorizon(observations = obs,
                       make_combined_bestmodel_legend = FALSE,
                       add_vline = FALSE,
                       combined_var = "none",
-                      show_null_model = FALSE)
+                      show_null_model = FALSE,
+                      fixed_ylim = FALSE)
 p4_supp1j
 
 p4_supp1k <- SkillVsHorizon(observations = obs, 
@@ -1529,7 +1562,8 @@ p4_supp1k <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1k
 
 p4_supp1l <- SkillVsHorizon(observations = obs, 
@@ -1544,7 +1578,8 @@ p4_supp1l <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
                             combined_var = "none",
-                            show_null_model = FALSE)
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
 p4_supp1l
 
 mod_out_all_strat <- out %>%
@@ -1562,7 +1597,8 @@ p4_supp1_leg_plot1 <- SkillVsHorizon(observations = obs,
                             make_combined_bestmodel_legend = TRUE,
                             combined_var = "strat",
                             show_null_model = FALSE,
-                            add_vline = FALSE)
+                            add_vline = FALSE,
+                            fixed_ylim = FALSE)
 
 # Extract the legend. Returns a gtable
 p4_supp1_leg1 <- get_legend(p4_supp1_leg_plot1)
@@ -1588,21 +1624,23 @@ p4_supp1_leg2 <- as_ggplot(p4_supp1_leg2)
 p4_supp1_leg2
 
 
-p4_supp1 <- ggarrange(p4_supp1_leg1,
+p4_supp1 <- ggarrange(ggarrange(p4_supp1_leg1,p4_supp1_leg2,
+                                nrow = 2,
+                                ncol = 1,
+                                heights = c(1,0.5)),
                 ggarrange(p4_supp1a, p4_supp1b, p4_supp1c, p4_supp1d, p4_supp1e, p4_supp1f, p4_supp1g, p4_supp1h, p4_supp1i, p4_supp1j, p4_supp1k, p4_supp1l,
                           nrow = 4,
                           ncol = 3,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
                           widths = c(1,1,1)),
-                p4_supp1_leg2,
-                ncol = 3,
-                widths = c(0.2, 1, 0.2)
+                ncol = 2,
+                widths = c(0.2, 1)
 ) #+ bgcolor("white")
 
 p4_supp1
 
 ggsave(plot = p4_supp1, filename = "./figures/final_figures/Figure4_supp1.tif",
-       device = "tiff", height = 10, width = 15, units = "in", bg = "white")
+       device = "tiff", height = 10, width = 14, units = "in", bg = "white")
 
 # Figure 5
 
@@ -1655,7 +1693,8 @@ p5b <- GrandMeanSkill(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE)
 p5b <- p5b +
-  annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 10.5, size = 1)
 p5b
 
 p5c <- SkillVsHorizon(observations = obs, 
@@ -1688,7 +1727,8 @@ p5d <- GrandMeanSkill(observations = obs,
                       viz_metric = "r2",
                       show_legend = FALSE)
 p5d <- p5d +
-  annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 10.5, size = 1)
 p5d
 
 p5e <- SkillVsHorizon(observations = obs, 
@@ -1722,7 +1762,8 @@ p5f <- GrandMeanSkill(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE)
 p5f <- p5f +
-  annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)
+  annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 8.5, size = 1)
 p5f
 
 leg_plot1 <- SkillVsHorizon(observations = obs, 
@@ -1768,21 +1809,23 @@ p5_leg2 <- as_ggplot(leg2)
 p5_leg2
 
 
-p5 <- ggarrange(p5_leg1,
+p5 <- ggarrange(ggarrange(p5_leg1,p5_leg2,
+                          nrow = 2, 
+                          ncol = 1,
+                          heights = c(1, 0.5)),
                 ggarrange(p5a, p5b, p5c, p5d, p5e, p5f,
                           nrow = 3,
                           ncol = 2,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
                           widths = c(1,0.8)),
-                p5_leg2,
-                ncol = 3,
-                widths = c(0.3, 1, 0.3)
+                ncol = 2,
+                widths = c(0.3, 1)
 ) #+ bgcolor("white")
 
 p5
 
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
-       device = "tiff", height = 9, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 9, width = 11, units = "in", bg = "white")
 
 # Figure 5 supplement
 
@@ -1904,13 +1947,15 @@ p5_supp1_leg2 <- as_ggplot(leg2)
 p5_supp1_leg2
 
 
-p5_supp1 <- ggarrange(p5_supp1_leg1,
+p5_supp1 <- ggarrange(ggarrange(p5_supp1_leg1,p5_supp1_leg2,
+                                nrow = 2,
+                                ncol = 1,
+                                heights = c(1, 0.5)),
                 ggarrange(p5_supp1a, p5_supp1b, p5_supp1c, p5_supp1d, p5_supp1e, p5_supp1f,
                           nrow = 3,
                           ncol = 2,
                           labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
                           widths = c(1,0.8)),
-                p5_supp1_leg2,
                 ncol = 3,
                 widths = c(0.3, 1, 0.3)
 ) #+ bgcolor("white")
@@ -1918,7 +1963,7 @@ p5_supp1 <- ggarrange(p5_supp1_leg1,
 p5_supp1
 
 ggsave(plot = p5_supp1, filename = "./figures/final_figures/Figure5_supp1.tif",
-       device = "tiff", height = 9, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 9, width = 11, units = "in", bg = "white")
 
 # additional Fig 5 code (low variability)
 
@@ -1974,7 +2019,7 @@ p6a <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "All predictions",
+                                    plot_title = "Data-driven: TSLM (full time period)",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
@@ -1989,7 +2034,7 @@ p6b <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("GAM","GAM (no drivers)","GAM (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "All predictions",
+                                    plot_title = "Data-driven: GAM (full time period)",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
@@ -2010,7 +2055,7 @@ p6c <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("ARIMA","ARIMA (no drivers)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Mixed period",
+                                    plot_title = "Data-driven: ARIMA (mixed period)",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
@@ -2031,7 +2076,7 @@ p6d <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Stratification onset",
+                                    plot_title = "Data-driven: MARS (stratification onset)",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
@@ -2052,7 +2097,7 @@ p6e <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("Prophet","Prophet (no drivers)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Stratified",
+                                    plot_title = "Data-driven: Prophet (stratified period)",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
@@ -2074,7 +2119,7 @@ p6f <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("NNETAR","NNETAR (no drivers)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Stratification decline",
+                                    plot_title = "Data-driven: NNETAR (stratification decline)",
                                     viz_metric = "rmse",
                                     show_legend = TRUE,
                                     combined_var = "none",
@@ -2103,7 +2148,7 @@ p6_supp1a <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "All predictions",
+                                          plot_title = "Data driven: TSLM (full time period)",
                                           viz_metric = "mae",
                                           show_legend = TRUE,
                                           combined_var = "none",
@@ -2118,7 +2163,7 @@ p6_supp1b <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("XGBoost","XGBoost (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "All predictions",
+                                          plot_title = "Data-driven: XGBoost (full time period)",
                                           viz_metric = "mae",
                                           show_legend = TRUE,
                                           combined_var = "none",
@@ -2139,7 +2184,7 @@ p6_supp1c <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("XGBoost","XGBoost (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "Mixed period",
+                                          plot_title = "Data-driven: XGBoost (mixed period)",
                                           viz_metric = "mae",
                                           show_legend = TRUE,
                                           combined_var = "none",
@@ -2160,7 +2205,7 @@ p6_supp1d <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "Stratification onset",
+                                          plot_title = "Data-driven: TSLM (stratification onset)",
                                           viz_metric = "mae",
                                           show_legend = TRUE,
                                           combined_var = "none",
@@ -2181,7 +2226,7 @@ p6_supp1e <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "Stratified",
+                                          plot_title = "Data-driven: TSLM (stratified)",
                                           viz_metric = "mae",
                                           show_legend = TRUE,
                                           combined_var = "none",
@@ -2203,7 +2248,7 @@ p6_supp1f <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "Stratification decline",
+                                          plot_title = "Data-driven: TSLM (stratification decline)",
                                           viz_metric = "mae",
                                           show_legend = TRUE,
                                           combined_var = "none",
@@ -2223,6 +2268,166 @@ p6_supp1
 
 ggsave(plot = p6_supp1, filename = "./figures/final_figures/Figure6_supp1.tif",
        device = "tiff", height = 8, width = 12, units = "in",bg = "white")
+
+# best models in other time periods according to RMSE
+
+fig6_supp_models <- list(c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                         c("GAM","GAM (no drivers)","GAM (no lag)"),
+                         c("ARIMA","ARIMA (no drivers)"),
+                         c("MARS","MARS (no drivers)","MARS (no lag)"),
+                         c("Prophet","Prophet (no drivers)"),
+                         c("NNETAR","NNETAR (no drivers)"))
+
+best_performing_period <- c("overall","overall","mixed","onset","stratified","decline")
+
+best_horizons_df <- list(data.frame(from = c(1),
+                                    to = c(10)),
+                         data.frame(from = c(11),
+                                    to = c(13)),
+                         data.frame(from = c(20),
+                                    to = c(23)),
+                         data.frame(from = c(4,14,29),
+                                    to = c(4,15,35)),
+                         data.frame(from = c(19),
+                                    to = c(32)),
+                         data.frame(from = c(15),
+                                    to = c(35)))
+
+for(i in 1:length(fig6_supp_models)){
+  # overall
+  if(best_performing_period[i] == "overall"){
+    bph_df <- best_horizons_df[[i]]
+  } else {
+    bph_df <- data.frame(from = c(NA),
+                         to = c(NA))
+  }
+  p6_supp2a <- CompareWithAndWithoutDrivers(observations = obs, 
+                                            model_output = out, 
+                                            forecast_horizon = forecast_horizon,
+                                            model_ids = fig6_supp_models[[i]],
+                                            viz_dates = pred_dates,
+                                            plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (full time period)"),
+                                            viz_metric = "rmse",
+                                            show_legend = TRUE,
+                                            combined_var = "none",
+                                            parent_model = fig6_supp_models[[i]][1],
+                                            best_performing_horizons = bph_df)
+
+  # mixed
+  mixed <- ss_data %>%
+    filter(strat_bin == "mixed")
+  
+  mod_out_mixed <- out %>%
+    filter(datetime %in% mixed$datetime)
+  
+  if(best_performing_period[i] == "mixed"){
+    bph_df <- best_horizons_df[[i]]
+  } else {
+    bph_df <- data.frame(from = c(NA),
+                         to = c(NA))
+  }
+  
+  p6_supp2b <- CompareWithAndWithoutDrivers(observations = obs, 
+                                            model_output = mod_out_mixed, 
+                                            forecast_horizon = forecast_horizon,
+                                            model_ids = fig6_supp_models[[i]],
+                                            viz_dates = pred_dates,
+                                            plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (mixed period)"),
+                                            viz_metric = "rmse",
+                                            show_legend = TRUE,
+                                            combined_var = "none",
+                                            parent_model = fig6_supp_models[[i]][1],
+                                            best_performing_horizons = bph_df)
+
+  # onset
+  onset <- ss_data %>%
+    filter(strat_bin == "onset")
+  
+  mod_out_onset <- out %>%
+    filter(datetime %in% onset$datetime)
+  
+  if(best_performing_period[i] == "onset"){
+    bph_df <- best_horizons_df[[i]]
+  } else {
+    bph_df <- data.frame(from = c(NA),
+                         to = c(NA))
+  }
+  
+  p6_supp2c <- CompareWithAndWithoutDrivers(observations = obs, 
+                                            model_output = mod_out_onset, 
+                                            forecast_horizon = forecast_horizon,
+                                            model_ids = fig6_supp_models[[i]],
+                                            viz_dates = pred_dates,
+                                            plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (stratification onset)"),
+                                            viz_metric = "rmse",
+                                            show_legend = TRUE,
+                                            combined_var = "none",
+                                            parent_model = fig6_supp_models[[i]][1],
+                                            best_performing_horizons = bph_df)
+
+  # stratified
+  strat <- ss_data %>%
+    filter(strat_bin == "stratified")
+  
+  mod_out_strat <- out %>%
+    filter(datetime %in% strat$datetime)
+  
+  if(best_performing_period[i] == "stratified"){
+    bph_df <- best_horizons_df[[i]]
+  } else {
+    bph_df <- data.frame(from = c(NA),
+                         to = c(NA))
+  }
+  
+  p6_supp2d <- CompareWithAndWithoutDrivers(observations = obs, 
+                                            model_output = mod_out_strat, 
+                                            forecast_horizon = forecast_horizon,
+                                            model_ids = fig6_supp_models[[i]],
+                                            viz_dates = pred_dates,
+                                            plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (stratified period)"),
+                                            viz_metric = "rmse",
+                                            show_legend = TRUE,
+                                            combined_var = "none",
+                                            parent_model = fig6_supp_models[[i]][1],
+                                            best_performing_horizons = bph_df)
+
+  # decline
+  
+  decline <- ss_data %>%
+    filter(strat_bin == "decline")
+  
+  mod_out_decline <- out %>%
+    filter(datetime %in% decline$datetime)
+  
+  if(best_performing_period[i] == "decline"){
+    bph_df <- best_horizons_df[[i]]
+  } else {
+    bph_df <- data.frame(from = c(NA),
+                         to = c(NA))
+  }
+  
+  p6_supp2e <- CompareWithAndWithoutDrivers(observations = obs, 
+                                            model_output = mod_out_decline, 
+                                            forecast_horizon = forecast_horizon,
+                                            model_ids = fig6_supp_models[[i]],
+                                            viz_dates = pred_dates,
+                                            plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (stratification decline)"),
+                                            viz_metric = "rmse",
+                                            show_legend = TRUE,
+                                            combined_var = "none",
+                                            parent_model = fig6_supp_models[[i]][1],
+                                            best_performing_horizons = bph_df)
+  
+  p6_supp2 <- ggarrange(p6_supp2a, p6_supp2b, p6_supp2c, p6_supp2d, p6_supp2e,
+                        nrow = 3, ncol = 2,
+                        widths = c(1, 1, 1),
+                        labels = c("(a)","(b)","(c)","(d)","(e)")
+  ) 
+  
+  ggsave(plot = p6_supp2, filename = paste0("./figures/final_figures/Figure6_supp",i+1,".tif"),
+         device = "tiff", height = 8, width = 12, units = "in",bg = "white")
+}
+
 
 # Figure 7
 source("./code/function_library/visualization/CompareKGML.R")

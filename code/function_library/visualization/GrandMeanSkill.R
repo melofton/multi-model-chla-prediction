@@ -65,7 +65,7 @@ GrandMeanSkill <- function(observations,
   my.cols <- c("process-based" = "#B85233",
                "data-driven" = "#6FA19D",
                "KGML" = "navy",
-               "ensemble" = "darkgray",
+               "ensemble" = "black",
                "null" = "#DED50F")
   
   plot_data <- output %>%
