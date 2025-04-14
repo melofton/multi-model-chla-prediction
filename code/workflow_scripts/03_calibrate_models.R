@@ -67,10 +67,10 @@ fit_TSLM <- fit_TSLM(data = dat_TSLM, cal_dates = c("2018-08-06","2021-12-31"))
 fit_TSLM$plot
 ggsave(fit_TSLM$plot, filename = "./figures/TSLM_fit.png",
        height = 3, width = 5, units = "in")
-TSLM_diagnostics <- ggarrange(plotlist = c(fit_TSLM$diagnostics_no_lag, fit_TSLM$diagnostics),
-                              labels = c("(a)","(b)","(c)","(d)","(e)","(f)"))
+TSLM_diagnostics <- ggarrange(plotlist = c(fit_TSLM$diagnostics_no_lag, fit_TSLM$diagnostics, fit_TSLM$diagnostics_no_drivers),
+                              labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)"))
 ggsave(TSLM_diagnostics, filename = "./figures/TSLM_diagnostics.png",
-       height = 6, width = 10, units = "in")
+       height = 9, width = 10, units = "in")
 stats_table <- fit_TSLM$stats %>%
   add_column(model_name = c("no lag or trend","lag","lag and trend")) %>%
   select(model_name, r_squared, adj_r_squared, log_lik, AIC, AICc, BIC, CV, deviance) %>%
@@ -78,7 +78,7 @@ stats_table <- fit_TSLM$stats %>%
                 .fns  = ~ round(., 2)))
 write.csv(stats_table, "./model_output/TSLM_diagnostics.csv",row.names = FALSE)
 
-fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"), include_lag = FALSE)
+fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
 ggsave(fit_XGBoost$plot, filename = "./figures/XGBoost_fit.png",
        height = 3, width = 5, units = "in")
 ggsave(fit_XGBoost$vip_plot, filename = "./figures/XGBoost_feature_importance.png",
@@ -112,7 +112,18 @@ png("./figures/MARS_model_surfaces.png", width = 9, height = 6,
     units = "in", res = 300)
 plotmo(fit_MARS$MARS, xlab = "predictor value", ylab = "Chla (ug/L)")
 dev.off()
+png("./figures/MARS_noLag_model_surfaces.png", width = 9, height = 6,
+    units = "in", res = 300)
+plotmo(fit_MARS$MARS_no_lag, xlab = "predictor value", ylab = "Chla (ug/L)")
+dev.off()
+png("./figures/MARS_noDrivers_model_surfaces.png", width = 9, height = 6,
+    units = "in", res = 300)
+plotmo(fit_MARS$MARS_no_drivers, xlab = "predictor value", ylab = "Chla (ug/L)")
+dev.off()
+
 write.csv(fit_MARS$basis.functions, "./model_output/MARS_basis_functions.csv",row.names = FALSE)
+write.csv(fit_MARS$basis.functions.no.lag, "./model_output/MARS_basis_functions_noLag.csv",row.names = FALSE)
+write.csv(fit_MARS$basis.functions.no.drivers, "./model_output/MARS_basis_functions_noDrivers.csv",row.names = FALSE)
 
 fit_randomForest <- fit_randomForest(data = dat_randomForest, cal_dates = c("2018-08-06","2021-12-31"))
 ggsave(fit_randomForest$importance_plot, filename = "./figures/randomForest_importance.png",
@@ -173,6 +184,21 @@ OneDProcessModel_run$out <- OneDProcessModel_run$output_df %>%
   mutate(depth = 1.6,
          variable = "chlorophyll-a") %>%
   select(model_id, datetime, variable, prediction)
+
+# make figure
+OneDProcessModel_output <- read_csv("./code/model_files/1DProcessModel/output.csv") %>%
+  filter(depth == 1.5 & variable == "chla") 
+OneDProcessModel_cal_plot <- ggplot(data = OneDProcessModel_output)+
+  geom_point(aes(x = datetime, y = observation, shape = "observed"))+
+  geom_line(aes(x = datetime, y = prediction, col = "predicted"))+
+  scale_color_manual(values = c("predicted" = "green"), name = "")+
+  scale_shape_manual(values = c("observed" = 16), name = "")+
+  ylab("chlorophyll-a (ug/L)")+
+  xlab("")+
+  theme_bw()
+OneDProcessModel_cal_plot
+ggsave(OneDProcessModel_cal_plot, filename = "./figures/OneDProcessModel_fit.png",
+       height = 3, width = 5, units = "in")
 
 # KGML experiment
 fit_NNETAR_KGML <- fit_NNETAR_KGML(data = dat_NNETAR_KGML, cal_dates = c("2018-08-06","2021-12-31"))

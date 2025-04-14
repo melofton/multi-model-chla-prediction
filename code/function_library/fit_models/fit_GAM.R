@@ -11,6 +11,8 @@ library(mgcv)
 #'median daily EXO_chla_ugL_1 with chl-a measurements in ug/L
 #'@param cal_dates list of two dates (yyyy-mm-dd) for start and
 #'stop of calibration/fit period
+#'
+data <- dat_GAM
 
 fit_GAM <- function(data, cal_dates){
   
@@ -26,27 +28,57 @@ fit_GAM <- function(data, cal_dates){
     slice(-1)
   
   #fit GAM following methods in ggplot()
-  my.gam <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs") +
-                        s(AirTemp_C_mean, bs = "cs") +
-                        s(PAR_umolm2s_mean, bs = "cs") +
-                        s(WindSpeed_ms_mean, bs = "cs") +
-                        s(Flow_cms_mean, bs = "cs") +
-                        s(Temp_C_mean, bs = "cs") +
-                        s(SRP_ugL, bs = "cs") +
-                        s(DIN_ugL, bs = "cs") +
-                        s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
-                      data = df, method = "REML")
+    #fit GAM following methods in ggplot()
+    my.gam1 <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs") +
+                          s(AirTemp_C_mean, bs = "cs") +
+                          s(PAR_umolm2s_mean, bs = "cs") +
+                          s(WindSpeed_ms_mean, bs = "cs") +
+                          s(Flow_cms_mean, bs = "cs") +
+                          s(Temp_C_mean, bs = "cs") +
+                          s(SRP_ugL, bs = "cs") +
+                          s(DIN_ugL, bs = "cs") +
+                          s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
+                        data = df, method = "REML")
+    #fit GAM following methods in ggplot()
+    my.gam2 <- mgcv::gam(formula = Chla_ugL_mean ~ s(lag_Chla_ugL_mean, bs = "cs"), family = gaussian(),
+                        data = df, method = "REML")
+    #fit GAM following methods in ggplot()
+    my.gam3 <- mgcv::gam(formula = Chla_ugL_mean ~ s(AirTemp_C_mean, bs = "cs") +
+                          s(PAR_umolm2s_mean, bs = "cs") +
+                          s(WindSpeed_ms_mean, bs = "cs") +
+                          s(Flow_cms_mean, bs = "cs") +
+                          s(Temp_C_mean, bs = "cs") +
+                          s(SRP_ugL, bs = "cs") +
+                          s(DIN_ugL, bs = "cs") +
+                          s(LightAttenuation_Kd, bs = "cs"), family = gaussian(),
+                        data = df, method = "REML")
   
   png("./figures/GAM_diagnostics.png", res = 300,
       width = 8, height = 6, units = "in")
   par(mfrow=c(2,2))
-  gam.check(my.gam)
+  gam.check(my.gam1)
   dev.off()
   
-  GAM_predicted <- mgcv::predict.gam(my.gam)
+  png("./figures/GAM_noDrivers_diagnostics.png", res = 300,
+      width = 8, height = 6, units = "in")
+  par(mfrow=c(2,2))
+  gam.check(my.gam2)
+  dev.off()
+  
+  png("./figures/GAM_noLag_diagnostics.png", res = 300,
+      width = 8, height = 6, units = "in")
+  par(mfrow=c(2,2))
+  gam.check(my.gam3)
+  dev.off()
+  
+  GAM_predicted <- mgcv::predict.gam(my.gam1)
+  GAM_predicted_noDrivers <- mgcv::predict.gam(my.gam2)
+  GAM_predicted_noLag <- mgcv::predict.gam(my.gam3)
   
   fitted_values <- data.frame(datetime = df$datetime,
-                              fitted = GAM_predicted)
+                              `(a) GAM` = GAM_predicted,
+                              `(b) GAM (no drivers)` = GAM_predicted_noDrivers,
+                              `(c) GAM (no lag)` = GAM_predicted_noLag)
   
   GAM_plot <- ggplot()+
     xlab("")+

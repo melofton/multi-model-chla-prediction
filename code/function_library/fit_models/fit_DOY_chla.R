@@ -36,7 +36,7 @@ fit_DOY_chla <- function(data, cal_dates){
     theme_classic()+
     labs(color = NULL, fill = NULL)
   
-  png("./figures/GAM_diagnostics.png", res = 300,
+  png("./figures/DOY_diagnostics.png", res = 300,
       width = 8, height = 6, units = "in")
   par(mfrow=c(2,2))
   gam.check(my.gam)
