@@ -12,7 +12,6 @@ library(mgcv)
 #'@param cal_dates list of two dates (yyyy-mm-dd) for start and
 #'stop of calibration/fit period
 #'
-data <- dat_GAM
 
 fit_GAM <- function(data, cal_dates){
   
@@ -75,16 +74,18 @@ fit_GAM <- function(data, cal_dates){
   GAM_predicted_noDrivers <- mgcv::predict.gam(my.gam2)
   GAM_predicted_noLag <- mgcv::predict.gam(my.gam3)
   
-  fitted_values <- data.frame(datetime = df$datetime,
-                              `(a) GAM` = GAM_predicted,
-                              `(b) GAM (no drivers)` = GAM_predicted_noDrivers,
-                              `(c) GAM (no lag)` = GAM_predicted_noLag)
+  fitted_values <- tibble(datetime = df$datetime,
+                              `GAM` = GAM_predicted,
+                              `GAM (no drivers)` = GAM_predicted_noDrivers,
+                              `GAM (no lag)` = GAM_predicted_noLag)
   
   GAM_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
     geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
-    geom_line(data = fitted_values, aes(x = datetime, y = fitted, color = "GAM"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = `GAM (no lag)`, color = "GAM (no lag)"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = `GAM (no drivers)`, color = "GAM (no drivers)"))+
+    geom_line(data = fitted_values, aes(x = datetime, y = `GAM`, color = "GAM"))+
     labs(color = NULL, fill = NULL)+
     theme_classic()
 
@@ -96,7 +97,7 @@ fit_GAM <- function(data, cal_dates){
   df.out <- data.frame(model_id = "GAM",
                        datetime = df$datetime,
                        variable = "chlorophyll-a",
-                       prediction = fitted_values$fitted)
+                       prediction = fitted_values$GAM)
 
   #return output + model with best fit + plot
   return(list(out = df.out, plot = GAM_plot))

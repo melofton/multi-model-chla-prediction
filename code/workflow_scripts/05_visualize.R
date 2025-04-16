@@ -2429,95 +2429,22 @@ for(i in 1:length(fig6_supp_models)){
 }
 
 
-# Figure 7
+# Additional supplemental figures
+
+# KGML figure 1
 source("./code/function_library/visualization/CompareKGML.R")
 
 # overall
-p7a <- CompareKGML(observations = obs, 
-                   model_output = out, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
-                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "All predictions",
-                   viz_metric = "rmse",
-                   show_legend = TRUE,
-                   best_performing_horizons = data.frame(from = c(NA),
-                                                         to = c(NA)))
-p7a
-
-# GLM-AED mixed
-mixed <- ss_data %>%
-  filter(strat_bin == "mixed")
-
-mod_out_mixed <- out %>%
-  filter(datetime %in% mixed$datetime)
-
-p7b <- CompareKGML(observations = obs, 
-                   model_output = mod_out_mixed, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
-                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "Mixed period",
-                   viz_metric = "rmse",
-                   show_legend = TRUE,
-                   best_performing_horizons = data.frame(from = c(4),
-                                                         to = c(13)))
-p7b
-
-# high chl-a variability 2022-2023
-obs_var <- obs %>%
-  mutate(delta = c(NA,abs(diff(Chla_ugL_mean, na.rm = TRUE)))) 
-
-dens <- density(obs_var$delta, na.rm = TRUE)
-q90 <- quantile(obs_var$delta, 0.90, na.rm = TRUE)
-var_df <- obs_var %>%
-  mutate(var_bin = ifelse(delta > q90, "high","low"))
-
-high_var <- var_df %>%
-  filter(var_bin == "high")
-
-mod_out_high_var <- out %>%
-  filter(datetime %in% high_var$datetime)
-
-p7c <- CompareKGML(observations = obs, 
-                   model_output = mod_out_high_var, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
-                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "High chl-a variability",
-                   viz_metric = "rmse",
-                   show_legend = TRUE,
-                   best_performing_horizons = data.frame(from = c(3,5),
-                                                         to = c(3,5)),
-                   add_vline = TRUE,
-                   vline_intercept = 8)
-p7c
-
-p7 <- ggarrange(p7a, p7b, p7c,
-                nrow = 3, ncol = 1,
-                labels = c("(a)","(b)","(c)")
-) 
-
-p7
-
-ggsave(plot = p7, filename = "./figures/final_figures/Figure7.tif",
-       device = "tiff", height = 12, width = 7, units = "in")
-
-# Figure 7 supplement
-
-# supplement 1
-
-# overall
 p7_supp1a <- CompareKGML(observations = obs, 
-                   model_output = out, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
-                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "All predictions",
-                   viz_metric = "r2",
-                   show_legend = TRUE,
-                   best_performing_horizons = data.frame(from = c(NA),
-                                                         to = c(NA)))
+                         model_output = out, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "All predictions",
+                         viz_metric = "rmse",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(NA),
+                                                               to = c(NA)))
 p7_supp1a
 
 # GLM-AED mixed
@@ -2528,15 +2455,15 @@ mod_out_mixed <- out %>%
   filter(datetime %in% mixed$datetime)
 
 p7_supp1b <- CompareKGML(observations = obs, 
-                   model_output = mod_out_mixed, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
-                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "Mixed period",
-                   viz_metric = "r2",
-                   show_legend = TRUE,
-                   best_performing_horizons = data.frame(from = c(4),
-                                                         to = c(13)))
+                         model_output = mod_out_mixed, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "Mixed period",
+                         viz_metric = "rmse",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(4),
+                                                               to = c(13)))
 p7_supp1b
 
 # high chl-a variability 2022-2023
@@ -2555,20 +2482,22 @@ mod_out_high_var <- out %>%
   filter(datetime %in% high_var$datetime)
 
 p7_supp1c <- CompareKGML(observations = obs, 
-                   model_output = mod_out_high_var, 
-                   forecast_horizon = forecast_horizon,
-                   model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
-                   viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
-                   plot_title = "High chl-a variability",
-                   viz_metric = "r2",
-                   show_legend = TRUE,
-                   best_performing_horizons = data.frame(from = c(3,5),
-                                                         to = c(3,5)))
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability",
+                         viz_metric = "rmse",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(3,5),
+                                                               to = c(3,5)),
+                         add_vline = TRUE,
+                         vline_intercept = 8)
 p7_supp1c
 
 p7_supp1 <- ggarrange(p7_supp1a, p7_supp1b, p7_supp1c,
-                nrow = 3, ncol = 1,
-                labels = c("(a)","(b)","(c)")
+                      nrow = 3, ncol = 1,
+                      labels = c("(a)","(b)","(c)")
 ) 
 
 p7_supp1
@@ -2576,7 +2505,7 @@ p7_supp1
 ggsave(plot = p7_supp1, filename = "./figures/final_figures/Figure7_supp1.tif",
        device = "tiff", height = 12, width = 7, units = "in")
 
-# supplement 2
+# KGML figure 2
 
 # overall
 p7_supp2a <- CompareKGML(observations = obs, 
@@ -2585,7 +2514,7 @@ p7_supp2a <- CompareKGML(observations = obs,
                          model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "All predictions",
-                         viz_metric = "mae",
+                         viz_metric = "r2",
                          show_legend = TRUE,
                          best_performing_horizons = data.frame(from = c(NA),
                                                                to = c(NA)))
@@ -2604,10 +2533,10 @@ p7_supp2b <- CompareKGML(observations = obs,
                          model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "Mixed period",
-                         viz_metric = "mae",
+                         viz_metric = "r2",
                          show_legend = TRUE,
-                         best_performing_horizons = data.frame(from = c(4,10),
-                                                               to = c(8,10)))
+                         best_performing_horizons = data.frame(from = c(4),
+                                                               to = c(13)))
 p7_supp2b
 
 # high chl-a variability 2022-2023
@@ -2631,12 +2560,10 @@ p7_supp2c <- CompareKGML(observations = obs,
                          model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "High chl-a variability",
-                         viz_metric = "mae",
+                         viz_metric = "r2",
                          show_legend = TRUE,
-                         best_performing_horizons = data.frame(from = c(3),
-                                                               to = c(8)),
-                         add_vline = TRUE,
-                         vline_intercept = 8)
+                         best_performing_horizons = data.frame(from = c(3,5),
+                                                               to = c(3,5)))
 p7_supp2c
 
 p7_supp2 <- ggarrange(p7_supp2a, p7_supp2b, p7_supp2c,
@@ -2647,6 +2574,79 @@ p7_supp2 <- ggarrange(p7_supp2a, p7_supp2b, p7_supp2c,
 p7_supp2
 
 ggsave(plot = p7_supp2, filename = "./figures/final_figures/Figure7_supp2.tif",
+       device = "tiff", height = 12, width = 7, units = "in")
+
+# KGML figure 3
+
+# overall
+p7_supp3a <- CompareKGML(observations = obs, 
+                         model_output = out, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "All predictions",
+                         viz_metric = "mae",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(NA),
+                                                               to = c(NA)))
+p7_supp3a
+
+# GLM-AED mixed
+mixed <- ss_data %>%
+  filter(strat_bin == "mixed")
+
+mod_out_mixed <- out %>%
+  filter(datetime %in% mixed$datetime)
+
+p7_supp3b <- CompareKGML(observations = obs, 
+                         model_output = mod_out_mixed, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence","DOY","historical mean"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "Mixed period",
+                         viz_metric = "mae",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(4,10),
+                                                               to = c(8,10)))
+p7_supp3b
+
+# high chl-a variability 2022-2023
+obs_var <- obs %>%
+  mutate(delta = c(NA,abs(diff(Chla_ugL_mean, na.rm = TRUE)))) 
+
+dens <- density(obs_var$delta, na.rm = TRUE)
+q90 <- quantile(obs_var$delta, 0.90, na.rm = TRUE)
+var_df <- obs_var %>%
+  mutate(var_bin = ifelse(delta > q90, "high","low"))
+
+high_var <- var_df %>%
+  filter(var_bin == "high")
+
+mod_out_high_var <- out %>%
+  filter(datetime %in% high_var$datetime)
+
+p7_supp3c <- CompareKGML(observations = obs, 
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability",
+                         viz_metric = "mae",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(3),
+                                                               to = c(8)),
+                         add_vline = TRUE,
+                         vline_intercept = 8)
+p7_supp3c
+
+p7_supp3 <- ggarrange(p7_supp3a, p7_supp3b, p7_supp3c,
+                      nrow = 3, ncol = 1,
+                      labels = c("(a)","(b)","(c)")
+) 
+
+p7_supp3
+
+ggsave(plot = p7_supp3, filename = "./figures/final_figures/Figure7_supp3.tif",
        device = "tiff", height = 12, width = 7, units = "in")
 
 #need to figure out how to detach legend from this and make it a separate

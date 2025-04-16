@@ -79,11 +79,14 @@ stats_table <- fit_TSLM$stats %>%
 write.csv(stats_table, "./model_output/TSLM_diagnostics.csv",row.names = FALSE)
 
 fit_XGBoost <- fit_XGBoost(data = dat_XGBoost, cal_dates = c("2018-08-06","2021-12-31"))
-ggsave(fit_XGBoost$plot, filename = "./figures/XGBoost_fit.png",
+ggsave(XGBoost_plot, filename = "./figures/XGBoost_fit.png",
        height = 3, width = 5, units = "in")
-ggsave(fit_XGBoost$vip_plot, filename = "./figures/XGBoost_feature_importance.png",
-       height = 3, width = 5, units = "in")
-write.csv(fit_XGBoost$best_hyperparameters, "./model_output/XGBoost_best_hyperparameters.csv",row.names = FALSE)
+vip <- ggarrange(vip_plot_lag, vip_plot_no_lag,
+                 nrow = 1, labels = c("(a)","(b)"))
+ggsave(vip, filename = "./figures/XGBoost_feature_importance.png",
+       height = 3, width = 8, units = "in")
+write.csv(best_hyperparameters_lag, "./model_output/XGBoost_best_hyperparameters_lag.csv",row.names = FALSE)
+write.csv(best_hyperparameters_no_lag, "./model_output/XGBoost_best_hyperparameters_no_lag.csv",row.names = FALSE)
 
 fit_Prophets <- fit_Prophets(data = dat_Prophet, cal_dates = c("2018-08-06","2021-12-31"))
 ggsave(fit_Prophets$plot, filename = "./figures/Prophet_fit.png",
@@ -128,10 +131,11 @@ write.csv(fit_MARS$basis.functions.no.drivers, "./model_output/MARS_basis_functi
 fit_randomForest <- fit_randomForest(data = dat_randomForest, cal_dates = c("2018-08-06","2021-12-31"))
 ggsave(fit_randomForest$importance_plot, filename = "./figures/randomForest_importance.png",
        height = 3, width = 6, units = "in")
-ggsave(fit_randomForest$plot, filename = "./figures/randomForest_fit.png",
-       height = 3, width = 5, units = "in")
 
 fit_GAM <- fit_GAM(data = dat_GAM, cal_dates = c("2018-08-06","2021-12-31"))
+fit_GAM$plot
+ggsave(fit_GAM$plot, filename = "./figures/GAM_fit.png",
+       height = 3, width = 5, units = "in")
 
 params_list <- list(epochs = c(100,200),
                     dropout = c(0, 0.0001, 0.0005, 0.001, 0.002, 0.01),

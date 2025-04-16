@@ -14,6 +14,8 @@ set.seed(100)
 #'@param cal_dates list of two dates (yyyy-mm-dd) for start and
 #'stop of calibration/fit period
 
+data = dat_XGBoost
+
 fit_XGBoost <- function(data, cal_dates, include_lag){
   
   #assign model fit start and stop dates
@@ -125,7 +127,7 @@ fit_XGBoost <- function(data, cal_dates, include_lag){
   XGBoost_plot <- ggplot()+
     xlab("")+
     ylab("Chla (ug/L)")+
-    geom_point(data = df, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
+    geom_point(data = df_lag, aes(x = datetime, y = Chla_ugL_mean, fill = "obs"))+
     geom_line(data = fitted_values_no_lag, aes(x = datetime, y = .pred, color = "XGBoost (no lag)"))+
     geom_line(data = fitted_values_lag, aes(x = datetime, y = .pred, color = "XGBoost"))+
     labs(color = NULL, fill = NULL)+
