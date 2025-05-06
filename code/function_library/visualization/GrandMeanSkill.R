@@ -33,7 +33,8 @@ GrandMeanSkill <- function(observations,
                           viz_dates = pred_dates,
                           plot_title = "All predictions",
                           viz_metric = "r2",
-                          show_legend = FALSE){
+                          show_legend = FALSE,
+                          xlims = NULL){
   
   #reformat observations
   pred_dates <- data.frame(datetime = viz_dates) %>%
@@ -109,6 +110,11 @@ GrandMeanSkill <- function(observations,
     p <- p +
       theme(legend.position = "none")
   }
+ 
+ if(!is.null(xlims)){
+   p <- p +
+     xlim(xlims)
+ }
   
   return(p)
     

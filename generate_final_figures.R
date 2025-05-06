@@ -5,6 +5,8 @@
 # Purpose: Generate final figures for manuscript 
 # (and many of the Appendix S2 figures as well)
 
+# Set-up ----
+
 # Install and load packages
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(tidyverse, lubridate, ggpubr, viridis)
@@ -53,9 +55,9 @@ ss_data <- read_csv("./data/data_processed/schmidt_stability.csv")
 forecast_horizon = 35
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
 
-#Plots
+#Plots ----
 
-# Figure 1
+# Figure 1 ----
 source("./code/function_library/visualization/PlotObservations.R")
 p1a <- PlotObservations(observations = obs, 
                         pred_only = FALSE,
@@ -86,7 +88,7 @@ p1
 ggsave(plot = p1, filename = "./figures/final_figures/Figure1.tif",
        device = "tiff", height = 6, width = 10, units = "in")
 
-# Figure 2
+# Figure 2 ----
 
 source("./code/function_library/visualization/ExamplePrediction.R")
 plot_cols <- viridis(6, option = "turbo")
@@ -200,7 +202,7 @@ p2
 ggsave(plot = p2, filename = "./figures/final_figures/Figure2.tif",
        device = "tiff", height = 11, width = 10, units = "in",bg = "white")
 
-# Figure 2 supplement
+# Figure 2 supplement ----
 p2_supp1a <- ExamplePrediction(observations = obs, 
                          model_output = out, 
                          reference_datetime = reference_datetime_a, 
@@ -323,7 +325,7 @@ p2_supp1
 ggsave(plot = p2_supp1, filename = "./figures/final_figures/Figure2_supp1.tif",
        device = "tiff", height = 11, width = 11, units = "in",bg = "white")
 
-# Figure 3
+# Figure 3 ----
 
 source("./code/function_library/visualization/SkillVsHorizon.R")
 source("./code/function_library/visualization/GrandMeanSkill.R")
@@ -400,41 +402,6 @@ p3d <- p3d +
   geom_hline(yintercept = 7.5, size = 1)
 p3d
 
-p3e <- SkillVsHorizon(observations = obs, 
-                      model_output = out, 
-                      forecast_horizon = 35,
-                      model_ids = c("DOY","persistence","historical mean","ARIMA",
-                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
-                                    "GAM","NNETAR-KGML","ensemble"),
-                      best_models_only = TRUE,
-                      viz_dates = pred_dates,
-                      plot_title = "",
-                      viz_metric = "mae",
-                      show_legend = FALSE,
-                      make_combined_bestmodel_legend = FALSE,
-                      add_vline = TRUE,
-                      vline_intercept = 26,
-                      combined_var = "none",
-                      fixed_ylim = FALSE)
-p3e
-
-p3f <- GrandMeanSkill(observations = obs, 
-                      model_output = out, 
-                      forecast_horizon = 35,
-                      model_ids = c("DOY","persistence","historical mean","ARIMA",
-                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
-                                    "GAM","NNETAR-KGML","ensemble"),
-                      viz_dates = pred_dates,
-                      plot_title = "All horizons",
-                      viz_metric = "mae",
-                      show_legend = FALSE)
-p3f <- p3f +
-  annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
-  geom_hline(yintercept = 11.5, size = 1)
-p3f
-
 leg_plot1 <- SkillVsHorizon(observations = obs, 
                             model_output = out, 
                             forecast_horizon = forecast_horizon,
@@ -481,10 +448,10 @@ p3_leg2
 p3 <- ggarrange(ggarrange(p3_leg1,p3_leg2,
                           nrow = 2,
                           ncol = 1),
-                ggarrange(p3a, p3b, p3c, p3d, p3e, p3f,
-                          nrow = 3,
+                ggarrange(p3a, p3b, p3c, p3d,
+                          nrow = 2,
                           ncol = 2,
-                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
+                          labels = c("(a)","(b)","(c)","(d)"),
                           widths = c(1,0.8)),
                 ncol = 2,
                 widths = c(0.3, 1)
@@ -493,9 +460,11 @@ p3 <- ggarrange(ggarrange(p3_leg1,p3_leg2,
 p3
 
 ggsave(plot = p3, filename = "./figures/final_figures/Figure3.tif",
-       device = "tiff", height = 8, width = 11, units = "in",bg = "white")
+       device = "tiff", height = 5.5, width = 9, units = "in",bg = "white")
 
-# Figure 3 supplements
+# Figure 3 supplements ----
+
+# null models ----
 
 p3_supp1a <- SkillVsHorizon(observations = obs, 
                             model_output = out, 
@@ -636,8 +605,55 @@ p3_supp1
 ggsave(plot = p3_supp1, filename = "./figures/final_figures/Figure3_supp1.tif",
        device = "tiff", height = 8, width = 11, units = "in", bg = "white")
 
+# MAE ----
 
-# Figure 4
+p3_supp2a <- SkillVsHorizon(observations = obs, 
+                      model_output = out, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "",
+                      viz_metric = "mae",
+                      show_legend = TRUE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = TRUE,
+                      vline_intercept = 26,
+                      combined_var = "none",
+                      fixed_ylim = FALSE)
+p3_supp2a
+
+p3_supp2b <- GrandMeanSkill(observations = obs, 
+                      model_output = out, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "mae",
+                      show_legend = TRUE)
+p3_supp2b <- p3_supp2b +
+  annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 11.5, size = 1)
+p3_supp2b
+
+p3_supp2 <- ggarrange(p3_supp2a, p3_supp2b, 
+                                nrow = 1,
+                                ncol = 2,
+                                labels = c("(a)","(b)","(c)","(d)"),
+                                widths = c(1,0.8))
+p3_supp2
+
+ggsave(plot = p3_supp2, filename = "./figures/final_figures/Figure3_supp2.tif",
+       device = "tiff", height = 3, width = 10, units = "in", bg = "white")
+
+
+# Figure 4 ----
 
 source("./code/function_library/visualization/SkillVsHorizon.R")
 source("./code/function_library/visualization/GrandMeanSkill.R")
@@ -678,7 +694,8 @@ p4b <- GrandMeanSkill(observations = obs,
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
                       viz_metric = "rmse",
-                      show_legend = FALSE)
+                      show_legend = FALSE,
+                      xlims = c(0,14))
 p4b <- p4b +
   annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
   geom_hline(yintercept = 14.5, size = 1)
@@ -721,7 +738,8 @@ p4d <- GrandMeanSkill(observations = obs,
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
                       viz_metric = "rmse",
-                      show_legend = FALSE)
+                      show_legend = FALSE,
+                      xlims = c(0,14))
 p4d <- p4d +
   annotate("text",x = 8.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 8.6, r2 x = -0.4, MAE x = 6.5,
   geom_hline(yintercept = 10.5, size = 1)
@@ -763,7 +781,8 @@ p4f <- GrandMeanSkill(observations = obs,
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
                       viz_metric = "rmse",
-                      show_legend = FALSE)
+                      show_legend = FALSE,
+                      xlims = c(0,14))
 p4f <- p4f +
   annotate("text",x = 9, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ # RMSE x = 9, r2 x = -0.45, MAE x = 6.7,
   geom_hline(yintercept = 15.5, size = 1)
@@ -805,7 +824,8 @@ p4h <- GrandMeanSkill(observations = obs,
                       viz_dates = pred_dates,
                       plot_title = "All horizons",
                       viz_metric = "rmse",
-                      show_legend = FALSE)
+                      show_legend = FALSE,
+                      xlims = c(0,14))
 p4h <- p4h +
   annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8)+ #RMSE x = 11.8, r2 x = -0.6, MAE x = 7.8,
   geom_hline(yintercept = 7.5, size = 1)
@@ -876,11 +896,11 @@ p4 <- ggarrange(ggarrange(p4_leg1,p4_leg2,
 p4
 
 ggsave(plot = p4, filename = "./figures/final_figures/Figure4.tif",
-       device = "tiff", height = 10, width = 11, units = "in", bg = "white")
+       device = "tiff", height = 10, width = 9.5, units = "in", bg = "white")
 
-# Figure 4 supplement
+# Figure 4 supplements ----
 
-# r2
+# r2 ----
 
 mixed <- ss_data %>%
   filter(strat_bin == "mixed")
@@ -1118,7 +1138,7 @@ p4_r2
 ggsave(plot = p4_r2, filename = "./figures/final_figures/Figure4_r2.tif",
        device = "tiff", height = 10, width = 11, units = "in", bg = "white")
 
-# mae
+# mae ----
 
 mixed <- ss_data %>%
   filter(strat_bin == "mixed")
@@ -1356,7 +1376,7 @@ p4_mae
 ggsave(plot = p4_mae, filename = "./figures/final_figures/Figure4_mae.tif",
        device = "tiff", height = 10, width = 11, units = "in", bg = "white")
 
-# null models
+# null models ----
 
 mixed <- ss_data %>%
   filter(strat_bin == "mixed")
@@ -1637,7 +1657,7 @@ p4_supp1
 ggsave(plot = p4_supp1, filename = "./figures/final_figures/Figure4_supp1.tif",
        device = "tiff", height = 10, width = 14, units = "in", bg = "white")
 
-# Figure 5
+# Figure 5 ----
 
 source("./code/function_library/visualization/SkillVsHorizon.R")
 source("./code/function_library/visualization/GrandMeanSkill.R")
@@ -1822,7 +1842,9 @@ p5
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
        device = "tiff", height = 9, width = 11, units = "in", bg = "white")
 
-# Figure 5 supplement
+# Figure 5 supplements ----
+
+# null models ----
 
 p5_supp1a <- SkillVsHorizon(observations = obs, 
                             model_output = mod_out_high_var, 
@@ -1960,7 +1982,7 @@ p5_supp1
 ggsave(plot = p5_supp1, filename = "./figures/final_figures/Figure5_supp1.tif",
        device = "tiff", height = 9, width = 11, units = "in", bg = "white")
 
-# additional Fig 5 code (low variability)
+# additional Fig 5 code (low variability) ----
 
 mod_out_all_var <- out %>%
   left_join(., var_df, by = "datetime") %>%
@@ -2005,7 +2027,7 @@ p5b <- p5b +
 p5b
 
 
-# Figure 6
+# Figure 6 ----
 source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
 # TSLM overall
@@ -2135,9 +2157,11 @@ p6
 ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
        device = "tiff", height = 8, width = 12, units = "in", bg = "white")
 
-# Figure 6 supplements
+# Figure 6 supplements ----
 
-# TSLM overall
+# MAE ----
+
+# TSLM overall 
 p6_supp1a <- CompareWithAndWithoutDrivers(observations = obs, 
                                           model_output = out, 
                                           forecast_horizon = forecast_horizon,
@@ -2264,7 +2288,7 @@ p6_supp1
 ggsave(plot = p6_supp1, filename = "./figures/final_figures/Figure6_supp1.tif",
        device = "tiff", height = 8, width = 12, units = "in",bg = "white")
 
-# best models in other time periods according to RMSE
+# best models in other time periods according to RMSE ----
 
 fig6_supp_models <- list(c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                          c("GAM","GAM (no drivers)","GAM (no lag)"),
@@ -2424,9 +2448,9 @@ for(i in 1:length(fig6_supp_models)){
 }
 
 
-# Additional supplemental figures
+# Additional supplemental figures ----
 
-# KGML figure 1
+# KGML figure 1 ----
 source("./code/function_library/visualization/CompareKGML.R")
 
 # overall
@@ -2500,7 +2524,7 @@ p7_supp1
 ggsave(plot = p7_supp1, filename = "./figures/final_figures/Figure7_supp1.tif",
        device = "tiff", height = 12, width = 7, units = "in")
 
-# KGML figure 2
+# KGML figure 2 ----
 
 # overall
 p7_supp2a <- CompareKGML(observations = obs, 
@@ -2571,7 +2595,7 @@ p7_supp2
 ggsave(plot = p7_supp2, filename = "./figures/final_figures/Figure7_supp2.tif",
        device = "tiff", height = 12, width = 7, units = "in")
 
-# KGML figure 3
+# KGML figure 3 ----
 
 # overall
 p7_supp3a <- CompareKGML(observations = obs, 
@@ -2605,7 +2629,7 @@ p7_supp3b <- CompareKGML(observations = obs,
                                                                to = c(8,10)))
 p7_supp3b
 
-# high chl-a variability 2022-2023
+# high chl-a variability 2022-2023 
 obs_var <- obs %>%
   mutate(delta = c(NA,abs(diff(Chla_ugL_mean, na.rm = TRUE)))) 
 
