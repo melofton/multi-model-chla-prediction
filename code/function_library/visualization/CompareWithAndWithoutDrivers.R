@@ -30,17 +30,17 @@ library(lubridate)
 #'@param best_performing_horizons data frame with two columns, 'from' and 'to', where 'from' is first horizon where model performs well
 #'and 'to' is last horizon; allows for multiple periods of top performance, e.g., from 2-5 days and from 13-16 days into the future
 
-CompareWithAndWithoutDrivers <- function(observations, 
-                          model_output, 
-                          forecast_horizon,
-                          model_ids = model_ids,
+CompareWithAndWithoutDrivers <- function(observations = obs, 
+                          model_output = out, 
+                          forecast_horizon = forecast_horizon,
+                          model_ids = c("MARS","MARS (no drivers)","MARS (no lag)","TSLM","TSLM (no drivers)","TSLM (no lag)"),
                           viz_dates = pred_dates,
-                          plot_title = "All predictions",
-                          viz_metric = "r2",
-                          show_legend = FALSE,
-                          make_combined_legend =TRUE,
-                          combined_var = "strat",
-                          parent_model = "MARS",
+                          plot_title = "test",
+                          viz_metric = "rmse",
+                          show_legend = TRUE,
+                          make_combined_legend =FALSE,
+                          combined_var = "none",
+                          parent_model = c("MARS","TSLM"),
                           best_performing_horizons = data.frame(from = c(1),
                                                                 to = c(10))){
   
@@ -113,12 +113,19 @@ CompareWithAndWithoutDrivers <- function(observations,
       pivot_longer(rmse:mae, names_to = "skill_metric", values_to = "skill_value")
   }
   
-  plot_data <- output %>%
-    filter(skill_metric == viz_metric) %>%
-    mutate(parent_model = parent_model,
+  for(i in 1:length(parent_model)){
+  plot_data_temp <- output %>%
+    filter(skill_metric == viz_metric & grepl(parent_model[i],model_id)) %>%
+    mutate(parent_model = parent_model[i],
            model_version = ifelse(grepl('no drivers',model_id), 'chlorophyll-a data only', 
                                   ifelse(grepl('no lag',model_id), 'environmental variables only','original model'))) %>%
     mutate(model_version = factor(model_version, levels = c("original model","chlorophyll-a data only","environmental variables only")))
+  if(i == 1){
+    plot_data <- plot_data_temp
+  } else {
+    plot_data <- bind_rows(plot_data, plot_data_temp)
+  }
+  }
   
   my.shapes <-             c("ARIMA" = 0,
                              "TSLM" = 2,

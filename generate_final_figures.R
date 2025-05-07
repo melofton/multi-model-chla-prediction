@@ -896,7 +896,7 @@ p4 <- ggarrange(ggarrange(p4_leg1,p4_leg2,
 p4
 
 ggsave(plot = p4, filename = "./figures/final_figures/Figure4.tif",
-       device = "tiff", height = 10, width = 9.5, units = "in", bg = "white")
+       device = "tiff", height = 11, width = 9, units = "in", bg = "white")
 
 # Figure 4 supplements ----
 
@@ -1746,41 +1746,6 @@ p5d <- p5d +
   geom_hline(yintercept = 10.5, size = 1)
 p5d
 
-p5e <- SkillVsHorizon(observations = obs, 
-                      model_output = mod_out_high_var, 
-                      forecast_horizon = forecast_horizon,
-                      model_ids = c("DOY","persistence","historical mean","ARIMA",
-                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
-                                    "GAM","NNETAR-KGML","ensemble"),
-                      best_models_only = TRUE,
-                      viz_dates = pred_dates,
-                      plot_title = "High chl-a variability",
-                      viz_metric = "mae",
-                      show_legend = FALSE,
-                      make_combined_bestmodel_legend = FALSE,
-                      add_vline = TRUE,
-                      vline_intercept = 8,
-                      combined_var = "none",
-                      fixed_ylim = FALSE)
-p5e
-
-p5f <- GrandMeanSkill(observations = obs, 
-                      model_output = mod_out_high_var, 
-                      forecast_horizon = 35,
-                      model_ids = c("DOY","persistence","historical mean","ARIMA",
-                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
-                                    "GAM","NNETAR-KGML","ensemble"),
-                      viz_dates = pred_dates,
-                      plot_title = "All horizons",
-                      viz_metric = "mae",
-                      show_legend = FALSE)
-p5f <- p5f +
-  annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
-  geom_hline(yintercept = 8.5, size = 1)
-p5f
-
 leg_plot1 <- SkillVsHorizon(observations = obs, 
                             model_output = mod_out_high_var, 
                             forecast_horizon = forecast_horizon,
@@ -1828,10 +1793,10 @@ p5 <- ggarrange(ggarrange(p5_leg1,p5_leg2,
                           nrow = 2, 
                           ncol = 1,
                           heights = c(1, 0.5)),
-                ggarrange(p5a, p5b, p5c, p5d, p5e, p5f,
-                          nrow = 3,
+                ggarrange(p5a, p5b, p5c, p5d,
+                          nrow = 2,
                           ncol = 2,
-                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
+                          labels = c("(a)","(b)","(c)","(d)"),
                           widths = c(1,0.8)),
                 ncol = 2,
                 widths = c(0.3, 1)
@@ -1840,7 +1805,7 @@ p5 <- ggarrange(ggarrange(p5_leg1,p5_leg2,
 p5
 
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
-       device = "tiff", height = 9, width = 11, units = "in", bg = "white")
+       device = "tiff", height = 5.5, width = 9, units = "in", bg = "white")
 
 # Figure 5 supplements ----
 
@@ -1982,6 +1947,56 @@ p5_supp1
 ggsave(plot = p5_supp1, filename = "./figures/final_figures/Figure5_supp1.tif",
        device = "tiff", height = 9, width = 11, units = "in", bg = "white")
 
+# MAE ----
+
+# MAE ----
+
+p5_supp2a <- SkillVsHorizon(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = forecast_horizon,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      best_models_only = TRUE,
+                      viz_dates = pred_dates,
+                      plot_title = "High chl-a variability",
+                      viz_metric = "mae",
+                      show_legend = TRUE,
+                      make_combined_bestmodel_legend = FALSE,
+                      add_vline = TRUE,
+                      vline_intercept = 8,
+                      combined_var = "none",
+                      fixed_ylim = FALSE)
+p5_supp2a
+
+p5_supp2b <- GrandMeanSkill(observations = obs, 
+                      model_output = mod_out_high_var, 
+                      forecast_horizon = 35,
+                      model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GAM","NNETAR-KGML","ensemble"),
+                      viz_dates = pred_dates,
+                      plot_title = "All horizons",
+                      viz_metric = "mae",
+                      show_legend = TRUE)
+p5_supp2b <- p5_supp2b +
+  annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 8.5, size = 1)
+p5_supp2b
+
+p5_supp2 <- ggarrange(p5_supp2a, p5_supp2b, 
+                      nrow = 1,
+                      ncol = 2,
+                      labels = c("(a)","(b)","(c)","(d)"),
+                      widths = c(1,0.8))
+p5_supp2
+
+ggsave(plot = p5_supp2, filename = "./figures/final_figures/Figure5_supp2.tif",
+       device = "tiff", height = 4, width = 12, units = "in", bg = "white")
+
+
 # additional Fig 5 code (low variability) ----
 
 mod_out_all_var <- out %>%
@@ -2038,7 +2053,7 @@ p6a <- CompareWithAndWithoutDrivers(observations = obs,
                                     viz_dates = pred_dates,
                                     plot_title = "Data-driven: TSLM (full time period)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "TSLM",
                                     best_performing_horizons = data.frame(from = c(1),
@@ -2053,7 +2068,7 @@ p6b <- CompareWithAndWithoutDrivers(observations = obs,
                                     viz_dates = pred_dates,
                                     plot_title = "Data-driven: GAM (full time period)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "GAM",
                                     best_performing_horizons = data.frame(from = c(11),
@@ -2074,7 +2089,7 @@ p6c <- CompareWithAndWithoutDrivers(observations = obs,
                                     viz_dates = pred_dates,
                                     plot_title = "Data-driven: ARIMA (mixed period)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "ARIMA",
                                     best_performing_horizons = data.frame(from = c(20),
@@ -2093,9 +2108,9 @@ p6d <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: MARS (stratification onset)",
+                                    plot_title = "Data-driven: MARS (strat. onset)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "MARS",
                                     best_performing_horizons = data.frame(from = c(4,14,29),
@@ -2114,9 +2129,9 @@ p6e <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("Prophet","Prophet (no drivers)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: Prophet (stratified period)",
+                                    plot_title = "Data-driven: Prophet (strat. period)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "Prophet",
                                     best_performing_horizons = data.frame(from = c(19),
@@ -2136,26 +2151,51 @@ p6f <- CompareWithAndWithoutDrivers(observations = obs,
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("NNETAR","NNETAR (no drivers)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: NNETAR (stratification decline)",
+                                    plot_title = "Data-driven: NNETAR (strat. decline)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "NNETAR",
                                     best_performing_horizons = data.frame(from = c(15),
                                                                           to = c(35)))
 p6f
 
+leg_plot1 <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_decline, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)","GAM","GAM (no drivers)","GAM (no lag)","ARIMA","ARIMA (no drivers)","MARS","MARS (no drivers)","MARS (no lag)","Prophet","Prophet (no drivers)","NNETAR","NNETAR (no drivers)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "",
+                                    viz_metric = "rmse",
+                                    show_legend = TRUE,
+                                    combined_var = "none",
+                                    parent_model = c("TSLM","GAM","ARIMA","MARS","Prophet","NNETAR"),
+                                    best_performing_horizons = data.frame(from = c(15),
+                                                                          to = c(35)))
+leg_plot1
 
-p6 <- ggarrange(p6a, p6b, p6c, p6d, p6e, p6f,
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p6_leg1 <- as_ggplot(leg1)
+p6_leg1
+
+
+p6 <- ggarrange(p6_leg1,
+                ggarrange(p6a, p6b, p6c, p6d, p6e, p6f,
                 nrow = 3, ncol = 2,
                 widths = c(1, 1, 1),
-                labels = c("(a)","(b)","(c)","(d)","(e)","(f)")
-) 
+                labels = c("(a)","(b)","(c)","(d)","(e)","(f)")),
+                nrow = 1, 
+                ncol = 2,
+                widths = c(0.4, 1))
+
 
 p6
 
 ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
-       device = "tiff", height = 8, width = 12, units = "in", bg = "white")
+       device = "tiff", height = 8, width = 10, units = "in", bg = "white")
 
 # Figure 6 supplements ----
 
