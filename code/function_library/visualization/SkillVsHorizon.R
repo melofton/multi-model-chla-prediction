@@ -237,8 +237,8 @@ SkillVsHorizon <- function(observations,
     if(combined_var == "strat"){
       if(viz_metric == "r2"){
         bestModByHorizon <- output %>%
-          filter(skill_metric == "r2") %>%
-          group_by(horizon) %>%
+          filter(skill_metric == "r2" & !is.na(strat_bin)) %>%
+          group_by(strat_bin, horizon) %>%
           filter(skill_value == max(skill_value)) %>%
           arrange(horizon)
       } else {

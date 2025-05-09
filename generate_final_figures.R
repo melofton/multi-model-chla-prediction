@@ -902,6 +902,9 @@ ggsave(plot = p4, filename = "./figures/final_figures/Figure4.tif",
 
 # r2 ----
 
+source("./code/function_library/visualization/SkillVsHorizon.R")
+source("./code/function_library/visualization/GrandMeanSkill.R")
+
 mixed <- ss_data %>%
   filter(strat_bin == "mixed")
 
@@ -2200,6 +2203,7 @@ ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
 # Figure 6 supplements ----
 
 # MAE ----
+source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
 # TSLM overall 
 p6_supp1a <- CompareWithAndWithoutDrivers(observations = obs, 
@@ -2209,7 +2213,7 @@ p6_supp1a <- CompareWithAndWithoutDrivers(observations = obs,
                                           viz_dates = pred_dates,
                                           plot_title = "Data driven: TSLM (full time period)",
                                           viz_metric = "mae",
-                                          show_legend = TRUE,
+                                          show_legend = FALSE,
                                           combined_var = "none",
                                           parent_model = "TSLM",
                                           best_performing_horizons = data.frame(from = c(1),
@@ -2224,7 +2228,7 @@ p6_supp1b <- CompareWithAndWithoutDrivers(observations = obs,
                                           viz_dates = pred_dates,
                                           plot_title = "Data-driven: XGBoost (full time period)",
                                           viz_metric = "mae",
-                                          show_legend = TRUE,
+                                          show_legend = FALSE,
                                           combined_var = "none",
                                           parent_model = "XGBoost",
                                           best_performing_horizons = data.frame(from = c(NA),
@@ -2245,7 +2249,7 @@ p6_supp1c <- CompareWithAndWithoutDrivers(observations = obs,
                                           viz_dates = pred_dates,
                                           plot_title = "Data-driven: XGBoost (mixed period)",
                                           viz_metric = "mae",
-                                          show_legend = TRUE,
+                                          show_legend = FALSE,
                                           combined_var = "none",
                                           parent_model = "XGBoost",
                                           best_performing_horizons = data.frame(from = c(9,11),
@@ -2264,9 +2268,9 @@ p6_supp1d <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "Data-driven: TSLM (stratification onset)",
+                                          plot_title = "Data-driven: TSLM (strat. onset)",
                                           viz_metric = "mae",
-                                          show_legend = TRUE,
+                                          show_legend = FALSE,
                                           combined_var = "none",
                                           parent_model = "TSLM",
                                           best_performing_horizons = data.frame(from = c(1),
@@ -2287,7 +2291,7 @@ p6_supp1e <- CompareWithAndWithoutDrivers(observations = obs,
                                           viz_dates = pred_dates,
                                           plot_title = "Data-driven: TSLM (stratified)",
                                           viz_metric = "mae",
-                                          show_legend = TRUE,
+                                          show_legend = FALSE,
                                           combined_var = "none",
                                           parent_model = "TSLM",
                                           best_performing_horizons = data.frame(from = c(2),
@@ -2307,9 +2311,9 @@ p6_supp1f <- CompareWithAndWithoutDrivers(observations = obs,
                                           forecast_horizon = forecast_horizon,
                                           model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                           viz_dates = pred_dates,
-                                          plot_title = "Data-driven: TSLM (stratification decline)",
+                                          plot_title = "Data-driven: TSLM (strat. decline)",
                                           viz_metric = "mae",
-                                          show_legend = TRUE,
+                                          show_legend = FALSE,
                                           combined_var = "none",
                                           parent_model = "TSLM",
                                           best_performing_horizons = data.frame(from = c(1,6,24,30),
@@ -2317,18 +2321,47 @@ p6_supp1f <- CompareWithAndWithoutDrivers(observations = obs,
 p6_supp1f
 
 
-p6_supp1 <- ggarrange(p6_supp1a, p6_supp1b, p6_supp1c, p6_supp1d, p6_supp1e, p6_supp1f,
-                      nrow = 3, ncol = 2,
-                      widths = c(1, 1, 1),
-                      labels = c("(a)","(b)","(c)","(d)","(e)","(f)")
-) 
+leg_plot1 <- CompareWithAndWithoutDrivers(observations = obs, 
+                                          model_output = mod_out_decline, 
+                                          forecast_horizon = forecast_horizon,
+                                          model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)","XGBoost","XGBoost (no lag)"),
+                                          viz_dates = pred_dates,
+                                          plot_title = "",
+                                          viz_metric = "rmse",
+                                          show_legend = TRUE,
+                                          combined_var = "none",
+                                          parent_model = c("TSLM","XGBoost"),
+                                          best_performing_horizons = data.frame(from = c(15),
+                                                                                to = c(35)))
+leg_plot1
+
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p6_supp1_leg1 <- as_ggplot(leg1)
+p6_supp1_leg1
+
+
+p6_supp1 <- ggarrange(p6_supp1_leg1,
+                ggarrange(p6_supp1a, p6_supp1b, p6_supp1c, p6_supp1d, p6_supp1e, p6_supp1f,
+                          nrow = 3, ncol = 2,
+                          widths = c(1, 1, 1),
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)")),
+                nrow = 1, 
+                ncol = 2,
+                widths = c(0.4, 1))
+
 
 p6_supp1
 
 ggsave(plot = p6_supp1, filename = "./figures/final_figures/Figure6_supp1.tif",
-       device = "tiff", height = 8, width = 12, units = "in",bg = "white")
+       device = "tiff", height = 8, width = 10.5, units = "in", bg = "white")
+
 
 # best models in other time periods according to RMSE ----
+source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
+
 
 fig6_supp_models <- list(c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                          c("GAM","GAM (no drivers)","GAM (no lag)"),
@@ -2336,6 +2369,7 @@ fig6_supp_models <- list(c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                          c("MARS","MARS (no drivers)","MARS (no lag)"),
                          c("Prophet","Prophet (no drivers)"),
                          c("NNETAR","NNETAR (no drivers)"))
+fig6_supp_parent_models <- c("TSLM","GAM","ARIMA","MARS","Prophet","NNETAR")
 
 best_performing_period <- c("overall","overall","mixed","onset","stratified","decline")
 
@@ -2367,7 +2401,7 @@ for(i in 1:length(fig6_supp_models)){
                                             viz_dates = pred_dates,
                                             plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (full time period)"),
                                             viz_metric = "rmse",
-                                            show_legend = TRUE,
+                                            show_legend = FALSE,
                                             combined_var = "none",
                                             parent_model = fig6_supp_models[[i]][1],
                                             best_performing_horizons = bph_df)
@@ -2393,7 +2427,7 @@ for(i in 1:length(fig6_supp_models)){
                                             viz_dates = pred_dates,
                                             plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (mixed period)"),
                                             viz_metric = "rmse",
-                                            show_legend = TRUE,
+                                            show_legend = FALSE,
                                             combined_var = "none",
                                             parent_model = fig6_supp_models[[i]][1],
                                             best_performing_horizons = bph_df)
@@ -2419,7 +2453,7 @@ for(i in 1:length(fig6_supp_models)){
                                             viz_dates = pred_dates,
                                             plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (stratification onset)"),
                                             viz_metric = "rmse",
-                                            show_legend = TRUE,
+                                            show_legend = FALSE,
                                             combined_var = "none",
                                             parent_model = fig6_supp_models[[i]][1],
                                             best_performing_horizons = bph_df)
@@ -2445,7 +2479,7 @@ for(i in 1:length(fig6_supp_models)){
                                             viz_dates = pred_dates,
                                             plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (stratified period)"),
                                             viz_metric = "rmse",
-                                            show_legend = TRUE,
+                                            show_legend = FALSE,
                                             combined_var = "none",
                                             parent_model = fig6_supp_models[[i]][1],
                                             best_performing_horizons = bph_df)
@@ -2472,19 +2506,39 @@ for(i in 1:length(fig6_supp_models)){
                                             viz_dates = pred_dates,
                                             plot_title = paste0("Data-driven: ",fig6_supp_models[[i]][1]," (stratification decline)"),
                                             viz_metric = "rmse",
-                                            show_legend = TRUE,
+                                            show_legend = FALSE,
                                             combined_var = "none",
                                             parent_model = fig6_supp_models[[i]][1],
                                             best_performing_horizons = bph_df)
   
-  p6_supp2 <- ggarrange(p6_supp2a, p6_supp2b, p6_supp2c, p6_supp2d, p6_supp2e,
-                        nrow = 3, ncol = 2,
-                        widths = c(1, 1, 1),
-                        labels = c("(a)","(b)","(c)","(d)","(e)")
-  ) 
+  leg_plot1 <- CompareWithAndWithoutDrivers(observations = obs, 
+                                            model_output = mod_out_decline, 
+                                            forecast_horizon = forecast_horizon,
+                                            model_ids = fig6_supp_models[[i]],
+                                            viz_dates = pred_dates,
+                                            plot_title = "",
+                                            viz_metric = "rmse",
+                                            show_legend = TRUE,
+                                            combined_var = "none",
+                                            parent_model = fig6_supp_parent_models[i],
+                                            best_performing_horizons = data.frame(from = c(15),
+                                                                                  to = c(35)))
+
+  # Extract the legend. Returns a gtable
+  leg1 <- get_legend(leg_plot1)
+  
+  # Convert to a ggplot and print
+  p6_supp2_leg1 <- as_ggplot(leg1)
+  
+  p6_supp2 <- ggarrange(p6_supp2a, p6_supp2b, p6_supp2c, p6_supp2d, p6_supp2e, p6_supp2_leg1,
+                                  nrow = 3, ncol = 2,
+                                  widths = c(1, 1, 1),
+                                  labels = c("(a)","(b)","(c)","(d)","(e)",""))
+                        
   
   ggsave(plot = p6_supp2, filename = paste0("./figures/final_figures/Figure6_supp",i+1,".tif"),
-         device = "tiff", height = 8, width = 12, units = "in",bg = "white")
+         device = "tiff", height = 8, width = 8, units = "in",bg = "white")
+  
 }
 
 
@@ -2501,7 +2555,7 @@ p7_supp1a <- CompareKGML(observations = obs,
                    viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                    plot_title = "All predictions",
                    viz_metric = "rmse",
-                   show_legend = TRUE,
+                   show_legend = FALSE,
                    best_performing_horizons = data.frame(from = c(NA),
                                                          to = c(NA)))
 p7_supp1a
@@ -2520,7 +2574,7 @@ p7_supp1b <- CompareKGML(observations = obs,
                    viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                    plot_title = "Mixed period",
                    viz_metric = "rmse",
-                   show_legend = TRUE,
+                   show_legend = FALSE,
                    best_performing_horizons = data.frame(from = c(4),
                                                          to = c(13)))
 p7_supp1b
@@ -2547,22 +2601,42 @@ p7_supp1c <- CompareKGML(observations = obs,
                    viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                    plot_title = "High chl-a variability",
                    viz_metric = "rmse",
-                   show_legend = TRUE,
+                   show_legend = FALSE,
                    best_performing_horizons = data.frame(from = c(3,5),
                                                          to = c(3,5)),
                    add_vline = TRUE,
                    vline_intercept = 8)
 p7_supp1c
 
-p7_supp1 <- ggarrange(p7_supp1a, p7_supp1b, p7_supp1c,
-                nrow = 3, ncol = 1,
-                labels = c("(a)","(b)","(c)")
+leg_plot1 <- CompareKGML(observations = obs, 
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability",
+                         viz_metric = "rmse",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(3,5),
+                                                               to = c(3,5)),
+                         add_vline = TRUE,
+                         vline_intercept = 8)
+leg_plot1
+
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p7_supp1_leg1 <- as_ggplot(leg1)
+
+p7_supp1 <- ggarrange(p7_supp1a, p7_supp1b, p7_supp1c, p7_supp1_leg1,
+                nrow = 2, ncol = 2,
+                labels = c("(a)","(b)","(c)","")
 ) 
 
 p7_supp1
 
 ggsave(plot = p7_supp1, filename = "./figures/final_figures/Figure7_supp1.tif",
-       device = "tiff", height = 12, width = 7, units = "in")
+       device = "tiff", height = 7.5, width = 10, units = "in",bg = "white")
 
 # KGML figure 2 ----
 
@@ -2574,7 +2648,7 @@ p7_supp2a <- CompareKGML(observations = obs,
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "All predictions",
                          viz_metric = "r2",
-                         show_legend = TRUE,
+                         show_legend = FALSE,
                          best_performing_horizons = data.frame(from = c(NA),
                                                                to = c(NA)))
 p7_supp2a
@@ -2593,7 +2667,7 @@ p7_supp2b <- CompareKGML(observations = obs,
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "Mixed period",
                          viz_metric = "r2",
-                         show_legend = TRUE,
+                         show_legend = FALSE,
                          best_performing_horizons = data.frame(from = c(4),
                                                                to = c(13)))
 p7_supp2b
@@ -2620,20 +2694,40 @@ p7_supp2c <- CompareKGML(observations = obs,
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "High chl-a variability",
                          viz_metric = "r2",
-                         show_legend = TRUE,
+                         show_legend = FALSE,
                          best_performing_horizons = data.frame(from = c(3,5),
                                                                to = c(3,5)))
 p7_supp2c
 
-p7_supp2 <- ggarrange(p7_supp2a, p7_supp2b, p7_supp2c,
-                      nrow = 3, ncol = 1,
-                      labels = c("(a)","(b)","(c)")
+leg_plot1 <- CompareKGML(observations = obs, 
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability",
+                         viz_metric = "rmse",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(3,5),
+                                                               to = c(3,5)),
+                         add_vline = TRUE,
+                         vline_intercept = 8)
+leg_plot1
+
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p7_supp2_leg1 <- as_ggplot(leg1)
+
+p7_supp2 <- ggarrange(p7_supp2a, p7_supp2b, p7_supp2c, p7_supp2_leg1,
+                      nrow = 2, ncol = 2,
+                      labels = c("(a)","(b)","(c)","")
 ) 
 
 p7_supp2
 
 ggsave(plot = p7_supp2, filename = "./figures/final_figures/Figure7_supp2.tif",
-       device = "tiff", height = 12, width = 7, units = "in")
+       device = "tiff", height = 7.5, width = 10, units = "in",bg = "white")
 
 # KGML figure 3 ----
 
@@ -2645,7 +2739,7 @@ p7_supp3a <- CompareKGML(observations = obs,
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "All predictions",
                          viz_metric = "mae",
-                         show_legend = TRUE,
+                         show_legend = FALSE,
                          best_performing_horizons = data.frame(from = c(NA),
                                                                to = c(NA)))
 p7_supp3a
@@ -2664,7 +2758,7 @@ p7_supp3b <- CompareKGML(observations = obs,
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "Mixed period",
                          viz_metric = "mae",
-                         show_legend = TRUE,
+                         show_legend = FALSE,
                          best_performing_horizons = data.frame(from = c(4,10),
                                                                to = c(8,10)))
 p7_supp3b
@@ -2691,19 +2785,40 @@ p7_supp3c <- CompareKGML(observations = obs,
                          viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
                          plot_title = "High chl-a variability",
                          viz_metric = "mae",
-                         show_legend = TRUE,
+                         show_legend = FALSE,
                          best_performing_horizons = data.frame(from = c(3),
                                                                to = c(8)),
                          add_vline = TRUE,
                          vline_intercept = 8)
 p7_supp3c
 
-p7_supp3 <- ggarrange(p7_supp3a, p7_supp3b, p7_supp3c,
-                      nrow = 3, ncol = 1,
-                      labels = c("(a)","(b)","(c)")
+leg_plot1 <- CompareKGML(observations = obs, 
+                         model_output = mod_out_high_var, 
+                         forecast_horizon = forecast_horizon,
+                         model_ids = c("NNETAR","GLM-AED","NNETAR-KGML","persistence"),
+                         viz_dates = seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day"),
+                         plot_title = "High chl-a variability",
+                         viz_metric = "rmse",
+                         show_legend = TRUE,
+                         best_performing_horizons = data.frame(from = c(3,5),
+                                                               to = c(3,5)),
+                         add_vline = TRUE,
+                         vline_intercept = 8)
+leg_plot1
+
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p7_supp3_leg1 <- as_ggplot(leg1)
+
+p7_supp3 <- ggarrange(p7_supp3a, p7_supp3b, p7_supp3c, p7_supp3_leg1,
+                      nrow = 2, ncol = 2,
+                      labels = c("(a)","(b)","(c)","")
 ) 
 
 p7_supp3
 
 ggsave(plot = p7_supp3, filename = "./figures/final_figures/Figure7_supp3.tif",
-       device = "tiff", height = 12, width = 7, units = "in")
+       device = "tiff", height = 7.5, width = 10, units = "in",bg = "white")
+
