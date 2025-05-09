@@ -65,10 +65,10 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
   met_vars <- c("PAR_umolm2s_mean","AirTemp_C_mean","WindSpeed_ms_mean")
   #initial data wrangling
   met <- read_csv(met_url) %>%
-    filter(site_id == "fcre" & variable %in% met_vars & year(datetime) %in% c(2018:2023)) %>%
+    dplyr::filter(site_id == "fcre" & variable %in% met_vars & year(datetime) %in% c(2018:2023)) %>%
     select(datetime, variable, observation) %>%
     pivot_wider(names_from = "variable", values_from = "observation") %>%
-    filter(datetime >= start_date)
+    dplyr::filter(datetime >= start_date)
 
   #interpolation
   met2 <- interpolate(daily_dates = daily_dates,
@@ -83,10 +83,10 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
   message("interpolating inflow")
   
   inf <- read_csv(inf_url) %>%
-    filter(variable == "Flow_cms_mean" & year(datetime) %in% c(2018:2023)) %>%
+    dplyr::filter(variable == "Flow_cms_mean" & year(datetime) %in% c(2018:2023)) %>%
     select(datetime, observation) %>%
     rename(Flow_cms_mean = observation) %>%
-    filter(datetime >= start_date)
+    dplyr::filter(datetime >= start_date)
   
   #interpolation
   inf2 <- interpolate(daily_dates = daily_dates,
@@ -102,7 +102,7 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
   res_vars <- c("Chla_ugL_mean","Temp_C_mean","Secchi_m_sample")
   #initial data wrangling
   res <- read_csv(res_url) %>%
-    filter(site_id == "fcre" & variable %in% res_vars & year(datetime) %in% c(2018:2023) & depth_m %in% c(1.6, NA)) %>%
+    dplyr::filter(site_id == "fcre" & variable %in% res_vars & year(datetime) %in% c(2018:2023) & depth_m %in% c(1.6, NA)) %>%
     select(datetime, variable, observation) %>%
     mutate(datetime = date(datetime)) %>%
     group_by(datetime, variable) %>%
@@ -111,7 +111,7 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
     pivot_wider(names_from = "variable", values_from = "observation") %>%
     mutate(LightAttenuation_Kd = (1.7/Secchi_m_sample)) %>%
     select(-Secchi_m_sample) %>%
-    filter(datetime >= start_date)
+    dplyr::filter(datetime >= start_date)
   
   #interpolation
   res2 <- interpolate(daily_dates = daily_dates,
@@ -137,14 +137,14 @@ format_data_ARIMA <- function(filepath_chemistry = "./data/data_raw/chemistry_20
                      DC_mgL = col_double(),
                      DN_mgL = col_double()
                    )) %>%
-    filter(Reservoir == "FCR" & Site == 50 & Depth_m == 1.6) %>%
+    dplyr::filter(Reservoir == "FCR" & Site == 50 & Depth_m == 1.6) %>%
     select(DateTime, SRP_ugL, NH4_ugL, NO3NO2_ugL) %>%
     mutate(datetime = date(DateTime),
            DIN_ugL = NH4_ugL + NO3NO2_ugL) %>%
     group_by(datetime) %>%
     summarize(SRP_ugL = mean(SRP_ugL, na.rm = TRUE),
               DIN_ugL = mean(DIN_ugL, na.rm = TRUE)) %>%
-    filter(datetime >= start_date)
+    dplyr::filter(datetime >= start_date)
     
   # this will be needed if you decide to use DOY interpolation
   # chem_cal <- chem %>%

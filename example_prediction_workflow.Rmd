@@ -91,6 +91,8 @@ knitr::kable(fit_ARIMAs$model_params)
 
 ## 4. Generate chlorophyll-a predictions from 1-35 days into the future for every day from 2022-01-01 to 2023-11-26
 
+NOTE: this chunk will take ~10 minutes to run.
+
 ```{r generate_predictions, message = FALSE}
 # Source script with function to format data for ARIMA model
 source("./code/function_library/predict/fableARIMA.R")
@@ -102,7 +104,9 @@ dat_ARIMA <- read_csv("./example_workflow_output/ARIMA.csv")
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
 forecast_horizon = 35
 
-# Generate 1-35-day-ahead predictions for every day from 2022-01-01 to 2023-11-26; in this case, we are generating predictions using an ARIMA model that uses all environmental variables as regessors
+# Generate 1-35-day-ahead predictions for every day from 2022-01-01 to 2023-11-26; in this case, we are generating predictions using an ARIMA model that uses all environmental variables as regressors
+
+#### NOTE THIS WILL TAKE ABOUT 10 MINUTES TO RUN!####
 pred_ARIMA_Drivers <- fableARIMA(data = dat_ARIMA,
                 pred_dates = pred_dates,
                 forecast_horizon = forecast_horizon,
