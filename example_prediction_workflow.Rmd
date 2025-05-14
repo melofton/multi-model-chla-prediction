@@ -21,7 +21,7 @@ Several custom functions are sourced throughout the workflow. Function metadata 
 First, install and load packages.
 ```{r packages, message = FALSE}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, lubridate, ggpubr, data.table, zoo, fable, viridis, knitr)
+pacman::p_load(tidyverse, lubridate, ggpubr, data.table, zoo, fable, viridis, knitr, moments)
 ```
 
 
@@ -37,7 +37,7 @@ pacman::p_load(tidyverse, lubridate, ggpubr, data.table, zoo, fable, viridis, kn
 options(timeout=10000)
 
 # chemistry
-inUrl1  <- "https://portal.edirepository.org/nis/dataviewer?packageid=edi.199.12&entityid=a33a5283120c56e90ea414e76d5b7ddb" 
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/edi/199/12/a33a5283120c56e90ea414e76d5b7ddb" 
 infile1 <- paste0("./example_workflow_output/chemistry_2013_2023.csv")
 try(download.file(inUrl1,infile1,method="curl"))
 if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")

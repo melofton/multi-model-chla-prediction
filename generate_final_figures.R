@@ -1952,8 +1952,6 @@ ggsave(plot = p5_supp1, filename = "./figures/final_figures/Figure5_supp1.tif",
 
 # MAE ----
 
-# MAE ----
-
 p5_supp2a <- SkillVsHorizon(observations = obs, 
                       model_output = mod_out_high_var, 
                       forecast_horizon = forecast_horizon,
