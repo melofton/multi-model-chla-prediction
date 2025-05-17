@@ -1,4 +1,4 @@
-# Code repository associated with Lofton et al., "**Multi-model predictive skill of variable ecological time series varies over time horizon and environmental conditions**"
+# Code repository associated with Lofton et al., "**The importance of a multi-model ensemble for predicting variable ecological time series across dynamic conditions**"
 
 Submitted as a research article to Ecological Applications
 

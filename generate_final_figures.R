@@ -1998,51 +1998,6 @@ ggsave(plot = p5_supp2, filename = "./figures/final_figures/Figure5_supp2.tif",
        device = "tiff", height = 4, width = 12, units = "in", bg = "white")
 
 
-# additional Fig 5 code (low variability) ----
-
-mod_out_all_var <- out %>%
-  left_join(., var_df, by = "datetime") %>%
-  select(-Chla_ugL_mean)
-
-low_var <- var_df %>%
-  filter(var_bin == "low")
-
-mod_out_low_var <- out %>%
-  filter(datetime %in% low_var$datetime)
-
-p5a <- SkillVsHorizon(observations = obs, 
-                      model_output = mod_out_low_var, 
-                      forecast_horizon = forecast_horizon,
-                      model_ids = c("DOY","persistence","historical mean","ARIMA",
-                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
-                                    "GAM","NNETAR-KGML","ensemble"),
-                      best_models_only = TRUE,
-                      viz_dates = pred_dates,
-                      plot_title = "Low chl-a variability",
-                      viz_metric = "rmse",
-                      show_legend = FALSE,
-                      make_combined_bestmodel_legend = FALSE,
-                      add_vline = FALSE,
-                      combined_var = "none")
-p5a
-
-p5b <- GrandMeanSkill(observations = obs, 
-                      model_output = mod_out_low_var, 
-                      forecast_horizon = 35,
-                      model_ids = c("DOY","persistence","historical mean","ARIMA",
-                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
-                                    "GAM","NNETAR-KGML","ensemble"),
-                      viz_dates = pred_dates,
-                      plot_title = "All horizons",
-                      viz_metric = "rmse",
-                      show_legend = FALSE)
-p5b <- p5b +
-  annotate("text",x = 8.2, y = "LSTM", label = "*", size = 10, vjust = 0.8)
-p5b
-
-
 # Figure 6 ----
 source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
