@@ -16,6 +16,7 @@ cal <- read_csv("./model_output/calibration_output.csv") %>%
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest","GAM"),"data-driven","process-based")))
 out <- read_csv("./model_output/validation_output.csv") %>%
+  filter(!(model_id == "OneDProcessModel")) %>%  #remove 1D model for revisions
   mutate(model_type = ifelse(model_id %in% c("DOY","persistence","historical mean"),"null",
                              ifelse(model_id %in% c("ARIMA","ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR","NNETARnoDrivers","ProphetnoDrivers","ARIMAnoDrivers","MARS","randomForest","GAM","TSLMnoDrivers","TSLMnoLag","MARSnoDrivers","MARSnoLag","GAMnoLag","GAMnoDrivers","XGBoostNoLag"),"data-driven",
                                     ifelse(model_id %in% c("NNETAR_KGML_residuals","NNETAR_KGML_observations","NNETAR_KGML_cal_training_resid","NNETAR_KGML_cal_training_obs"),"KGML","process-based"))),
@@ -34,10 +35,10 @@ out <- read_csv("./model_output/validation_output.csv") %>%
                                                                                                         ifelse(model_id == "GAMnoDrivers","GAM (no drivers)",
                                                                                                                ifelse(model_id == "XGBoostNoLag","XGBoost (no lag)",model_id)))))))))))))))
 unique(out$model_id)
-ens <- out %>%
+ens <- out %>% #removed 1D model from ensemble
   filter(model_id %in% c("DOY","persistence","historical mean","ARIMA",
                                      "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                     "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                     "GLM-AED","MARS","randomForest",
                                      "GAM","NNETAR-KGML")) %>%
   group_by(reference_datetime, datetime) %>%
   summarize(prediction = mean(prediction, na.rm = TRUE)) %>%
@@ -51,7 +52,7 @@ ss_data <- read_csv("./data/data_processed/schmidt_stability.csv")
 
 
 #Set arguments for plotting functions
-forecast_horizon = 35
+forecast_horizon = 14
 pred_dates <- seq.Date(from = as.Date("2022-01-01"), to = as.Date("2023-11-26"), by = "day")
 
 #Plot 
@@ -92,7 +93,7 @@ ggsave(plot = p1, filename = "./figures/final_figures/Figure1.tif",
 
 source("./code/function_library/visualization/ExamplePrediction.R")
 plot_cols <- viridis(6, option = "turbo")
-focal_dates = c("2022-01-10","2022-04-10","2022-07-10","2022-09-10","2023-01-10","2023-10-15")
+focal_dates = c("2022-01-10","2022-04-10","2022-07-10","2022-09-10","2023-01-10","2023-10-24") # edited date for last panel to show variability with 14-day horizon
 
 reference_datetime_a = focal_dates[1]
 p2a <- ExamplePrediction(observations = obs, 
@@ -168,7 +169,7 @@ p2f <- ExamplePrediction(observations = obs,
                          show_legend = FALSE,
                          sub_panel_label = "(f) High variability: ",
                          rect_color = plot_cols[6],
-                         ylim_values = c(0,65),
+                         ylim_values = c(0,40),
                          show_shapes = FALSE)
 p2f
 
@@ -210,7 +211,7 @@ p2_supp1a <- ExamplePrediction(observations = obs,
                          forecast_horizon = forecast_horizon,
                          model_ids = c("DOY","persistence","historical mean","ARIMA",
                                                    "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                                   "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                                   "GLM-AED","MARS","randomForest", # removed 1D process model
                                                    "GAM","NNETAR-KGML","ensemble"),
                          show_legend = FALSE,
                          sub_panel_label = "(a) Mixed: ",
@@ -331,14 +332,14 @@ ggsave(plot = p2_supp1, filename = "./figures/final_figures/Figure2_supp1.tif",
 # Figure 3
 
 source("./code/function_library/visualization/SkillVsHorizon.R")
-source("./code/function_library/visualization/GrandMeanSkill.R")
+source("./code/function_library/visualization/OneHorizonSkill.R")
 
 p3a <- SkillVsHorizon(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 14, # changing forecast horizon
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", # eliminating 1D process model
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -346,36 +347,71 @@ p3a <- SkillVsHorizon(observations = obs,
                       viz_metric = "rmse",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
-                      add_vline = TRUE,
+                      add_vline = FALSE,
                       vline_intercept = 26,
                       combined_var = "none",
                       show_null_model = TRUE,
                       fixed_ylim = FALSE)
 p3a
 
-p3b <- GrandMeanSkill(observations = obs, 
+p3b <- OneHorizonSkill(observations = obs, 
                     model_output = out, 
-                    forecast_horizon = 35,
+                    forecast_horizon = 2, #changing forecast horizon
                     model_ids = c("DOY","persistence","historical mean","ARIMA",
                                   "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                  "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                  "GLM-AED","MARS","randomForest", # removing 1D process model
                                   "GAM","NNETAR-KGML","ensemble"),
                     viz_dates = pred_dates,
-                    plot_title = "All horizons",
+                    plot_title = "2 days ahead",
                     viz_metric = "rmse",
-                    show_legend = FALSE)
+                    show_legend = FALSE,
+                    xlims = c(0,10))
 p3b <- p3b +
-  annotate("text",x = 10.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
-  geom_hline(yintercept = 7.5, size = 1)
+  #annotate("text",x = 10.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 12.5, size = 1)
 p3b
 
+p3c <- OneHorizonSkill(observations = obs, 
+                       model_output = out, 
+                       forecast_horizon = 5, #changing forecast horizon
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest", # removing 1D process model
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "5 days ahead",
+                       viz_metric = "rmse",
+                       show_legend = FALSE,
+                       xlims = c(0,10))
+p3c <- p3c +
+  #annotate("text",x = 10.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 12.5, size = 1)
+p3c
 
-p3c <- SkillVsHorizon(observations = obs, 
+p3d <- OneHorizonSkill(observations = obs, 
+                       model_output = out, 
+                       forecast_horizon = 10, #changing forecast horizon
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest", # removing 1D process model
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "10 days ahead",
+                       viz_metric = "rmse",
+                       show_legend = FALSE,
+                       xlims = c(0,10))
+p3d <- p3d +
+  #annotate("text",x = 10.5, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 10.5, size = 1)
+p3d
+
+
+p3e <- SkillVsHorizon(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 14, # changing horizon
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", # eliminating 1D process model
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -387,30 +423,65 @@ p3c <- SkillVsHorizon(observations = obs,
                       vline_intercept = 21,
                       combined_var = "none",
                       fixed_ylim = FALSE)
-p3c
+p3e
 
-p3d <- GrandMeanSkill(observations = obs, 
+p3f <- OneHorizonSkill(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 2, # changing horizon
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", # removing 1D process model
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons",
+                      plot_title = "2 days ahead",
                       viz_metric = "r2",
-                      show_legend = FALSE)
-p3d <- p3d +
-  annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
-  geom_hline(yintercept = 7.5, size = 1)
-p3d
+                      show_legend = FALSE,
+                      xlims = c(-0.3,1))
+p3f <- p3f +
+  #annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 12.5, size = 1)
+p3f
 
-p3e <- SkillVsHorizon(observations = obs, 
+p3g <- OneHorizonSkill(observations = obs, 
+                       model_output = out, 
+                       forecast_horizon = 5, # changing horizon
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest", # removing 1D process model
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "5 days ahead",
+                       viz_metric = "r2",
+                       show_legend = FALSE,
+                       xlims = c(-0.3,1))
+p3g <- p3g +
+  #annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 12.5, size = 1)
+p3g
+
+p3h <- OneHorizonSkill(observations = obs, 
+                       model_output = out, 
+                       forecast_horizon = 10, # changing horizon
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest", # removing 1D process model
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "10 days ahead",
+                       viz_metric = "r2",
+                       show_legend = FALSE,
+                       xlims = c(-0.3,1))
+p3h <- p3h +
+  #annotate("text",x = -0.35, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 10.5, size = 1)
+p3h
+
+p3i <- SkillVsHorizon(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 14, # changing horizon
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", #removing 1D process model
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -418,34 +489,69 @@ p3e <- SkillVsHorizon(observations = obs,
                       viz_metric = "mae",
                       show_legend = FALSE,
                       make_combined_bestmodel_legend = FALSE,
-                      add_vline = TRUE,
+                      add_vline = FALSE,
                       vline_intercept = 26,
                       combined_var = "none",
                       fixed_ylim = FALSE)
-p3e
+p3i
 
-p3f <- GrandMeanSkill(observations = obs, 
+p3j <- OneHorizonSkill(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 2, # changing horizon
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", # removing 1D process model
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons",
+                      plot_title = "2 days ahead",
                       viz_metric = "mae",
-                      show_legend = FALSE)
-p3f <- p3f +
-  annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
-  geom_hline(yintercept = 11.5, size = 1)
-p3f
+                      show_legend = FALSE,
+                      xlims = c(0,8))
+p3j <- p3j +
+  #annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 12.5, size = 1)
+p3j
+
+p3k <- OneHorizonSkill(observations = obs, 
+                       model_output = out, 
+                       forecast_horizon = 5, # changing horizon
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest", # removing 1D process model
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "5 days ahead",
+                       viz_metric = "mae",
+                       show_legend = FALSE,
+                       xlims = c(0,8))
+p3k <- p3k +
+  #annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 13.5, size = 1)
+p3k
+
+p3l <- OneHorizonSkill(observations = obs, 
+                       model_output = out, 
+                       forecast_horizon = 10, # changing horizon
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest", # removing 1D process model
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "10 days ahead",
+                       viz_metric = "mae",
+                       show_legend = FALSE,
+                       xlims = c(0,8))
+p3l <- p3l +
+  #annotate("text",x = 7.3, y = "LSTM", label = "*", size = 10, vjust = 0.8) +
+  geom_hline(yintercept = 10.5, size = 1)
+p3l
 
 leg_plot1 <- SkillVsHorizon(observations = obs, 
                             model_output = out, 
                             forecast_horizon = forecast_horizon,
                             model_ids = c("DOY","persistence","historical mean","ARIMA",
                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                          "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                          "GLM-AED","MARS","randomForest",
                                           "GAM","NNETAR-KGML","ensemble"),
                             best_models_only = TRUE,
                             viz_dates = pred_dates,
@@ -463,15 +569,15 @@ leg1 <- get_legend(leg_plot1)
 p3_leg1 <- as_ggplot(leg1)
 p3_leg1
 
-leg_plot2 <- GrandMeanSkill(observations = obs, 
+leg_plot2 <- OneHorizonSkill(observations = obs, 
                       model_output = out, 
                       forecast_horizon = forecast_horizon,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest",
                                     "NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons up to 21 days",
+                      plot_title = "All horizons up to 14 days",
                       viz_metric = "r2",
                       show_legend = TRUE)
 
@@ -486,25 +592,25 @@ p3_leg2
 p3 <- ggarrange(ggarrange(p3_leg1,p3_leg2,
                           nrow = 2,
                           ncol = 1),
-                ggarrange(p3a, p3b, p3c, p3d, p3e, p3f,
+                ggarrange(p3a, p3b, p3c, p3d, p3e, p3f, p3g, p3h, p3i, p3j, p3k, p3l,
                 nrow = 3,
+                ncol = 4,
+                labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
+                widths = c(1,0.9, 0.9, 0.9)),
                 ncol = 2,
-                labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
-                widths = c(1,0.8)),
-                ncol = 2,
-                widths = c(0.3, 1)
+                widths = c(0.2, 1)
 ) #+ bgcolor("white")
 
 p3
 
 ggsave(plot = p3, filename = "./figures/final_figures/Figure3.tif",
-       device = "tiff", height = 8, width = 11, units = "in",bg = "white")
+       device = "tiff", height = 8, width = 12.5, units = "in",bg = "white")
 
 # Figure 3 supplements
 
 p3_supp1a <- SkillVsHorizon(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 14,
                       model_ids = c("DOY","persistence","historical mean"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -519,53 +625,50 @@ p3_supp1a <- SkillVsHorizon(observations = obs,
                       fixed_ylim = FALSE)
 p3_supp1a
 
-p3_supp1b <- GrandMeanSkill(observations = obs, 
+p3_supp1b <- OneHorizonSkill(observations = obs, 
                       model_output = out, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 2,
                       model_ids = c("DOY","persistence","historical mean"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons",
+                      plot_title = "2 days ahead",
                       viz_metric = "rmse",
-                      show_legend = FALSE)
+                      show_legend = FALSE,
+                      xlims = c(0,10))
 
 p3_supp1b
 
-p3_supp1c <- SkillVsHorizon(observations = obs, 
-                            model_output = out, 
-                            forecast_horizon = 35,
-                            model_ids = c("DOY","persistence","historical mean"),
-                            best_models_only = TRUE,
-                            viz_dates = pred_dates,
-                            plot_title = "",
-                            viz_metric = "r2",
-                            show_legend = FALSE,
-                            make_combined_bestmodel_legend = FALSE,
-                            add_vline = FALSE,
-                            vline_intercept = 26,
-                            combined_var = "none",
-                            show_null_model = FALSE,
-                            fixed_ylim = FALSE)
+p3_supp1c <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean"),
+                             viz_dates = pred_dates,
+                             plot_title = "5 days ahead",
+                             viz_metric = "rmse",
+                             show_legend = FALSE,
+                             xlims = c(0,10))
+
 p3_supp1c
 
-p3_supp1d <- GrandMeanSkill(observations = obs, 
-                            model_output = out, 
-                            forecast_horizon = 35,
-                            model_ids = c("DOY","persistence","historical mean"),
-                            viz_dates = pred_dates,
-                            plot_title = "All horizons",
-                            viz_metric = "r2",
-                            show_legend = FALSE)
+p3_supp1d <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean"),
+                             viz_dates = pred_dates,
+                             plot_title = "10 days ahead",
+                             viz_metric = "rmse",
+                             show_legend = FALSE,
+                             xlims = c(0,10))
 
 p3_supp1d
 
 p3_supp1e <- SkillVsHorizon(observations = obs, 
                             model_output = out, 
-                            forecast_horizon = 35,
+                            forecast_horizon = 14,
                             model_ids = c("DOY","persistence","historical mean"),
                             best_models_only = TRUE,
                             viz_dates = pred_dates,
                             plot_title = "",
-                            viz_metric = "mae",
+                            viz_metric = "r2",
                             show_legend = FALSE,
                             make_combined_bestmodel_legend = FALSE,
                             add_vline = FALSE,
@@ -575,16 +678,94 @@ p3_supp1e <- SkillVsHorizon(observations = obs,
                             fixed_ylim = FALSE)
 p3_supp1e
 
-p3_supp1f <- GrandMeanSkill(observations = obs, 
+p3_supp1f <- OneHorizonSkill(observations = obs, 
                             model_output = out, 
-                            forecast_horizon = 35,
+                            forecast_horizon = 2,
                             model_ids = c("DOY","persistence","historical mean"),
                             viz_dates = pred_dates,
-                            plot_title = "All horizons",
-                            viz_metric = "mae",
-                            show_legend = FALSE)
+                            plot_title = "2 days ahead",
+                            viz_metric = "r2",
+                            show_legend = FALSE,
+                            xlims = c(-0.3,1))
 
 p3_supp1f
+
+p3_supp1g <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean"),
+                             viz_dates = pred_dates,
+                             plot_title = "5 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-0.3,1))
+
+p3_supp1g
+
+p3_supp1h <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean"),
+                             viz_dates = pred_dates,
+                             plot_title = "10 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-0.3,1))
+
+p3_supp1h
+
+p3_supp1i <- SkillVsHorizon(observations = obs, 
+                            model_output = out, 
+                            forecast_horizon = 14,
+                            model_ids = c("DOY","persistence","historical mean"),
+                            best_models_only = TRUE,
+                            viz_dates = pred_dates,
+                            plot_title = "",
+                            viz_metric = "mae",
+                            show_legend = FALSE,
+                            make_combined_bestmodel_legend = FALSE,
+                            add_vline = FALSE,
+                            vline_intercept = 26,
+                            combined_var = "none",
+                            show_null_model = FALSE,
+                            fixed_ylim = FALSE)
+p3_supp1i
+
+p3_supp1j <- OneHorizonSkill(observations = obs, 
+                            model_output = out, 
+                            forecast_horizon = 2,
+                            model_ids = c("DOY","persistence","historical mean"),
+                            viz_dates = pred_dates,
+                            plot_title = "2 days ahead",
+                            viz_metric = "mae",
+                            show_legend = FALSE,
+                            xlims = c(0,7))
+
+p3_supp1j
+
+p3_supp1k <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean"),
+                             viz_dates = pred_dates,
+                             plot_title = "5 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0,7))
+
+p3_supp1k
+
+p3_supp1l <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean"),
+                             viz_dates = pred_dates,
+                             plot_title = "10 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0,7))
+
+p3_supp1l
 
 p3_supp1_leg_plot1 <- SkillVsHorizon(observations = obs, 
                             model_output = out, 
@@ -608,12 +789,12 @@ p3_supp1_leg1 <- as_ggplot(p3_supp1_leg1)
 p3_supp1_leg1 <- p3_supp1_leg1 #+ theme(plot.background = element_blank()) + bgcolor("white")
 p3_supp1_leg1
 
-p3_supp1_leg_plot2 <- GrandMeanSkill(observations = obs, 
+p3_supp1_leg_plot2 <- OneHorizonSkill(observations = obs, 
                             model_output = out, 
                             forecast_horizon = forecast_horizon,
                             model_ids = c("DOY","persistence","historical mean"),
                             viz_dates = pred_dates,
-                            plot_title = "All horizons up to 21 days",
+                            plot_title = "All horizons up to 14 days",
                             viz_metric = "mae",
                             show_legend = TRUE)
 
@@ -626,20 +807,21 @@ p3_supp1_leg2 <- p3_supp1_leg2 #+ theme(plot.background = element_blank()) + bgc
 p3_supp1_leg2
 
 p3_supp1 <- ggarrange(ggarrange(p3_supp1_leg1,p3_supp1_leg2,
-                                nrow = 2, ncol = 1),
-                ggarrange(p3_supp1a, p3_supp1b, p3_supp1c, p3_supp1d, p3_supp1e, p3_supp1f, 
+                          nrow = 2,
+                          ncol = 1),
+                ggarrange(p3_supp1a, p3_supp1b, p3_supp1c, p3_supp1d, p3_supp1e, p3_supp1f, p3_supp1g, p3_supp1h, p3_supp1i, p3_supp1j, p3_supp1k, p3_supp1l,
                           nrow = 3,
-                          ncol = 2,
-                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
-                          widths = c(1,0.8)),
-                ncol = 3,
-                widths = c(0.3, 1, 0.3)
-) #+ bgcolor("white") + theme(plot.background = element_blank())
+                          ncol = 4,
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
+                          widths = c(1,0.9, 0.9, 0.9)),
+                ncol = 2,
+                widths = c(0.2, 1)
+) #+ bgcolor("white")
 
 p3_supp1
 
 ggsave(plot = p3_supp1, filename = "./figures/final_figures/Figure3_supp1.tif",
-       device = "tiff", height = 8, width = 11, units = "in", bg = "white")
+       device = "tiff", height = 8, width = 12.5, units = "in",bg = "white")
 
 
 # Figure 4
@@ -1645,7 +1827,7 @@ ggsave(plot = p4_supp1, filename = "./figures/final_figures/Figure4_supp1.tif",
 # Figure 5
 
 source("./code/function_library/visualization/SkillVsHorizon.R")
-source("./code/function_library/visualization/GrandMeanSkill.R")
+source("./code/function_library/visualization/OneHorizonSkill.R")
 
 obs_var <- obs %>%
   mutate(delta = c(NA,abs(diff(Chla_ugL_mean, na.rm = TRUE)))) 
@@ -1666,7 +1848,7 @@ p5a <- SkillVsHorizon(observations = obs,
                       forecast_horizon = forecast_horizon,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", #removing 1D model
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -1681,28 +1863,63 @@ p5a <- SkillVsHorizon(observations = obs,
                       fixed_ylim = FALSE)
 p5a
 
-p5b <- GrandMeanSkill(observations = obs, 
+p5b <- OneHorizonSkill(observations = obs, 
                       model_output = mod_out_high_var, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 2,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest",
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons",
+                      plot_title = "2 days ahead",
                       viz_metric = "rmse",
-                      show_legend = FALSE)
+                      show_legend = FALSE,
+                      xlims = c(0,20))
 p5b <- p5b +
-  annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
-  geom_hline(yintercept = 10.5, size = 1)
+  #annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 11.5, size = 1)
 p5b
 
-p5c <- SkillVsHorizon(observations = obs, 
+p5c <- OneHorizonSkill(observations = obs, 
+                       model_output = mod_out_high_var, 
+                       forecast_horizon = 5,
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest",
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "5 days ahead",
+                       viz_metric = "rmse",
+                       show_legend = FALSE,
+                       xlims = c(0,20))
+p5c <- p5c +
+  #annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 13.5, size = 1)
+p5c
+
+p5d <- OneHorizonSkill(observations = obs, 
+                       model_output = mod_out_high_var, 
+                       forecast_horizon = 10,
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest",
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "10 days ahead",
+                       viz_metric = "rmse",
+                       show_legend = FALSE,
+                       xlims = c(0,20))
+p5d <- p5d +
+  #annotate("text",x = 19.6, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 12.5, size = 1)
+p5d
+
+p5e <- SkillVsHorizon(observations = obs, 
                       model_output = mod_out_high_var, 
                       forecast_horizon = forecast_horizon,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", #removing 1D model
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -1713,30 +1930,65 @@ p5c <- SkillVsHorizon(observations = obs,
                       add_vline = FALSE,
                       combined_var = "none",
                       fixed_ylim = FALSE)
-p5c
+p5e
 
-p5d <- GrandMeanSkill(observations = obs, 
+p5f <- OneHorizonSkill(observations = obs, 
                       model_output = mod_out_high_var, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 2,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest",
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons",
+                      plot_title = "2 days ahead",
                       viz_metric = "r2",
-                      show_legend = FALSE)
-p5d <- p5d +
-  annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
-  geom_hline(yintercept = 10.5, size = 1)
-p5d
+                      show_legend = FALSE,
+                      xlims = c(-1.5,1))
+p5f <- p5f +
+  #annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 11.5, size = 1)
+p5f
 
-p5e <- SkillVsHorizon(observations = obs, 
+p5g <- OneHorizonSkill(observations = obs, 
+                       model_output = mod_out_high_var, 
+                       forecast_horizon = 5,
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest",
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "5 days ahead",
+                       viz_metric = "r2",
+                       show_legend = FALSE,
+                       xlims = c(-1.5,1))
+p5g <- p5g +
+  #annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 13.5, size = 1)
+p5g
+
+p5h <- OneHorizonSkill(observations = obs, 
+                       model_output = mod_out_high_var, 
+                       forecast_horizon = 10,
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest",
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "10 days ahead",
+                       viz_metric = "r2",
+                       show_legend = FALSE,
+                       xlims = c(-1.5,1))
+p5h <- p5h +
+  #annotate("text",x = -1.35, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 12.5, size = 1)
+p5h
+
+p5i <- SkillVsHorizon(observations = obs, 
                       model_output = mod_out_high_var, 
                       forecast_horizon = forecast_horizon,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest", # removing 1D model
                                     "GAM","NNETAR-KGML","ensemble"),
                       best_models_only = TRUE,
                       viz_dates = pred_dates,
@@ -1748,30 +2000,65 @@ p5e <- SkillVsHorizon(observations = obs,
                       vline_intercept = 8,
                       combined_var = "none",
                       fixed_ylim = FALSE)
-p5e
+p5i
 
-p5f <- GrandMeanSkill(observations = obs, 
+p5j <- OneHorizonSkill(observations = obs, 
                       model_output = mod_out_high_var, 
-                      forecast_horizon = 35,
+                      forecast_horizon = 2,
                       model_ids = c("DOY","persistence","historical mean","ARIMA",
                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                    "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                    "GLM-AED","MARS","randomForest",
                                     "GAM","NNETAR-KGML","ensemble"),
                       viz_dates = pred_dates,
-                      plot_title = "All horizons",
+                      plot_title = "2 days ahead",
                       viz_metric = "mae",
-                      show_legend = FALSE)
-p5f <- p5f +
-  annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
-  geom_hline(yintercept = 8.5, size = 1)
-p5f
+                      show_legend = FALSE,
+                      xlims = c(0,17))
+p5j <- p5j +
+  #annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 11.5, size = 1)
+p5j
+
+p5k <- OneHorizonSkill(observations = obs, 
+                       model_output = mod_out_high_var, 
+                       forecast_horizon = 5,
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest",
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "5 days ahead",
+                       viz_metric = "mae",
+                       show_legend = FALSE,
+                       xlims = c(0,17))
+p5k <- p5k +
+  #annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 13.5, size = 1)
+p5k
+
+p5l <- OneHorizonSkill(observations = obs, 
+                       model_output = mod_out_high_var, 
+                       forecast_horizon = 10,
+                       model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                     "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                     "GLM-AED","MARS","randomForest",
+                                     "GAM","NNETAR-KGML","ensemble"),
+                       viz_dates = pred_dates,
+                       plot_title = "10 days ahead",
+                       viz_metric = "mae",
+                       show_legend = FALSE,
+                       xlims = c(0,17))
+p5l <- p5l +
+  #annotate("text",x = 15.5, y = "LSTM", label = "*", size = 10, vjust = 0.8)+
+  geom_hline(yintercept = 9.5, size = 1)
+p5l
 
 leg_plot1 <- SkillVsHorizon(observations = obs, 
                             model_output = mod_out_high_var, 
                             forecast_horizon = forecast_horizon,
                             model_ids = c("DOY","persistence","historical mean","ARIMA",
                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                          "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                          "GLM-AED","MARS","randomForest",
                                           "GAM","NNETAR-KGML","ensemble"),
                             best_models_only = TRUE,
                             viz_dates = pred_dates,
@@ -1789,12 +2076,12 @@ leg1 <- get_legend(leg_plot1)
 p5_leg1 <- as_ggplot(leg1)
 p5_leg1
 
-leg_plot2 <- GrandMeanSkill(observations = obs, 
+leg_plot2 <- OneHorizonSkill(observations = obs, 
                             model_output = out, 
                             forecast_horizon = forecast_horizon,
                             model_ids = c("DOY","persistence","historical mean","ARIMA",
                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
-                                          "GLM-AED","OneDProcessModel","MARS","randomForest",
+                                          "GLM-AED","MARS","randomForest",
                                           "NNETAR-KGML","ensemble"),
                             viz_dates = pred_dates,
                             plot_title = "All horizons",
@@ -1810,22 +2097,21 @@ p5_leg2
 
 
 p5 <- ggarrange(ggarrange(p5_leg1,p5_leg2,
-                          nrow = 2, 
-                          ncol = 1,
-                          heights = c(1, 0.5)),
-                ggarrange(p5a, p5b, p5c, p5d, p5e, p5f,
+                          nrow = 2,
+                          ncol = 1),
+                ggarrange(p5a, p5b, p5c, p5d, p5e, p5f, p5g, p5h, p5i, p5j, p5k, p5l,
                           nrow = 3,
-                          ncol = 2,
-                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)"),
-                          widths = c(1,0.8)),
+                          ncol = 4,
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
+                          widths = c(1,0.9, 0.9, 0.9)),
                 ncol = 2,
-                widths = c(0.3, 1)
+                widths = c(0.2, 1)
 ) #+ bgcolor("white")
 
 p5
 
 ggsave(plot = p5, filename = "./figures/final_figures/Figure5.tif",
-       device = "tiff", height = 9, width = 11, units = "in", bg = "white")
+       device = "tiff", height = 8, width = 12.5, units = "in",bg = "white")
 
 # Figure 5 supplement
 
