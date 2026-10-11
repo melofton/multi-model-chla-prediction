@@ -93,7 +93,8 @@ OneHorizonSkill <- function(observations,
     scale_fill_manual(name = "Model Type", values = my.cols)+
     theme_classic()+
     theme(legend.title = element_text(face = "bold"),
-          panel.background = element_rect(color = "black", linewidth = 1))
+          panel.background = element_rect(color = "black", linewidth = 1))+
+   scale_x_continuous(expand = expansion(mult = c(0, 0.05)))
  
   if(viz_metric == "rmse"){
     p <- p +
@@ -113,7 +114,8 @@ OneHorizonSkill <- function(observations,
  
  if(!is.null(xlims)){
    p <- p +
-     xlim(xlims)
+     xlim(xlims)+
+     scale_x_continuous(expand = expansion(mult = c(0, 0.05)))
  }
   
   return(p)

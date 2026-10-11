@@ -59,7 +59,7 @@ SkillVsHorizon <- function(observations,
     1 - (sum((obs - pred)^2, na.rm = TRUE) / sum((obs - mean(obs, na.rm = TRUE))^2, na.rm = TRUE))
   }
   
-  if(combined_var == "strat"){
+  if(combined_var == "strat" | combined_var == "strat_and_metric"){
   #reformat model output
   output <- model_output %>% 
     filter(model_id %in% model_ids & reference_datetime %in% viz_dates) %>%
@@ -254,18 +254,40 @@ SkillVsHorizon <- function(observations,
         group_by(var_bin, horizon) %>%
         filter(skill_value == min(skill_value)) %>%
         arrange(horizon)
-    }else {
+    }else if(combined_var == "strat_and_metric") {
     bestModByHorizon1 <- output %>%
       filter(skill_metric == "rmse") %>%
-      group_by(horizon) %>%
+      group_by(horizon, strat_bin) %>%
       filter(skill_value == min(skill_value)) %>%
-      arrange(horizon)
+      arrange(horizon, strat_bin)
     bestModByHorizon2 <- output %>%
       filter(skill_metric == "r2") %>%
-      group_by(horizon) %>%
+      group_by(horizon, strat_bin) %>%
       filter(skill_value == max(skill_value)) %>%
-      arrange(horizon)
-    bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2)
+      arrange(horizon, strat_bin)
+    bestModByHorizon3 <- output %>%
+      filter(skill_metric == "mae") %>%
+      group_by(horizon, strat_bin) %>%
+      filter(skill_value == min(skill_value)) %>%
+      arrange(horizon, strat_bin)
+    bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2, bestModByHorizon3)
+    } else {
+      bestModByHorizon1 <- output %>%
+        filter(skill_metric == "rmse") %>%
+        group_by(horizon) %>%
+        filter(skill_value == min(skill_value)) %>%
+        arrange(horizon)
+      bestModByHorizon2 <- output %>%
+        filter(skill_metric == "r2") %>%
+        group_by(horizon) %>%
+        filter(skill_value == max(skill_value)) %>%
+        arrange(horizon)
+      bestModByHorizon3 <- output %>%
+        filter(skill_metric == "mae") %>%
+        group_by(horizon) %>%
+        filter(skill_value == min(skill_value)) %>%
+        arrange(horizon)
+      bestModByHorizon <- bind_rows(bestModByHorizon1, bestModByHorizon2, bestModByHorizon3)
     }
     
     p <- ggplot()
