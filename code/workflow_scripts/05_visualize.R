@@ -1400,6 +1400,501 @@ p4_supp1
 ggsave(plot = p4_supp1, filename = "./figures/final_figures/Figure4_supp1.tif",
        device = "tiff", height = 10, width = 15, units = "in",bg = "white")
 
+# R2 at 2, 5, 10 day horizons in different periods
+
+# mixed period
+p4_supp2a <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_mixed, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Mixed period: 2 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2a <- p4_supp2a +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 11.5, size = 1)
+p4_supp2a
+
+p4_supp2b <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_mixed, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Mixed period: 5 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2b <- p4_supp2b +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 13.5, size = 1)
+p4_supp2b
+
+p4_supp2c <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_mixed, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Mixed period: 10 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2c <- p4_supp2c +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 15.5, size = 1)
+p4_supp2c
+
+# stratification onset
+p4_supp2d <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_onset, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification onset: 2 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2d <- p4_supp2d +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 13.5, size = 1)
+p4_supp2d
+
+p4_supp2e <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_onset, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification onset: 5 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2e <- p4_supp2e +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 8.5, size = 1)
+p4_supp2e
+
+p4_supp2f <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_onset, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification onset: 10 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2f <- p4_supp2f +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 8.5, size = 1)
+p4_supp2f
+
+# stratified period
+p4_supp2g <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_strat, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratified period: 2 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2, 1))
+p4_supp2g <- p4_supp2g +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 12.5, size = 1)
+p4_supp2g
+
+p4_supp2h <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_strat, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratified period: 5 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2,1))
+p4_supp2h <- p4_supp2h +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 13.5, size = 1)
+p4_supp2h
+
+p4_supp2i <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_strat, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratified period: 10 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2, 1))
+p4_supp2i <- p4_supp2i +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 9.5, size = 1)
+p4_supp2i
+
+# stratification decline
+p4_supp2j <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_decline, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification decline: 2 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2, 1))
+p4_supp2j <- p4_supp2j +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
+p4_supp2j
+
+p4_supp2k <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_decline, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification decline: 5 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2, 1))
+p4_supp2k <- p4_supp2k +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
+p4_supp2k
+
+p4_supp2l <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_decline, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification decline: 10 days ahead",
+                             viz_metric = "r2",
+                             show_legend = FALSE,
+                             xlims = c(-2, 1))
+p4_supp2l <- p4_supp2l +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
+p4_supp2l
+
+leg_plot2 <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = forecast_horizon,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "All horizons",
+                             viz_metric = "mae",
+                             show_legend = TRUE)
+
+# Extract the legend. Returns a gtable
+leg2 <- get_legend(leg_plot2)
+
+# Convert to a ggplot and print
+p4_supp2_leg2 <- as_ggplot(leg2)
+p4_supp2_leg2
+
+
+p4_supp2 <- ggarrange(ggarrange(p4_supp2_leg2,
+                                nrow = 1,
+                                ncol = 1),
+                      ggarrange(p4_supp2a, p4_supp2b, p4_supp2c, p4_supp2d, p4_supp2e, p4_supp2f, p4_supp2g, p4_supp2h, p4_supp2i, p4_supp2j, p4_supp2k, p4_supp2l,
+                                nrow = 4,
+                                ncol = 3,
+                                labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
+                                widths = c(1, 1, 1, 1)),
+                      ncol = 2,
+                      widths = c(0.15, 1)
+) #+ bgcolor("white")
+
+p4_supp2
+
+ggsave(plot = p4_supp2, filename = "./figures/final_figures/Figure4_supp2.tif",
+       device = "tiff", height = 10, width = 15, units = "in",bg = "white")
+
+
+# MAE at 2, 5, 10 day horizons in different periods
+
+# mixed period
+p4_supp3a <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_mixed, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Mixed period: 2 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3a <- p4_supp3a +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 15.5, size = 1)
+p4_supp3a
+
+p4_supp3b <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_mixed, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Mixed period: 5 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3b <- p4_supp3b +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 15.5, size = 1)
+p4_supp3b
+
+p4_supp3c <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_mixed, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Mixed period: 10 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3c <- p4_supp3c +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
+p4_supp3c
+
+# stratification onset
+p4_supp3d <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_onset, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification onset: 2 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3d <- p4_supp3d +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 13.5, size = 1)
+p4_supp3d
+
+p4_supp3e <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_onset, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification onset: 5 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3e <- p4_supp3e +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 10.5, size = 1)
+p4_supp3e
+
+p4_supp3f <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_onset, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification onset: 10 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3f <- p4_supp3f +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 10.5, size = 1)
+p4_supp3f
+
+# stratified period
+p4_supp3g <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_strat, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratified period: 2 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3g <- p4_supp3g +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 12.5, size = 1)
+p4_supp3g
+
+p4_supp3h <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_strat, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratified period: 5 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3h <- p4_supp3h +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 14.5, size = 1)
+p4_supp3h
+
+p4_supp3i <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_strat, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratified period: 10 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3i <- p4_supp3i +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 9.5, size = 1)
+p4_supp3i
+
+# stratification decline
+p4_supp3j <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_decline, 
+                             forecast_horizon = 2,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification decline: 2 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3j <- p4_supp3j +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 13.5, size = 1)
+p4_supp3j
+
+p4_supp3k <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_decline, 
+                             forecast_horizon = 5,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification decline: 5 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3k <- p4_supp3k +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 13.5, size = 1)
+p4_supp3k
+
+p4_supp3l <- OneHorizonSkill(observations = obs, 
+                             model_output = mod_out_decline, 
+                             forecast_horizon = 10,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "GAM","NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "Stratification decline: 10 days ahead",
+                             viz_metric = "mae",
+                             show_legend = FALSE,
+                             xlims = c(0, 9))
+p4_supp3l <- p4_supp3l +
+  #annotate("text",x = 11.8, y = "LSTM", label = "*", size = 10, vjust = 0.8) + #RMSE x = 11.8, r2 x = -0.24, MAE x = 8.5,
+  geom_hline(yintercept = 9.5, size = 1)
+p4_supp3l
+
+leg_plot2 <- OneHorizonSkill(observations = obs, 
+                             model_output = out, 
+                             forecast_horizon = forecast_horizon,
+                             model_ids = c("DOY","persistence","historical mean","ARIMA",
+                                           "ETS","TSLM","Prophet","LSTM","XGBoost","NNETAR",
+                                           "GLM-AED","MARS","randomForest",
+                                           "NNETAR-KGML","ensemble"),
+                             viz_dates = pred_dates,
+                             plot_title = "All horizons",
+                             viz_metric = "mae",
+                             show_legend = TRUE)
+
+# Extract the legend. Returns a gtable
+leg2 <- get_legend(leg_plot2)
+
+# Convert to a ggplot and print
+p4_supp3_leg2 <- as_ggplot(leg2)
+p4_supp3_leg2
+
+
+p4_supp3 <- ggarrange(ggarrange(p4_supp3_leg2,
+                                nrow = 1,
+                                ncol = 1),
+                      ggarrange(p4_supp3a, p4_supp3b, p4_supp3c, p4_supp3d, p4_supp3e, p4_supp3f, p4_supp3g, p4_supp3h, p4_supp3i, p4_supp3j, p4_supp3k, p4_supp3l,
+                                nrow = 4,
+                                ncol = 3,
+                                labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
+                                widths = c(1, 1, 1, 1)),
+                      ncol = 2,
+                      widths = c(0.15, 1)
+) #+ bgcolor("white")
+
+p4_supp3
+
+ggsave(plot = p4_supp3, filename = "./figures/final_figures/Figure4_supp3.tif",
+       device = "tiff", height = 10, width = 15, units = "in",bg = "white")
+
 
 # r2
 

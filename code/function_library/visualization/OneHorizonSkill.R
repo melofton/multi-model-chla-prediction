@@ -114,8 +114,7 @@ OneHorizonSkill <- function(observations,
  
  if(!is.null(xlims)){
    p <- p +
-     xlim(xlims)+
-     scale_x_continuous(expand = expansion(mult = c(0, 0.05)))
+     scale_x_continuous(limits = xlims, expand = expansion(mult = c(0, 0.05)))
  }
   
   return(p)
