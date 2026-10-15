@@ -2631,101 +2631,105 @@ p5b
 # Figure 6
 source("./code/function_library/visualization/CompareWithAndWithoutDrivers.R")
 
-# TSLM overall
+# TSLM RMSE
 p6a <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = out, 
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: TSLM (full time period)",
+                                    plot_title = "Data-driven: TSLM",
+                                    plot_subtitle = "(full time period)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "TSLM",
                                     best_performing_horizons = data.frame(from = c(1),
                                                                           to = c(10)))
 p6a
 
-# GAM overall
-p6b <- CompareWithAndWithoutDrivers(observations = obs, 
-                                    model_output = out, 
-                                    forecast_horizon = forecast_horizon,
-                                    model_ids = c("GAM","GAM (no drivers)","GAM (no lag)"),
-                                    viz_dates = pred_dates,
-                                    plot_title = "Data-driven: GAM (full time period)",
-                                    viz_metric = "rmse",
-                                    show_legend = TRUE,
-                                    combined_var = "none",
-                                    parent_model = "GAM",
-                                    best_performing_horizons = data.frame(from = c(11),
-                                                                          to = c(13)))
-p6b
-
-# ARIMA mixed
-mixed <- ss_data %>%
-  filter(strat_bin == "mixed")
-
-mod_out_mixed <- out %>%
-  filter(datetime %in% mixed$datetime)
-
-p6c <- CompareWithAndWithoutDrivers(observations = obs, 
-                                    model_output = mod_out_mixed, 
-                                    forecast_horizon = forecast_horizon,
-                                    model_ids = c("ARIMA","ARIMA (no drivers)"),
-                                    viz_dates = pred_dates,
-                                    plot_title = "Data-driven: ARIMA (mixed period)",
-                                    viz_metric = "rmse",
-                                    show_legend = TRUE,
-                                    combined_var = "none",
-                                    parent_model = "ARIMA",
-                                    best_performing_horizons = data.frame(from = c(20),
-                                                                          to = c(23)))
-p6c
-
-# MARS onset
+# MARS RMSE
 onset <- ss_data %>%
   filter(strat_bin == "onset")
 
 mod_out_onset <- out %>%
   filter(datetime %in% onset$datetime)
 
-p6d <- CompareWithAndWithoutDrivers(observations = obs, 
+p6b <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = mod_out_onset, 
                                     forecast_horizon = forecast_horizon,
                                     model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: MARS (stratification onset)",
+                                    plot_title = "Data-driven: MARS",
+                                    plot_subtitle = "(stratification onset)",
                                     viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    show_legend = FALSE,
                                     combined_var = "none",
                                     parent_model = "MARS",
-                                    best_performing_horizons = data.frame(from = c(4,14,29),
-                                                                          to = c(4,15,35)))
+                                    best_performing_horizons = data.frame(from = c(4,14),
+                                                                          to = c(9,14)))
+p6b
+
+# ARIMA RMSE
+decline <- ss_data %>%
+  filter(strat_bin == "decline")
+
+mod_out_decline <- out %>%
+  filter(datetime %in% decline$datetime)
+
+p6c <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_decline, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("ARIMA","ARIMA (no drivers)","ARIMA (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Data-driven: ARIMA",
+                                    plot_subtitle = "(stratification decline)",
+                                    viz_metric = "rmse",
+                                    show_legend = FALSE,
+                                    combined_var = "none",
+                                    parent_model = "ARIMA",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(14)))
+p6c
+
+# TSLM R2
+p6d <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Data-driven: TSLM",
+                                    plot_subtitle = "(full time period)",
+                                    viz_metric = "r2",
+                                    show_legend = FALSE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(10)))
 p6d
 
-# Prophet stratified
-strat <- ss_data %>%
-  filter(strat_bin == "stratified")
+# MARS R2
+onset <- ss_data %>%
+  filter(strat_bin == "onset")
 
-mod_out_strat <- out %>%
-  filter(datetime %in% strat$datetime)
+mod_out_onset <- out %>%
+  filter(datetime %in% onset$datetime)
 
 p6e <- CompareWithAndWithoutDrivers(observations = obs, 
-                                    model_output = mod_out_strat, 
+                                    model_output = mod_out_onset, 
                                     forecast_horizon = forecast_horizon,
-                                    model_ids = c("Prophet","Prophet (no drivers)"),
+                                    model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: Prophet (stratified period)",
-                                    viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    plot_title = "Data-driven: MARS",
+                                    plot_subtitle = "(stratification onset)",
+                                    viz_metric = "r2",
+                                    show_legend = FALSE,
                                     combined_var = "none",
-                                    parent_model = "Prophet",
-                                    best_performing_horizons = data.frame(from = c(19),
-                                                                          to = c(32)))
+                                    parent_model = "MARS",
+                                    best_performing_horizons = data.frame(from = c(4,14),
+                                                                          to = c(9,14)))
 p6e
 
-# NNETAR decline
-
+# ARIMA R2
 decline <- ss_data %>%
   filter(strat_bin == "decline")
 
@@ -2735,22 +2739,121 @@ mod_out_decline <- out %>%
 p6f <- CompareWithAndWithoutDrivers(observations = obs, 
                                     model_output = mod_out_decline, 
                                     forecast_horizon = forecast_horizon,
-                                    model_ids = c("NNETAR","NNETAR (no drivers)"),
+                                    model_ids = c("ARIMA","ARIMA (no drivers)","ARIMA (no lag)"),
                                     viz_dates = pred_dates,
-                                    plot_title = "Data-driven: NNETAR (stratification decline)",
-                                    viz_metric = "rmse",
-                                    show_legend = TRUE,
+                                    plot_title = "Data-driven: ARIMA",
+                                    plot_subtitle = "(stratification decline)",
+                                    viz_metric = "r2",
+                                    show_legend = FALSE,
                                     combined_var = "none",
-                                    parent_model = "NNETAR",
-                                    best_performing_horizons = data.frame(from = c(15),
-                                                                          to = c(35)))
+                                    parent_model = "ARIMA",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(14)))
 p6f
 
+# TSLM MAE
+p6g <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = out, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("TSLM","TSLM (no drivers)","TSLM (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Data-driven: TSLM",
+                                    plot_subtitle = "(full time period)",
+                                    viz_metric = "mae",
+                                    show_legend = FALSE,
+                                    combined_var = "none",
+                                    parent_model = "TSLM",
+                                    best_performing_horizons = data.frame(from = c(1),
+                                                                          to = c(14)))
+p6g
 
-p6 <- ggarrange(p6a, p6b, p6c, p6d, p6e, p6f,
-                nrow = 3, ncol = 2,
+# MARS MAE
+onset <- ss_data %>%
+  filter(strat_bin == "onset")
+
+mod_out_onset <- out %>%
+  filter(datetime %in% onset$datetime)
+
+p6h <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_onset, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("MARS","MARS (no drivers)","MARS (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Data-driven: MARS",
+                                    plot_subtitle = "(stratification onset)",
+                                    viz_metric = "mae",
+                                    show_legend = FALSE,
+                                    combined_var = "none",
+                                    parent_model = "MARS",
+                                    best_performing_horizons = data.frame(from = c(NA),
+                                                                          to = c(NA)))
+p6h
+
+# ARIMA MAE
+decline <- ss_data %>%
+  filter(strat_bin == "decline")
+
+mod_out_decline <- out %>%
+  filter(datetime %in% decline$datetime)
+
+p6i <- CompareWithAndWithoutDrivers(observations = obs, 
+                                    model_output = mod_out_decline, 
+                                    forecast_horizon = forecast_horizon,
+                                    model_ids = c("ARIMA","ARIMA (no drivers)","ARIMA (no lag)"),
+                                    viz_dates = pred_dates,
+                                    plot_title = "Data-driven: ARIMA",
+                                    plot_subtitle = "(stratification decline)",
+                                    viz_metric = "mae",
+                                    show_legend = FALSE,
+                                    combined_var = "none",
+                                    parent_model = "ARIMA",
+                                    best_performing_horizons = data.frame(from = c(2),
+                                                                          to = c(5)))
+p6i
+
+leg_plot1 <- CompareWithAndWithoutDrivers(observations = obs, 
+                                          model_output = mod_out_onset, 
+                                          forecast_horizon = forecast_horizon,
+                                          model_ids = c("MARS","TSLM","ARIMA","MARS (no lag)","MARS (no drivers)"),
+                                          viz_dates = pred_dates,
+                                          plot_title = "Data-driven: MARS (stratification onset)",
+                                          viz_metric = "mae",
+                                          show_legend = TRUE,
+                                          combined_var = "none",
+                                          parent_model = c("MARS","TSLM","ARIMA"),
+                                          best_performing_horizons = data.frame(from = c(NA),
+                                                                                to = c(NA)))                                    
+
+# Extract the legend. Returns a gtable
+leg1 <- get_legend(leg_plot1)
+
+# Convert to a ggplot and print
+p6_leg1 <- as_ggplot(leg1)
+p6_leg1
+
+p6 <- ggarrange(ggarrange(p6_leg1,
+                          nrow = 1,
+                          ncol = 1),
+                ggarrange(p6a, p6b, p6c, p6d, p6e, p6f, p6g, p6h, p6i,
+                          nrow = 3,
+                          ncol = 3,
+                          labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)","(j)","(k)","(l)"),
+                          widths = c(1,1,1)),
+                ncol = 2,
+                widths = c(0.3, 1)
+) #+ bgcolor("white")
+
+p6
+
+ggsave(plot = p6, filename = "./figures/final_figures/Figure6.tif",
+       device = "tiff", height = 8, width = 12.5, units = "in",bg = "white")
+
+
+
+p6 <- ggarrange(p6a, p6b, p6c, p6d, p6e, p6f, p6g, p6h, p6i,
+                nrow = 3, ncol = 3,
                 widths = c(1, 1, 1),
-                labels = c("(a)","(b)","(c)","(d)","(e)","(f)")
+                labels = c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(i)")
 ) 
 
 p6

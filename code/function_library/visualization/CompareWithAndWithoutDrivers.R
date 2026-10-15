@@ -22,6 +22,7 @@ library(lubridate)
 #'@param model_ids character vector of model_ids from validation_output.csv to plot
 #'@param viz_dates vector of dates to include when assessing skill (need all dates in vector, not just start/end dates)
 #'@param plot_title character vector for desired plot title
+#'@param plot_subtitle character vector for desired plot subtitle
 #'@param viz_metric choose from "rmse", "r2", "mae" to visualize the model assessment metric you prefer
 #'@param show_legend TRUE/FALSE whether to show plot legend
 #'@param make_combined_legend TRUE/FALSE make combined legend for a plot with multiple sub-panels, e.g., Figs 3, 4, 5 in main manuscript
@@ -36,6 +37,7 @@ CompareWithAndWithoutDrivers <- function(observations = obs,
                           model_ids = c("MARS","MARS (no drivers)","MARS (no lag)","TSLM","TSLM (no drivers)","TSLM (no lag)"),
                           viz_dates = pred_dates,
                           plot_title = "test",
+                          plot_subtitle = "test",
                           viz_metric = "rmse",
                           show_legend = TRUE,
                           make_combined_legend =FALSE,
@@ -135,7 +137,9 @@ CompareWithAndWithoutDrivers <- function(observations = obs,
                              "MARS" = 9,
                              "GAM" = 11)
   
-  my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 3))
+  # new color palette per reviewer request
+  my.dd.cols <- c("#E69F00","#009E73","#0072B2")
+  #my.dd.cols <- scales::seq_gradient_pal(low="#25625E", high="#B9E5E2")(seq(0, 1, length.out = 3))
   my.cols <- c("original model" = my.dd.cols[1],
                "chlorophyll-a data only" = my.dd.cols[2],
                "environmental variables only" = my.dd.cols[3])
@@ -149,7 +153,7 @@ CompareWithAndWithoutDrivers <- function(observations = obs,
     geom_rect(data = best_performing_horizons, aes(xmin = from - 0.5, xmax = to+0.5, ymin = -Inf, ymax = Inf, fill = "best-performing horizons",), alpha = 0.4, color = NA)+
     geom_point(data = plot_data, aes(x = horizon, y = skill_value, shape = parent_model, color = model_version), size = 2)+
     xlab("Prediction horizon (days)")+
-    ggtitle(plot_title)+
+    ggtitle(plot_title, subtitle = plot_subtitle)+
     scale_shape_manual(name = "Parent model", values = my.shapes)+
     scale_color_manual(name = "Model version", values = my.cols)+
     scale_fill_manual(name = "", values = c("best-performing horizons" = "lightgray"))+
