@@ -10,5 +10,5 @@ model_output/LSTM_predictions
 model_output/OneDProcessModel
 
 figures/*
-!figures/final_figures/**
+!figures/final_figures/
 
